@@ -1,6 +1,11 @@
 const functions = require('./functions');
+const filterBan = require('./filterBan');
 
 module.exports = function chatFormat(line, array, channel, client) {
+  if (line.includes('[JOIN]')) {
+    let user = line.slice((line.indexOf(']') + 2), (line.indexOf('joined the game') - 1));
+    filterBan(user);
+  }
   if (line.includes('<server>')) {
     return functions.arrayRemoveOne(array, line);
   }
@@ -9,12 +14,6 @@ module.exports = function chatFormat(line, array, channel, client) {
     return functions.arrayRemoveOne(array, line);
   }
   else if (line.includes('[JOIN]') || line.includes('[LEAVE]') || line.includes('[CHAT]')) {
-    // if (line.includes('[gps')) {
-    //   let res = line.replace(/(\[gps=-?[0-9]*,-?[0-9]*])/g, '');
-    //   console.log(res)
-    //   client.channels.cache.get(channel).send(`<Game Chat> ${functions.formatChatData(res)}`);
-    //   return functions.arrayRemoveOne(array, line);
-    // 
     if (line.includes('[CHAT]')) {
       client.channels.cache.get(channel).send(`<Game Chat> ${functions.formatChatData(line)}`);
       return functions.arrayRemoveOne(array, line);
