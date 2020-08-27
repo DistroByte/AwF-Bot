@@ -98,74 +98,38 @@ client.on('message', (message) => {
 
 function sendMessage() {
   coreLineData.forEach(line => {
-    if (line.includes('[JOIN]')) {
-      let user = line.slice((line.indexOf(']') + 2), (line.indexOf('joined the game') - 1));
-      filterBan(user);
-    }
     chatFormat(line, coreLineData, '718056299501191189', client);
   });
 
   islandicLineData.forEach(line => {
-    if (line.includes('[JOIN]')) {
-      let user = line.slice((line.indexOf(']') + 2), (line.indexOf('joined the game') - 1));
-      filterBan(user);
-    }
     chatFormat(line, islandicLineData, '718056597154299934', client);
   });
 
   seablockLineData.forEach(line => {
-    if (line.includes('[JOIN]')) {
-      let user = line.slice((line.indexOf(']') + 2), (line.indexOf('joined the game') - 1));
-      filterBan(user);
-    }
     chatFormat(line, seablockLineData, '718056423153598545', client);
   });
 
   testLineData.forEach(line => {
-    if (line.includes('[JOIN]')) {
-      let user = line.slice((line.indexOf(']') + 2), (line.indexOf('joined the game') - 1));
-      filterBan(user);
-    }
     chatFormat(line, testLineData, '723280139982471247', client);
   });
 
   eventLineData.forEach(line => {
-    if (line.includes('[JOIN]')) {
-      let user = line.slice((line.indexOf(']') + 2), (line.indexOf('joined the game') - 1));
-      filterBan(user);
-    }
     chatFormat(line, eventLineData, '726502816469876747', client);
   });
 
   chronoLineData.forEach(line => {
-    if (line.includes('[JOIN]')) {
-      let user = line.slice((line.indexOf(']') + 2), (line.indexOf('joined the game') - 1));
-      filterBan(user);
-    }
     chatFormat(line, chronoLineData, '724698782264066048', client);
   });
 
   coronaLineData.forEach(line => {
-    if (line.includes('[JOIN]')) {
-      let user = line.slice((line.indexOf(']') + 2), (line.indexOf('joined the game') - 1));
-      filterBan(user);
-    }
     chatFormat(line, coronaLineData, '724696348871622818', client);
   });
 
   krastorioLineData.forEach(line => {
-    if (line.includes('[JOIN]')) {
-      let user = line.slice((line.indexOf(']') + 2), (line.indexOf('joined the game') - 1));
-      filterBan(user);
-    }
     chatFormat(line, krastorioLineData, '745947531875319900', client);
   });
 
   spiderLineData.forEach(line => {
-    if (line.includes('[JOIN]')) {
-      let user = line.slice((line.indexOf(']') + 2), (line.indexOf('joined the game') - 1));
-      filterBan(user);
-    }
     chatFormat(line, spiderLineData, '746438501339234446', client);
   });
 }
