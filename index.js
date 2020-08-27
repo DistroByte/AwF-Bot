@@ -75,12 +75,12 @@ client.on('message', (message) => {
   //checking for mentions and replacing the user/channel id with the name
   if (message.content.includes('<@')) { //check if the message that the bot reads has a mention of a user
     message.mentions.users.forEach(user => {
-      message.content = message.content.replace(/<@.*>/, '@'+user);
+      message.content = message.content.replace(/<@[\S.]*>/, '@'+user);
     });
   }
   if (message.content.includes('<#')) { //check if the message includes a mention of a discord channel
     message.mentions.channels.forEach(channel => {
-      message.content = message.content.replace(/<#.*>/, '#'+channel);
+      message.content = message.content.replace(/<#[\S.]*>/, '#'+channel);
     });
   }
 
