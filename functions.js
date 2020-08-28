@@ -9,9 +9,9 @@ module.exports = {
   },
   formatChatData: function (data) {
     if (data.includes('[CHAT]') || data.includes('(shout)')) {
-      data = data.slice((data.indexOf(']') + 2)); //black magic fuckery as far as i'm concerned
+      data = data.slice((data.indexOf(']') + 2)); //removing the [CHAT] from sending to Discord
       if (data.includes('[')) {
-        //These all are for Factorio rich text fuckery, in order of https://wiki.factorio.com/Rich_text
+        //These all are for Factorio rich text magic, in order of https://wiki.factorio.com/Rich_text
         //for now, the discord will show [image], [item], [gps] but that can be removed completely by just
         //replacing the second phrase in the .replace with an empty string, i.e. ''
         if (data.includes('[img=')) {
