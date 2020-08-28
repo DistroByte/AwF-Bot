@@ -7,7 +7,6 @@ const { token } = require('./botconfig.json');
 const serverFolder = '../servers/';
 const fs = require('fs');
 const path = require('path');
-const { filterBan } = require("./filterBan");
 const files = fs.readdirSync(serverFolder);
 let servers = [];
 for (file of files) {
@@ -27,7 +26,6 @@ const testTail = new Tail('../servers/test/server.out');
 const krastorioTail = new Tail('../servers/members-krastorio2/server.out');
 const spiderTail = new Tail('../servers/members-spidertron/server.out');
 
-//to be able to write into the game chat what happens on the discord server
 const chronoFifo = new FIFO('../servers/chronotrain/server.fifo');
 exports.chronoFifo = chronoFifo;
 const coreFifo = new FIFO('../servers/members-core/server.fifo');
@@ -85,6 +83,8 @@ client.on('message', (message) => {
   }
 
   //phase of sending the message from discord to Factorio
+  if (message.author.bot) return
+  if (message.content.includes('lenny')) message.channel.send(`( ͡° ͜ʖ ͡°)`);
   if (message.channel.id === '718056299501191189') {
     coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
   }
