@@ -66,8 +66,8 @@ client.on('ready', () => {
 
 client.on('message', (message) => {
   if (message.content.includes('Jammy say hi')) message.channel.send(':wave:');
-  if (message.content.includes('Jammy, work for me') && message.author.name == 'oof2win2') {
-    message.channel.send('yes, master. anything for you, master oof2win2.')
+  if (message.content.includes('Jammy work')) {
+    message.channel.send('you coded me this way, your issue');
   }
   if (message.author.bot) return;
   if (message.content.includes('lenny')) message.channel.send(`( ͡° ͜ʖ ͡°)`);
@@ -75,12 +75,12 @@ client.on('message', (message) => {
   //checking for mentions and replacing the user/channel id with the name
   if (message.content.includes('<@')) { //check if the message that the bot reads has a mention of a user
     message.mentions.users.forEach(user => {
-      message.content = message.content.replace(/<@[\S.]*>/, '@'+user);
+      message.content = message.content.replace(/<@[\S.]*>/, '@'+user.username);
     });
   }
   if (message.content.includes('<#')) { //check if the message includes a mention of a discord channel
     message.mentions.channels.forEach(channel => {
-      message.content = message.content.replace(/<#[\S.]*>/, '#'+channel);
+      message.content = message.content.replace(/<#[\S.]*>/, '#'+channel.name);
     });
   }
 
