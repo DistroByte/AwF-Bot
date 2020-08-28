@@ -7,7 +7,6 @@ const { token } = require('./botconfig.json');
 const serverFolder = '../servers/';
 const fs = require('fs');
 const path = require('path');
-const { filterBan } = require("./filterBan");
 const files = fs.readdirSync(serverFolder);
 let servers = [];
 for (file of files) {
