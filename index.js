@@ -27,7 +27,6 @@ const testTail = new Tail('../servers/test/server.out');
 const krastorioTail = new Tail('../servers/members-krastorio2/server.out');
 const spiderTail = new Tail('../servers/members-spidertron/server.out');
 
-//to be able to write into the game chat what happens on the discord server
 const chronoFifo = new FIFO('../servers/chronotrain/server.fifo');
 exports.chronoFifo = chronoFifo;
 const coreFifo = new FIFO('../servers/members-core/server.fifo');
@@ -66,25 +65,8 @@ client.on('ready', () => {
 
 client.on('message', (message) => {
   if (message.content.includes('Jammy say hi')) message.channel.send(':wave:');
-  if (message.content.includes('Jammy, work for me') && message.author.name == 'oof2win2') {
-    message.channel.send('yes, master. anything for you, master oof2win2.')
-  }
-  if (message.author.bot) return;
+  if (message.author.bot) return
   if (message.content.includes('lenny')) message.channel.send(`( ͡° ͜ʖ ͡°)`);
-
-  //checking for mentions and replacing the user/channel id with the name
-  if (message.content.includes('<@')) { //check if the message that the bot reads has a mention of a user
-    message.mentions.users.forEach(user => {
-      message.content = message.content.replace(/<@[\S.]*>/, '@'+user);
-    });
-  }
-  if (message.content.includes('<#')) { //check if the message includes a mention of a discord channel
-    message.mentions.channels.forEach(channel => {
-      message.content = message.content.replace(/<#[\S.]*>/, '#'+channel);
-    });
-  }
-
-  //phase of sending the message from discord to Factorio
   if (message.channel.id === '718056299501191189') {
     coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
   }
