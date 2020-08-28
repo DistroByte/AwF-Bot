@@ -64,6 +64,25 @@ client.on('ready', () => {
 
 client.on('message', (message) => {
   if (message.content.includes('Jammy say hi')) message.channel.send(':wave:');
+  if (message.content.includes('Jammy work')) {
+    message.channel.send('you coded me this way, your issue');
+  }
+  if (message.author.bot) return;
+  if (message.content.includes('lenny')) message.channel.send(`( ͡° ͜ʖ ͡°)`);
+
+  //checking for mentions and replacing the user/channel id with the name
+  if (message.content.includes('<@')) { //check if the message that the bot reads has a mention of a user
+    message.mentions.users.forEach(user => {
+      message.content = message.content.replace(/<@[\S.]*>/, '@'+user.username);
+    });
+  }
+  if (message.content.includes('<#')) { //check if the message includes a mention of a discord channel
+    message.mentions.channels.forEach(channel => {
+      message.content = message.content.replace(/<#[\S.]*>/, '#'+channel.name);
+    });
+  }
+
+  //phase of sending the message from discord to Factorio
   if (message.author.bot) return
   if (message.content.includes('lenny')) message.channel.send(`( ͡° ͜ʖ ͡°)`);
   if (message.channel.id === '718056299501191189') {
