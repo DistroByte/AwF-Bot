@@ -6,6 +6,6 @@ function filterBan(user) {
     console.log(`banned user ${user}`);
   }
   else
-    return console.log(`did not ban user ${user}`);
+    return
 }
 exports.filterBan = filterBan;

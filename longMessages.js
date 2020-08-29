@@ -1,8 +1,9 @@
 //for a newline in the Discord message, have a \n at the end of a coreLineData
-const { prefix } = require('./index')
+const { prefix } = require('./botconfig')
+defaultColor = '#b7ab07'
 module.exports = {
   messageHelp: {
-    color: '#0099ff',
+    color: defaultColor,
     title: 'Help Commands',
     author: {
       name: 'JammyBot',
@@ -37,7 +38,7 @@ module.exports = {
   },
 
   factoriospcommands: {
-    color: '#0099ff',
+    color: defaultColor,
     title: 'Factorio SP Commands',
     author: {
       name: 'JammyBot',
@@ -104,7 +105,7 @@ module.exports = {
   },
 
   factoriompcommands: {
-    color: '#0099ff',
+    color: defaultColor,
     title: 'Factorio SP Commands',
     author: {
       name: 'JammyBot',

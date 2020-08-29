@@ -1,7 +1,7 @@
 const { Client } = require('discord.js');
 var Tail = require('tail').Tail;
 const chatFormat = require('./chatFormat');
-const { token } = require('./botconfig.json');
+const { token, prefix } = require('./botconfig.json');
 const { sendToServer, sendToAll } = require('./functions');
 const { messageHelp, factoriospcommands, factoriompcommands } = require('./longMessages');
 
@@ -26,10 +26,6 @@ const seablockLineData = [];
 const testLineData = [];
 const krastorioLineData = [];
 const spiderLineData = [];
-
-//prefix for all bot commands
-const prefix = '?';
-exports.prefix = prefix;
 
 client.on('ready', () => {
   console.log(`${client.user.username} is online`);

@@ -173,5 +173,5 @@ module.exports = {
         spiderFIFO.write(`${message.content}`, () => { });
       }
     }
-  }
+  },
 }
