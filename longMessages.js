@@ -30,6 +30,10 @@ module.exports = {
         name: `${prefix}factoriompcommands`,
         value: 'Display all Factorio multiplayer commands'
       },
+      {
+        name: `${prefix}griefer`,
+        value: 'Works from the Factorio game. When typed in chat, moderators and admins will be pinged so they can resolve the issue',
+      },
     ],
     timestamp: new Date(),
     footer: {
