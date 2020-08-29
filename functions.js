@@ -74,5 +74,16 @@ module.exports = {
   },
   formatSaveData: function (data) {
     return data.slice((data.indexOf('_autosave') + 1), (data.indexOf('(') - 1));
+  },
+  sendToAll: function(message) {
+    chronoFifo.write(message, () => { });
+    coreFifo.write(message, () => { });
+    coronaFifo.write(message, () => { });
+    eventFifo.write(message, () => { });
+    islandicFifo.write(message, () => { });
+    seablockFifo.write(message, () => { });
+    testFifo.write(message, () => { });
+    krastorioFifo.write(message, () => { });
+    spiderFifo.write(message, () => { });
   }
 }
