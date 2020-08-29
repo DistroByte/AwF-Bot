@@ -2,4 +2,14 @@
 //for a newline in the Discord message, have a \n at the end of a coreLineData
 //you can use Markdown to format messages
 
-const messageHelp = `### Help \n #### Bot Commands (for authorized users only): \n * +fcommandall - send a command to all Factorio servers \n * +fcommand - send a command to the current Factorio server, corresponding with the Discord server \n * +sendall - send a message to all Factorio servers, prefixed with the username of the user on Discord \n`
+const messageHelp = new Discord.MessageEmbed()
+  .setColor('#0099ff')
+  .setTitle('Help Commands')
+  .setAuthor('made by oof2win2')
+  .setDescription('These are all of the help commands programmed into JammyBot that are included in this message')
+  .addFields(
+    { name: '* +fcommandall', value: 'send a command to all Factorio servers' },
+    { name: '* +fcommand', value: 'send a command to the current Factorio server'},
+    { name: '* +sendall', value: 'send a message to all Factorio servers, prefixed with the username of the user on Discord' },
+  )
+  .setTimestamp()

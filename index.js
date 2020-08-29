@@ -73,7 +73,7 @@ client.on('message', (message) => {
   if (message.author.bot) return;
   if (message.content.includes('lenny')) message.channel.send(`( ͡° ͜ʖ ͡°)`);
 
-  if (message.content.startsWith(botPrefix) && (message.author.roles.cache.some(role => role.name === 'Admin') || message.author.roles.cache.some(role => role.name === 'Moderator'))) { //if the user has sufficient roles to use bot commands
+  if (message.content.startsWith(botPrefix) && (message.author.roles.cache.some(role => role.name === 'Admin') || message.author.roles.cache.some(role => role.name === 'Moderator') || message.author.roles.cache.some(role => role.name === 'dev'))) { //if the user has sufficient roles to use bot commands or is a dev to test them
     if (message.content.startsWith(botPrefix+'fcommandall')) {
       message.content = message.content.slice(9); //gets rid of the command prefix
       message.content = '/'+message.content;  //prefixes the message with a / to start commands in Factorio
