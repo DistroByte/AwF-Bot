@@ -62,11 +62,11 @@ client.on('ready', () => {
   setInterval(sendMessage, 1000);
 });
 
+
+//for sending messages from Discord to Factorio, or some random bot commands
 client.on('message', (message) => {
   if (message.content.includes('Jammy say hi')) message.channel.send(':wave:');
-  if (message.content.includes('Jammy work')) {
-    message.channel.send('you coded me this way, your issue');
-  }
+  if (message.content.includes('Jammy work')) message.channel.send('you coded me this way, your issue');
   if (message.author.bot) return;
   if (message.content.includes('lenny')) message.channel.send(`( ͡° ͜ʖ ͡°)`);
 
@@ -85,33 +85,7 @@ client.on('message', (message) => {
   //phase of sending the message from discord to Factorio
   if (message.author.bot) return
   if (message.content.includes('lenny')) message.channel.send(`( ͡° ͜ʖ ͡°)`);
-  if (message.channel.id === '718056299501191189') {
-    coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '718056597154299934') {
-    islandicFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '718056423153598545') {
-    seablockFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '723280139982471247') {
-    testFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '726502816469876747') {
-    eventFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '724698782264066048') {
-    chronoFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '724696348871622818') {
-    coronaFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '745947531875319900') {
-    krastorioFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '746438501339234446') {
-    spiderFIFO.write(`${message.author.username}: ${message.content}`, () => { });
-  }
+  sendToServer(message, 1);
 });
 
 function sendMessage() {
