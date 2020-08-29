@@ -1,4 +1,14 @@
-const { chronoFifo, coreFifo, coronaFifo, eventFifo, islandicFifo, seablockFifo, testFifo, krastorioFifo, spiderFIFO } = require("./index");
+const FIFO = require('fifo-js');
+
+const chronoFifo = new FIFO('../servers/chronotrain/server.fifo');
+const coreFifo = new FIFO('../servers/members-core/server.fifo');
+const coronaFifo = new FIFO('../servers/corona-daycare/server.fifo');
+const eventFifo = new FIFO('../servers/event-biter-battles/server.fifo');
+const islandicFifo = new FIFO('../servers/members-islandic/server.fifo');
+const seablockFifo = new FIFO('../servers/members-seablock/server.fifo');
+const testFifo = new FIFO('../servers/test/server.fifo');
+const krastorioFifo = new FIFO('../servers/members-krastorio2/server.fifo');
+const spiderFifo = new FIFO('../servers/members-spidertron/server.fifo');
 
 module.exports = {
   formatVersion: function (data) {
@@ -77,9 +87,10 @@ module.exports = {
   formatSaveData: function (data) {
     return data.slice((data.indexOf('_autosave') + 1), (data.indexOf('(') - 1));
   },
-  sendToAll: function (message, sendWithUsername = 1) {
+  sendToAll: function (message, sendWithUsername) {
     // gets the message as an object and if provided, will send the message with the username - if not provided, will send without (useful for commands)
     // sends a message to all servers at once
+    console.log(message.content);
     if (sendWithUsername == 1) {
       chronoFifo.write(`${message.author.username}: ${message.content}`, () => { });
       coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
@@ -91,19 +102,20 @@ module.exports = {
       krastorioFifo.write(`${message.author.username}: ${message.content}`, () => { });
       spiderFifo.write(`${message.author.username}: ${message.content}`, () => { });
     } else { //sends just the message, no username, nothing
-      chronoFifo.write(message.content, () => { });
-      coreFifo.write(message.content, () => { });
-      coronaFifo.write(message.content, () => { });
-      eventFifo.write(message.content, () => { });
-      islandicFifo.write(message.content, () => { });
-      seablockFifo.write(message.content, () => { });
-      testFifo.write(message.content, () => { });
-      krastorioFifo.write(message.content, () => { });
-      spiderFifo.write(message.content, () => { });
+      chronoFifo.write(`${message.content}`, () => { });
+      coreFifo.write(`${message.content}`, () => { });
+      coronaFifo.write(`${message.content}`, () => { });
+      eventFifo.write(`${message.content}`, () => { });
+      islandicFifo.write(`${message.content}`, () => { });
+      seablockFifo.write(`${message.content}`, () => { });
+      testFifo.write(`${message.content}`, () => { });
+      krastorioFifo.write(`${message.content}`, () => { });
+      spiderFifo.write(`${message.content}`, () => { });
     }
   },
-  sendToServer: function (message, sendWithUsername = 1) {
+  sendToServer: function (message, sendWithUsername) {
     // gets the message as an object and if provided, will send the message with the username - if not provided, will send without (useful for commands)
+
     if (sendWithUsername == 1) { //sends the message with the username and colon
       if (message.channel.id === '718056299501191189') {
         coreFifo.write(`${message.author.username}: ${message.content}`, () => { });

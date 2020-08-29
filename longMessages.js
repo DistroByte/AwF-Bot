@@ -44,59 +44,57 @@ const factoriospcommands = {
   description: 'These are all of the Factorio in-game console commands for singleplayer/client that can be used in +fcommand and +fcommandall. Some of them that can be used only on the Factorio client have a @ in front of the slash. Admin-only commands also have a # in front. Cheat commands have not been included',
   fields: [
     {
-      {
-        name: '/alerts <enable/disable/mute/unmute> <alert>',
-        value: 'Enables, disables, mutes, or unmutes the given alert type. Available alerts: entity_destroyed, entity_under_attack, not_enough_construction_robots, no_material_for_construction, not_enough_repair packs, turret_fire, custom, no_storage, train_out_of_fuel, fluid_mixing',
-      },
-      {
-        name: '/clear',
-        value: 'Clears the console (only viewing, server-side stays)',
-      },
-      {
-        name: '/evolution',
-        value: 'Prints info about the alien evolution factor',
-      },
-      {
-        name: '/mute-programmable-speaker <mute/unmute> <local/everyone>',
-        value: 'Mutes or unmutes the global sounds created by the Programmable Speaker. Use “local” to mute just the local client. Admins can use “everyone” to mute the sounds for everyone on the server',
-      },
-      {
-        name: '/perf-avg-frames <number>',
-        value: 'Number of ticks/updates used to average performance counters. Default is 100. Value of 5-10 is recommended for fast convergence, but numbers will jitter more rapidly',
-      },
-      {
-        name: '#@/permissions',
-        value: 'Opens the permissions GUI'
-      },
-      {
-         name: '/screenshot [x resolution] [y resolution] [zoom]',
-         value: 'Takes a screenshot with the GUI hidden, centered on the player. It is saved in the 'script-output' subfolder of your User data directory. Resolution is optional and defaults to the current window size. Zoom is optional and defaults to 1',
-      },
-      {
-        name: '/time',
-        value: 'Prints info about how old the map is',
-      },
-      {
-        name: '#/toggle-action-logging',
-        value: 'Toggles logging all input actions performed by the game. This value isn’t persisted between game restarts and only affects your local game in multiplayer sessions',
-      },
-      {
-        name: '#/toggle-heavy-mode',
-        value: 'Used to investigate desyncs. Will slow down the game and make multiplayer unplayable',
-      },
-      {
-        name: '@/toggle-rockets-sent-gui',
-        value: 'Toggles if the rockets sent button is shown in the upper left corner of the screen',
-      },
-      {
-        name: '@/unlock-shortcut-bar',
-        value: 'Unlocks all shortcut bar items'
-      },
-      {
-        name: '/version',
-        value: 'Prints the current game version - This is shown on Discord in channel description',
-      },
-    }
+      name: '/alerts <enable/disable/mute/unmute> <alert>',
+      value: 'Enables, disables, mutes, or unmutes the given alert type. Available alerts: entity_destroyed, entity_under_attack, not_enough_construction_robots, no_material_for_construction, not_enough_repair packs, turret_fire, custom, no_storage, train_out_of_fuel, fluid_mixing',
+    },
+    {
+      name: '/clear',
+      value: 'Clears the console (only viewing, server-side stays)',
+    },
+    {
+      name: '/evolution',
+      value: 'Prints info about the alien evolution factor',
+    },
+    {
+      name: '/mute-programmable-speaker <mute/unmute> <local/everyone>',
+      value: 'Mutes or unmutes the global sounds created by the Programmable Speaker. Use “local” to mute just the local client. Admins can use “everyone” to mute the sounds for everyone on the server',
+    },
+    {
+      name: '/perf-avg-frames <number>',
+      value: 'Number of ticks/updates used to average performance counters. Default is 100. Value of 5-10 is recommended for fast convergence, but numbers will jitter more rapidly',
+    },
+    {
+      name: '#@/permissions',
+      value: 'Opens the permissions GUI'
+    },
+    {
+      name: '/screenshot [x resolution] [y resolution] [zoom]',
+      value: 'Takes a screenshot with the GUI hidden, centered on the player. It is saved in the \'script- output\' subfolder of your User data directory. Resolution is optional and defaults to the current window size. Zoom is optional and defaults to 1',
+    },
+    {
+      name: '/time',
+      value: 'Prints info about how old the map is',
+    },
+    {
+      name: '#/toggle-action-logging',
+      value: 'Toggles logging all input actions performed by the game. This value isn’t persisted between game restarts and only affects your local game in multiplayer sessions',
+    },
+    {
+      name: '#/toggle-heavy-mode',
+      value: 'Used to investigate desyncs. Will slow down the game and make multiplayer unplayable',
+    },
+    {
+      name: '@/toggle-rockets-sent-gui',
+      value: 'Toggles if the rockets sent button is shown in the upper left corner of the screen',
+    },
+    {
+      name: '@/unlock-shortcut-bar',
+      value: 'Unlocks all shortcut bar items',
+    },
+    {
+      name: '/version',
+      value: 'Prints the current game version - This is shown on Discord in channel description',
+    },
   ],
   timestamp: new Date(),
   footer: {
