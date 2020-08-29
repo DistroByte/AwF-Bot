@@ -3,15 +3,7 @@ const { chronoFifo, coreFifo, coronaFifo, eventFifo, islandicFifo, seablockFifo,
 
 function filterBan(user) {
   if (banList.find(users => users.username === user)) {
-    chronoFifo.write(`/ban ${user}`);
-    coreFifo.write(`/ban ${user}`);
-    coronaFifo.write(`/ban ${user}`);
-    eventFifo.write(`/ban ${user}`);
-    islandicFifo.write(`/ban ${user}`);
-    seablockFifo.write(`/ban ${user}`);
-    testFifo.write(`/ban ${user}`);
-    krastorioFifo.write(`/ban ${user}`);
-    spiderFIFO.write(`/ban ${user}`);
+    sendToAll(`/ban ${user}`);
     console.log(`banned user ${user}`);
   }
   else

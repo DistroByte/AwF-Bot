@@ -57,18 +57,44 @@ const testLineData = [];
 const krastorioLineData = [];
 const spiderLineData = [];
 
+//prefix for all bot commands
+const botPrefix = '+'
+
 client.on('ready', () => {
   console.log(`${client.user.username} is online`)
   setInterval(sendMessage, 1000);
 });
 
+
+//for sending messages from Discord to Factorio, or some random bot commands
 client.on('message', (message) => {
   if (message.content.includes('Jammy say hi')) message.channel.send(':wave:');
-  if (message.content.includes('Jammy work')) {
-    message.channel.send('you coded me this way, your issue');
-  }
+  if (message.content.includes('Jammy work')) message.channel.send('you coded me this way, your issue');
   if (message.author.bot) return;
   if (message.content.includes('lenny')) message.channel.send(`( ͡° ͜ʖ ͡°)`);
+
+  //handle bot commands
+  if (message.content.startsWith(botPrefix)) {
+    if (message.author.roles.cache.some(role => role.name === 'Admin') || message.author.roles.cache.some(role => role.name === 'Moderator') || message.author.roles.cache.some(role => role.name === 'dev'))
+      if (message.content.startsWith(botPrefix+'fcommandall')) {
+        message.content = message.content.slice(9); //gets rid of the command prefix
+        message.content = '/'+message.content;  //prefixes the message with a / to start commands in Factorio
+        sendToAll(message, 0); //sends the command to all servers with no
+      }
+      if (message.content.startsWith(botPrefix+'fcommand')) {
+        message.content = message.content.slice(9); //gets rid of the command prefix
+        message.content = '/'+message.content;  //prefixes the message with a / to start commands in Factorio
+        sendToServer(message, 0);
+      }
+      if (message.content.startsWith(botPrefix+'sendall')) {
+        message.content = message.content.slice(8); //gets rid of the command prefix
+        sendToAll(message, 1);  //sends the message to all servers at once
+      }
+    }
+    if (message.content == botPrefix+'h' || message.content == botPrefix+'help') message.channel.send({embed: messageHelp});
+    if (message.content == botPrefix+'factoriospcommands') message.channel.send({embed: factoriospcommands});
+    if (message.content == botPrefix+'factoriompcommands') message.channel.send({embed: factoriompcommands});
+  }
 
   //checking for mentions and replacing the user/channel id with the name
   if (message.content.includes('<@')) { //check if the message that the bot reads has a mention of a user
@@ -85,33 +111,7 @@ client.on('message', (message) => {
   //phase of sending the message from discord to Factorio
   if (message.author.bot) return
   if (message.content.includes('lenny')) message.channel.send(`( ͡° ͜ʖ ͡°)`);
-  if (message.channel.id === '718056299501191189') {
-    coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '718056597154299934') {
-    islandicFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '718056423153598545') {
-    seablockFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '723280139982471247') {
-    testFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '726502816469876747') {
-    eventFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '724698782264066048') {
-    chronoFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '724696348871622818') {
-    coronaFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '745947531875319900') {
-    krastorioFifo.write(`${message.author.username}: ${message.content}`, () => { });
-  }
-  if (message.channel.id === '746438501339234446') {
-    spiderFIFO.write(`${message.author.username}: ${message.content}`, () => { });
-  }
+  sendToServer(message, 1); // send the message to corresponding server
 });
 
 function sendMessage() {
