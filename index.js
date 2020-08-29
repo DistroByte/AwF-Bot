@@ -23,12 +23,15 @@ client.on('ready', () => {
 
 //for sending messages from Discord to Factorio, or some random bot commands
 client.on('message', (message) => {
+  let slap = client.emojis.cache.find(emoji => emoji.name === "slap")
   if (message.content.includes('Jammy say hi')) return message.channel.send(':wave:');
   if (message.content.includes('Jammy work')) return message.channel.send('you coded me this way, your issue');
   if (message.author.bot) return
   if (message.content.includes('lenny')) return message.channel.send(`( ͡° ͜ʖ ͡°)`);
-  if (message.content.includes('slap') && message.mentions)
-    return message.channel.send(`${message.mentions.members.first()} :clap:`);
+  if (message.content.includes('slap') && message.mentions) {
+    message.delete();
+    message.channel.send(`${message.mentions.members.first() || message.content.slice(message.content.indexOf('slap') + 5)} ${slap}`);
+  }
 
   //handle bot commands
   if (message.content.startsWith(prefix)) {
@@ -67,6 +70,7 @@ client.on('message', (message) => {
   }
 
   //phase of sending the message from discord to Factorio
+  if (message.author.bot) return
   sendToServer(message, 1); // send the message to corresponding server
 });
 

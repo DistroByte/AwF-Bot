@@ -5,6 +5,7 @@ module.exports = function chatFormat(line, channel, client) {
   if (line.includes('[JOIN]')) {
     filterBan(line.slice((line.indexOf(']') + 2), (line.indexOf('joined the game') - 1)));
   }
+  if (line.includes('<server>')) return
   if (line.includes('; Factorio')) {
     return client.channels.cache.get(channel).setTopic(`Running ${functions.formatVersion(line)} since ${functions.formatDate(line)}`);
   }
