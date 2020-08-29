@@ -1,16 +1,19 @@
+# This is a simple Python script to reset the AwF servers and do magic on them after resetting - setting permissions etc.
+
 import subprocess
 import sys
 
+
 servers = {
-    1: "chrono",
-    2: "core",
-    3: "corona daycare",
-    4: "event",
-    5: "islandic",
-    6: "seablock",
-    7: "test",
-    8: "krastorio",
-    9: "spider",
+    1: "chronotrain",
+    2: "corona-daycare",
+    3: "event-biter-battles",
+    4: "members-core",
+    5: "members-islandic",
+    6: "members-krastorio2",
+    7: "members-seablock",
+    8: "members-spidertron",
+    9: "test",
 }
 
 
