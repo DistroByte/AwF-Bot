@@ -57,6 +57,9 @@ const testLineData = [];
 const krastorioLineData = [];
 const spiderLineData = [];
 
+//prefix for all bot commands
+const botPrefix = '+'
+
 client.on('ready', () => {
   console.log(`${client.user.username} is online`)
   setInterval(sendMessage, 1000);
@@ -69,6 +72,24 @@ client.on('message', (message) => {
   if (message.content.includes('Jammy work')) message.channel.send('you coded me this way, your issue');
   if (message.author.bot) return;
   if (message.content.includes('lenny')) message.channel.send(`( ͡° ͜ʖ ͡°)`);
+
+  if (message.content.startsWith(botPrefix) && (message.author.roles.cache.some(role => role.name === 'Admin') || message.author.roles.cache.some(role => role.name === 'Moderator'))) { //if the user has sufficient roles to use bot commands
+    if (message.content.startsWith(botPrefix+'fcommandall')) {
+      message.content = message.content.slice(9); //gets rid of the command prefix
+      message.content = '/'+message.content;  //prefixes the message with a / to start commands in Factorio
+      sendToAll(message, 0); //sends the command to all servers with no
+    }
+    if (message.content.startsWith(botPrefix+'fcommand')) {
+      message.content = message.content.slice(9); //gets rid of the command prefix
+      message.content = '/'+message.content;  //prefixes the message with a / to start commands in Factorio
+      sendToServer(message, 0);
+    }
+    if (message.content.startsWith(botPrefix+'sendall')) {
+      message.content = message.content.slice(8); //gets rid of the command prefix
+      sendToAll(message, 1);  //sends the message to all servers at once
+    }
+    if (message.content.startsWith(botPrefix+'h') || message.content.startsWith(botPrefix+'help')) message.channel.send(messageHelp);
+  }
 
   //checking for mentions and replacing the user/channel id with the name
   if (message.content.includes('<@')) { //check if the message that the bot reads has a mention of a user
@@ -85,7 +106,7 @@ client.on('message', (message) => {
   //phase of sending the message from discord to Factorio
   if (message.author.bot) return
   if (message.content.includes('lenny')) message.channel.send(`( ͡° ͜ʖ ͡°)`);
-  sendToServer(message, 1);
+  sendToServer(message, 1); // send the message to corresponding server
 });
 
 function sendMessage() {
