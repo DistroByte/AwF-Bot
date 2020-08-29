@@ -72,11 +72,6 @@ client.on('message', (message) => {
   if (message.content.includes('Jammy work')) message.channel.send('you coded me this way, your issue');
   if (message.author.bot) return;
   if (message.content.includes('lenny')) message.channel.send(`( ͡° ͜ʖ ͡°)`);
-  if (message.content.includes('Jammy smack') && message.content.includes('<@')) {
-    message.mentions.users.forEach(user => {
-      message.content = message.content.replace(/<@[\S.]*>/, '@'+user.username+' :clap:');
-    });
-  }
 
   //handle bot commands
   if (message.content.startsWith(botPrefix)) {
