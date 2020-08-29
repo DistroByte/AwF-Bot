@@ -38,7 +38,7 @@ client.on('message', (message) => {
   if (message.content.includes('Jammy work')) return message.channel.send('you coded me this way, your issue');
   if (message.author.bot) return
   if (message.content.includes('lenny')) return message.channel.send(`( ͡° ͜ʖ ͡°)`);
-  if (message.content.includes('slap') && message.mentions)
+  if (message.content.includes('slap') && message.mentions.members.first())
     return message.channel.send(`${message.mentions.members.first()} :clap:`);
 
   //handle bot commands
