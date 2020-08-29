@@ -1,3 +1,5 @@
+const { chronoFifo, coreFifo, coronaFifo, eventFifo, islandicFifo, seablockFifo, testFifo, krastorioFifo, spiderFIFO } = require("./index");
+
 module.exports = {
   formatVersion: function (data) {
     data.trim();
@@ -75,11 +77,11 @@ module.exports = {
   formatSaveData: function (data) {
     return data.slice((data.indexOf('_autosave') + 1), (data.indexOf('(') - 1));
   },
-  sendToAll: function(message, sendWithUsername = 1) {
+  sendToAll: function (message, sendWithUsername = 1) {
     // gets the message as an object and if provided, will send the message with the username - if not provided, will send without (useful for commands)
     // sends a message to all servers at once
     if (sendWithUsername == 1) {
-      chronoFifo.write(`${message.author.username}: ${message.content}`, () = { });
+      chronoFifo.write(`${message.author.username}: ${message.content}`, () => { });
       coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
       coronaFifo.write(`${message.author.username}: ${message.content}`, () => { });
       eventFifo.write(`${message.author.username}: ${message.content}`, () => { });
@@ -100,7 +102,7 @@ module.exports = {
       spiderFifo.write(message.content, () => { });
     }
   },
-  sendToServer: function(message, sendWithUsername = 1) {
+  sendToServer: function (message, sendWithUsername = 1) {
     // gets the message as an object and if provided, will send the message with the username - if not provided, will send without (useful for commands)
     if (sendWithUsername == 1) { //sends the message with the username and colon
       if (message.channel.id === '718056299501191189') {

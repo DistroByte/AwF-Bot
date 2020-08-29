@@ -1,5 +1,4 @@
 const banList = require('./banlist-full.json');
-const { chronoFifo, coreFifo, coronaFifo, eventFifo, islandicFifo, seablockFifo, testFifo, krastorioFifo, spiderFIFO } = require("./index");
 
 function filterBan(user) {
   if (banList.find(users => users.username === user)) {
