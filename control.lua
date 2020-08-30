@@ -1,5 +1,3 @@
--- This .txt file is only to get things on how we colled the data
--- Default Factorio control.lua
 local handler = require("event_handler")
 handler.add_lib(require("freeplay"))
 handler.add_lib(require("silo-script"))
@@ -13,24 +11,30 @@ script.on_event(defines.events.on_entity_died, function(event)
 end)
 
 -- Grafana logging
-local function log1(msg)
-	print ("JLOGGER: " .. msg) --jammylogger
+local function log1(event) --player death
+	print ("JLOGGER: DIED: " .. event.player_index .. event.cause) --jammylogger
 end
-local function log2(msg, msg2)
-	print ("JLOGGER: " .. msg .. msg2) --jammylogger
+local function log2(event)  --rocket launched
+	print ("JLOGGER: ROCKET: " .. event) --jammylogger
 end
-local function log3(msg, msg2, msg3)
-	print ("JLOGGER: " .. msg .. msg2 .. msg3) --jammylogger
+local function log3(event)  --handcraft
+	print ("JLOGGER: HANDCRAFT: " .. event.item_stack .. event.player_index) --jammylogger
 end
-local function log4(msg, msg2, msg3, msg4)
-	print ("JLOGGER: " .. msg .. msg2 .. msg3 .. msg4) --jammylogger
+local function log4(event)  --capsule
+	print ("JLOGGER: CAPSULE:" .. event.player_index .. event.item) --jammylogger
+end
+local function log5(event)  --research finished
+	print ("JLOGGER: RESEARCH FINISHED: " .. event.research) --jammylogger
+end
+local function log6(event)  --fired artillery
+	print ("JLOGGER: ARTILLERY: " .. event.entity, event.source) --jammylogger
 end
 
 
 -- Data collection
-script.on_event(defines.events.on_player_died,            function(event, player_index, cause) log3(event, "died", cause) end)
-script.on_event(defines.events.on_rocket_launched,        function(event) log2(event, "rocket launched") end)
-script.on_event(defines.events.on_player_crafted_item,    function(event, item_stack, player_index) log4(event, item_stack, "handcrafted by", player_index) end)
-script.on_event(defines.events.on_research_finished, function(event, research) log3(event, "research", research) end)
-script.on_event(defines.events.on_player_used_capsule, function(event, player_index, item) log4(event, "capsule", player_index, item) end)
-script.on_event(defines.events.on_trigger_fired_artillery, function(event, entity, source) log4(event, "artillery fired", entity, source) end)
+script.on_event(defines.events.on_player_died,              function(event) log1(event) end)
+script.on_event(defines.events.on_rocket_launched,          function(event) log2(event) end)
+script.on_event(defines.events.on_player_crafted_item,      function(event) log3(event) end)
+script.on_event(defines.events.on_player_used_capsule,      function(event) log4(event) end)
+script.on_event(defines.events.on_research_finished,        function(event) log5(event) end)
+script.on_event(defines.events.on_trigger_fired_artillery,  function(event) log6(event) end)
