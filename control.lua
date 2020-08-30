@@ -18,7 +18,7 @@ local function log2(event)  --rocket launched
 	print ("JLOGGER: ROCKET: " .. event) --jammylogger
 end
 local function log3(event)  --handcraft
-	print ("JLOGGER: HANDCRAFT: " .. event.item_stack .. event.player_index) --jammylogger
+	print ("JLOGGER: HANDCRAFT: " .. event.item_stack.name or "unnamed_item" .. game.get_player(event.player_index)) --jammylogger
 end
 local function log4(event)  --capsule
 	print ("JLOGGER: CAPSULE:" .. event.player_index .. event.item) --jammylogger
