@@ -18,6 +18,7 @@ module.exports = function chatFormat(line, channel, client) {
   }
   else if (line.includes('JLOGGER:')) {
     line = line.slice((line.indexOf('JLOGGER:') + 'JLOGGER:'.length + 1))
-    functions.parseJammyLogger(line, client.channels.cache.get(channel));
+    let result = functions.parseJammyLogger(line, client.channels.cache.get(channel));
+    //somehow return $result into the Discord chat
   }
 }

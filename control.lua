@@ -21,6 +21,9 @@ end
 local function logArtillery(event)  --fired artillery
 	print ("JLOGGER: ARTILLERY: " .. event.entity.name .. ' ' .. event.source.name or "no_source") --jammylogger
 end
+local function logProductionStats()
+	print("JLOGGER: PRODUCTION: " .. player.item_production_statistics.)
+end
 
 local function bannedPlayer(event) --player has been banned
 	print("JLOGGER: JFEEDBACK: BAN: " .. event.player_name .. ' ' .. event.reason or "no_reason")
@@ -38,6 +41,14 @@ local function unmutedPlayer(event) --player has been unmuted
 	print("JLOGGER: JFEEDBACK: UNMUTE: " .. game.get_player(event.player_index).name)
 end
 
+-- Jammy feedback to ? commands on Discord
+script.on_event(defines.events.on_player_banned, 						function(event) bannedPlayer(event) end)
+script.on_event(defines.events.on_player_unbanned, 					function(event) unbannedPlayer(event) end)
+script.on_event(defines.events.on_player_kicked, 						function(event) kickedPlayer(event) end)
+script.on_event(defines.events.on_player_muted, 						function(event) mutedPlayer(event) end)
+script.on_event(defines.events.on_player_unmuted, 					function(event) unmutedPlayer(event) end)
+
+
 -- Data collection
 script.on_event(defines.events.on_player_died,              function(event) logDeath(event) end)
 script.on_event(defines.events.on_rocket_launched,          function(event) logRocket() end)
@@ -45,10 +56,3 @@ script.on_event(defines.events.on_player_crafted_item,      function(event) logH
 script.on_event(defines.events.on_player_used_capsule,      function(event) logCapsule(event) end)
 script.on_event(defines.events.on_research_finished,        function(event) logResearch(event) end)
 script.on_event(defines.events.on_trigger_fired_artillery,  function(event) logArtillery(event) end)
-
--- Jammy feedback to ? commands on Discord
-script.on_event(defines.events.on_player_banned, 						function(event) bannedPlayer(event) end)
-script.on_event(defines.events.on_player_unbanned, 					function(event) unbannedPlayer(event) end)
-script.on_event(defines.events.on_player_kicked, 						function(event) kickedPlayer(event) end)
-script.on_event(defines.events.on_player_muted, 						function(event) mutedPlayer(event) end)
-script.on_event(defines.events.on_player_unmuted, 					function(event) unmutedPlayer(event) end)

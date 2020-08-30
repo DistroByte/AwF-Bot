@@ -73,9 +73,12 @@ client.on('message', (message) => {
   if (message.author.bot) return
   sendToServer(message, 1); // send the message to corresponding server
 });
-
+var result = ''
 coreTail.on('line', function (line) {
-  chatFormat(line, '718056299501191189', client);
+  result = chatFormat(line, '718056299501191189', client);
+  if (result != null) {
+    
+  }
   console.log(`[CORE] ${line}`);
 });
 

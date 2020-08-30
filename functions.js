@@ -113,34 +113,53 @@ module.exports = {
       sendWithUsername === 1 ? spiderFifo.write(`${auth}: ${msg}`, () => { }) : spiderFifo.write(`${msg}`, () => { });
     }
   },
+  readJSON: function(file) {
+    fs.readFile(file, function(err, data) {
+      if (err) throw err;
+      var data = JSON.parse(data);  //the data is now an Object
+    });
+    return data;
+  },
+  writeJSON: function(data) {
+    fs.writeFile("serverData.json", JSON.stringify(data), err => {
+      if (err) throw err;
+    });
+  },
   parseJammyLogger: function(line, channel) {
     //this long asf function parses JammyLogger lines in the console and does magic stuff
     return; //for now as this doesnt work yet
+    data = readJSON("serverData.js");
     if (line.includes('JFEEDBACK: ')) { //if line is feedback for a JammyBot command to Discord
       if (line.includes('JFEEDBACK: BAN: ')) {
         line = line.splice('JFEEDBACK: BAN: '.length);
         line = line.split(' ');
         //somehow pass to index.js that command has worked and player $line[0] has been banned for reason $line[1]
+        return `Player ${line[0]} has been banned for reason ${line[1]}`
       }
       else if (line.includes('JFEEDBACK: UNBAN: ')) {
-        line = line.splice('JFEEDBACK: BAN: '.length);
+        line = line.splice('JFEEDBACK: UNBAN: '.length);
         //somehow pass to index.js that command has worked and player $line[0] has been unbanned
+        return `Player ${line[0]} has been unbanned`
       }
       else if (line.includes('JFEEDBACK: KICK: ')) {
         line = line.splice('JFEEDBACK: KICK: '.length);
         line = line.split(' ');
         //somehow pass to index.js that command has worked and player $line[0] has been kicked for reason $line[1]
+        return `Player ${line[0]} has been kicked for reason ${line[1]}`
       }
       else if (line.includes('JFEEDBACK: MUTE: ')) {
         line = line.splice('JFEEDBACK: MUTE: ');
         //somehow pass to index.js that command worked and player $line has been muted
+        return `Player ${line} has been muted`
       }
       else if (line.includes('JFEEDBACK: UNMUTE: ')) {
         line = line.splice('JFEEDBACK: UNMUTE: ');
         //somehow pass to index.js that command worked and player $line has been unmuted
+        return `Player ${line} has been unmuted`
       }
     }
     else {  //if line is not a feedback for a JammyBot command
+      readJSON
       if (line.includes('DIED: ')) {
         line = line.splice('DIED: '.length);
         line = line.split(' '); //split at separation between username and death reson
@@ -183,16 +202,4 @@ module.exports = {
       }
     }
   },
-  readJSON: function() {
-    fs.readFile("serverData.js", function(err, data) {
-      if (err) throw err;
-      var data = JSON.parse(data);  //the data is now an Object
-    });
-    return data;
-  },
-  writeJSON: function(data) {
-    fs.writeFile("serverData.json", JSON.stringify(data), err => {
-      if (err) throw err;
-    });
-  }
 }
