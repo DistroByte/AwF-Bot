@@ -12,28 +12,28 @@ end)
 
 -- Grafana logging
 local function log1(event) --player death
-	print ("JLOGGER: DIED: " .. event.player_index .. event.cause) --jammylogger
+	print ("JLOGGER: DIED: " .. game.get_player(event.player_index) .. event.cause or "no cause") --jammylogger
 end
-local function log2(event)  --rocket launched
-	print ("JLOGGER: ROCKET: " .. event) --jammylogger
+local function log2()  --rocket launched
+	print ("JLOGGER: ROCKET: " .. "ROCKET LAUNCHED") --jammylogger
 end
 local function log3(event)  --handcraft
 	print ("JLOGGER: HANDCRAFT: " .. event.item_stack.name or "unnamed_item" .. game.get_player(event.player_index)) --jammylogger
 end
 local function log4(event)  --capsule
-	print ("JLOGGER: CAPSULE:" .. event.player_index .. event.item) --jammylogger
+	print ("JLOGGER: CAPSULE:" .. game.get_player(event.player_index) or "no player" .. event.item.name) --jammylogger
 end
 local function log5(event)  --research finished
-	print ("JLOGGER: RESEARCH FINISHED: " .. event.research) --jammylogger
+	print ("JLOGGER: RESEARCH FINISHED: " .. event.research.name) --jammylogger
 end
 local function log6(event)  --fired artillery
-	print ("JLOGGER: ARTILLERY: " .. event.entity, event.source) --jammylogger
+	print ("JLOGGER: ARTILLERY: " .. event.entity.name .. event.source.name or "no source") --jammylogger
 end
 
 
 -- Data collection
 script.on_event(defines.events.on_player_died,              function(event) log1(event) end)
-script.on_event(defines.events.on_rocket_launched,          function(event) log2(event) end)
+script.on_event(defines.events.on_rocket_launched,          function(event) log2() end)
 script.on_event(defines.events.on_player_crafted_item,      function(event) log3(event) end)
 script.on_event(defines.events.on_player_used_capsule,      function(event) log4(event) end)
 script.on_event(defines.events.on_research_finished,        function(event) log5(event) end)
