@@ -2,15 +2,6 @@ local handler = require("event_handler")
 handler.add_lib(require("freeplay"))
 handler.add_lib(require("silo-script"))
 
-script.on_event(defines.events.on_entity_died, function(event)
-  local recently_deceased_entity = event.entity
-  local time_of_death = event.tick
-
-  game.print("Let it be known that " .. recently_deceased_entity.name ..
-               " died a tragic death on tick " .. time_of_death)
-end)
-
-
 -- Grafana logging
 local function log1(event) --player death
 	print ("JLOGGER: DIED: " .. game.get_player(event.player_index).name .. event.cause.name or "no cause") --jammylogger
