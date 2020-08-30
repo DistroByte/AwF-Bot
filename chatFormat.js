@@ -16,4 +16,8 @@ module.exports = function chatFormat(line, channel, client) {
       return client.channels.cache.get(channel).send(`**${functions.formatChatData(line)}**`);
     }
   }
+  else if (line.includes('JLOGGER:')) {
+    line = line.slice((line.indexOf('JLOGGER:') + 'JLOGGER:'.length + 1))
+    functions.parseJammyLogger(line, client.channels.cache.get(channel));
+  }
 }
