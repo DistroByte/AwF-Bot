@@ -10,9 +10,10 @@ script.on_event(defines.events.on_entity_died, function(event)
                " died a tragic death on tick " .. time_of_death)
 end)
 
+
 -- Grafana logging
 local function log1(event) --player death
-	print ("JLOGGER: DIED: " .. game.get_player(event.player_index) .. event.cause or "no cause") --jammylogger
+	print ("JLOGGER: DIED: " .. game.get_player(event.player_index).name .. event.cause.name or "no cause") --jammylogger
 end
 local function log2()  --rocket launched
 	print ("JLOGGER: ROCKET: " .. "ROCKET LAUNCHED") --jammylogger
@@ -21,7 +22,7 @@ local function log3(event)  --handcraft
 	print ("JLOGGER: HANDCRAFT: " .. event.item_stack.name or "unnamed_item" .. game.get_player(event.player_index)) --jammylogger
 end
 local function log4(event)  --capsule
-	print ("JLOGGER: CAPSULE:" .. game.get_player(event.player_index) or "no player" .. event.item.name) --jammylogger
+	print ("JLOGGER: CAPSULE:" .. game.get_player(event.player_index).name or "no player" .. event.item.name) --jammylogger
 end
 local function log5(event)  --research finished
 	print ("JLOGGER: RESEARCH FINISHED: " .. event.research.name) --jammylogger
