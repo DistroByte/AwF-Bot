@@ -7,7 +7,7 @@ local function split(inputstr, sep)
 end
 
 local train_buckets = {}
-local bucket_settings = split(settings.startup["graftorio-train-histogram-buckets"].value, ",")
+local bucket_settings = split("10,30,60,90,120,180,240,300,600", ",")
 for _, bucket in pairs(bucket_settings) do
   table.insert(train_buckets, tonumber(bucket))
 end
