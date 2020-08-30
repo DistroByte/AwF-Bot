@@ -61,6 +61,7 @@ client.on('message', (message) => {
       sendToAll(message, 1);  //sends the message to all servers at once
       message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
     }
+    return; //dont send the message to Factorio
   }
   if (message.content == prefix + 'h' || message.content == prefix + 'help') message.channel.send({ embed: messageHelp });
   if (message.content == prefix + 'factoriospcommands') message.channel.send({ embed: factoriospcommands });
