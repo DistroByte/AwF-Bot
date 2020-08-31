@@ -230,7 +230,7 @@ const factoriompcommands = {
 };
 const ltn = {
   color: defaultColor,
-  title: 'Help Commands',
+  title: 'LTN help',
   author: {
     name: 'oof2win2',
   },
@@ -282,7 +282,18 @@ const ltn = {
     text: 'Made with ❤️ and a little bit of code by oof2win2'
   },
 };
+const factoryplanner = {
 
+};
+const servers = {
+  color: defaultColor,
+  title: 'Help Commands',
+  author: {
+    name: 'oof2win2',
+  },
+  description: 'These are all of the help commands programmed into JammyBot',
+  fields:
+}
 
 module.exports = {
   //dictionary of messages is exported, so they can be searched with a key instead of long ifs
