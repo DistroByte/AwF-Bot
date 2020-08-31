@@ -48,20 +48,19 @@ client.on('message', (message) => {
         message.content = message.content.slice(13); //gets rid of the command prefix
         message.content = '/' + message.content;  //prefixes the message with a / to start commands in Factorio
         sendToAll(message, 0); //sends the command to all servers with no
-        message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
+        return message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
       }
     if (message.content.startsWith(prefix + 'fcommand')) {
       message.content = message.content.slice(10); //gets rid of the command prefix
       message.content = '/' + message.content;  //prefixes the message with a / to start commands in Factorio
       sendToServer(message, 0);
-      message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
+      return message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
     }
     if (message.content.startsWith(prefix + 'sendall')) { //sends a message to all servers with the username of the person sending
       message.content = message.content.slice(8); //gets rid of the command prefix
       sendToAll(message, 1);  //sends the message to all servers at once
-      message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
+      return message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
     }
-    return; //dont send the message to Factorio
   }
   if (message.content == prefix + 'h' || message.content == prefix + 'help') message.channel.send({ embed: messageHelp });
   if (message.content == prefix + 'factoriospcommands') message.channel.send({ embed: factoriospcommands });
