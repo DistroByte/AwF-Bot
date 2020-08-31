@@ -114,9 +114,11 @@ module.exports = {
     }
   },
   sendToServer: function (message, sendWithUsername) {
-    // gets the message as an object and if provided, will send the message with the username - if not provided, will send without (useful for commands)
+    // The $message given to this function is an object of discord.js - it has the author username, message content, mentions etc.
+    // The $sendWithUsername given to the function is a boolean value (fixed from being a 0 or 1). If sendWithUsername is true, it will send the message with the username
+    // sends a message to only one server with or without the username
 
-    if (sendWithUsername == 1) { //sends the message with the username and colon
+    if (sendWithUsername == true) { //sends the message with the username and colon, as $sendWithUsername is true
       if (message.channel.id === '718056299501191189') {
         coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
       }
@@ -144,7 +146,7 @@ module.exports = {
       if (message.channel.id === '746438501339234446') {
         spiderFIFO.write(`${message.author.username}: ${message.content}`, () => { });
       }
-    } else { //sends just the message, no username, nothing
+    } else { //sends just the message, no username, nothing as $sendWithUsername is false
       if (message.channel.id === '718056299501191189') {
         coreFifo.write(`${message.content}`, () => { });
       }
