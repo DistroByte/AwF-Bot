@@ -39,19 +39,19 @@ client.on('message', (message) => {
       if (message.content.startsWith(prefix + 'fcommandall')) {
         message.content = message.content.slice(13); //gets rid of the command prefix
         message.content = '/' + message.content;  //prefixes the message with a / to start commands in Factorio
-        sendToAll(message, 0); //sends the command to all servers with no
-        message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
+        sendToAll(message, false); //sends the command to all servers with no username
+        return message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
       }
     if (message.content.startsWith(prefix + 'fcommand')) {
       message.content = message.content.slice(10); //gets rid of the command prefix
       message.content = '/' + message.content;  //prefixes the message with a / to start commands in Factorio
-      sendToServer(message, 0);
-      message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
+      sendToServer(message, false);
+      return message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
     }
     if (message.content.startsWith(prefix + 'sendall')) { //sends a message to all servers with the username of the person sending
       message.content = message.content.slice(8); //gets rid of the command prefix
-      sendToAll(message, 1);  //sends the message to all servers at once
-      message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
+      sendToAll(message, true);  //sends the message to all servers at once
+      return message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
     }
   }
   if (message.content == prefix + 'h' || message.content == prefix + 'help') message.channel.send({ embed: messageHelp });
@@ -70,8 +70,7 @@ client.on('message', (message) => {
   }
 
   //phase of sending the message from discord to Factorio
-  if (message.author.bot) return
-  sendToServer(message, 1); // send the message to corresponding server
+  sendToServer(message, true); // send the message to corresponding server
 });
 
 coreTail.on('line', function (line) {
