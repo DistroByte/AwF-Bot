@@ -5,7 +5,7 @@ const messageHelp: {
     color: defaultColor,
     title: 'Help Commands',
     author: {
-      name: 'JammyBot',
+      name: 'oof2win2',
     },
     description: 'These are all of the help commands programmed into JammyBot',
     fields: [
@@ -228,6 +228,60 @@ const factoriompcommands = {
     text: 'Made with ❤️ and a little bit of code by oof2win2'
   },
 };
+const ltn = {
+  color: defaultColor,
+  title: 'Help Commands',
+  author: {
+    name: 'oof2win2',
+  },
+  description: 'These are some of the most important items in the LTN mod. For a full guide/manual, see the [Mod Portal](https://forums.factorio.com/viewtopic.php?f=214&t=51072)',
+  fields: [
+    {
+      name: 'Basic Mod Description',
+      value: 'The LTN mod allows you to use fewer trains to transport items and for your trains to be able to be dynamically allocated - instead of having 5 trains for peak demand, you just have a total of 120 trains and if peak demand is reached, those 5 (or more) trains are dispatched to get and transport whatever items needed. According to Optera (the mod author), it can "cut the amount of rolling stock required to run a megabase down to 30% or less"'
+    },
+    {
+      name: 'Beware Ahead:',
+      value: 'LTN seems as a complex mod at first, but it is quite easy after you understand what does what. Until you understand that, I reccomend to use the [Optera’s blueprints](https://forums.factorio.com/viewtopic.php?t=51073) with some customizations, as if you screw up unloading/requests, your whole base can lay to ashes. With that said, LTN is not that bad if you know what you are doing at least a little bit.'
+    },
+    {
+      name: '\u200b', //blank/spacer field
+      value: '\u200b',
+    },
+    {
+      name: 'Basic LTN items',
+      value: ' ',
+    },
+    {
+      name: 'Logistic Train Stop',
+      value: 'The Logistic Train Stop allows the LTN mod to schedule trains to go from a Depot to a Provider station to a Requester station',
+    },
+    {
+      name: 'LTN Depot',
+      value: 'The LTN Depot is a Logistic Train Stop that is set for trains to be allowed to stop there when they are idling for a default period of 5s',
+    },
+    {
+      name: 'LTN Provider Station',
+      value: 'The LTN Provider station is a Logistic Train Stop that is set for trains to be allowed to pick items up, such as iron ore, steel, sulfuric acid etc to be then transported into LTN Requester Stations',
+    },
+    {
+      name: 'LTN Requester Station',
+      value: 'The LTN Requester Station is a Logistic Train Stop that is set for trains to deliver items to, such as red circuits require plastic (among others), so you would have one (or more) LTN Requester Stations wired up to request plastic',
+    },
+    {
+      name: '\u200b', //blank/spacer field
+      value: '\u200b',
+    },
+    {
+      name: 'This is the end for my short description',
+      value: 'If you would want to get the full description with everything, go [here](https://forums.factorio.com/viewtopic.php?f=214&t=51072) - the full fledged mod description by the creator, Optera'
+    }
+  ],
+  timestamp: new Date(),
+  footer: {
+    text: 'Made with ❤️ and a little bit of code by oof2win2'
+  },
+};
 
 
 module.exports = {
@@ -239,5 +293,6 @@ module.exports = {
     'fspc': factoriospcommands,
     'factoriompcommands': factoriompcommands,
     'fmpc': factoriompcommands,
+    'ltn': ltn,
   };
 }
