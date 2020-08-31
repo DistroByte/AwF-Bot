@@ -26,63 +26,26 @@ module.exports = {
         //These all are for Factorio rich text magic, in order of https://wiki.factorio.com/Rich_text
         //for now, the discord will show [image], [item], [gps] but that can be removed completely by just
         //replacing the second phrase in the .replace with an empty string, i.e. ''
-        if (data.includes('[img=')) {
-          data = data.replace(/\[img=.*\]/g, '[image]');
-        }
-        if (data.includes('[item=')) {
-          data = data.replace(/\[item=.*\]/g, '[item]');
-        }
-        if (data.includes('[entity=')) {
-          data = data.replace(/\[entity=.*\]/g, '[entity]');
-        }
-        if (data.includes('[technology=')) {
-          data = data.replace(/\[technology=.*\]/g, '[research]');
-        }
-        if (data.includes('[recipe=')) {
-          data = data.replace(/\[recipe=.*\]/g, '[recipe]');
-        }
-        if (data.includes('[item-group=')) {
-          data = data.replace(/\[item-group=.*\]/g, '[item group]');
-        }
-        if (data.includes('[fluid=')) {
-          data = data.replace(/\[fluid=.*\]/g, '[fluid]');
-        }
-        if (data.includes('[tile=')) {
-          data = data.replace(/\[tile=.*\]/g, '[tile]');
-        }
-        if (data.includes('[virtual-signal=')) {
-          data = data.replace(/\[virutal-signal=.*\]/g, '[signal]');
-        }
-        if (data.includes('[achievement=')) {
-          data = data.replace(/\[achievement=.*\]/g, '[achievement]');
-        }
-        if (data.includes('[gps=')) {
-          data = data.replace(/\[gps=.*\]/g, '[gps]');
-        }
-        if (data.includes('[special-item=')) {
-          data = data.replace(/\[special-item=.*\]/g, '[bp/upgrade/decon]');
-        }
-        if (data.includes('[armor=')) {
-          data = data.replace(/\[armor=.*\]/g, '[armor]');
-        }
-        if (data.includes('[train=')) {
-          data = data.replace(/\[train=.*\]/g, '[train]')
-        }
-        if (data.includes('[train-stop=')) {
-          data = data.replace(/\[train-stop.*\]/g, '[train stop]');
-        }
+        if (data.includes('[img=')) return data.replace(/\[img=.*\]/g, '[image]');
+        if (data.includes('[item=')) return data.replace(/\[item=.*\]/g, '[item]');
+        if (data.includes('[entity=')) return data.replace(/\[entity=.*\]/g, '[entity]');
+        if (data.includes('[technology=')) return data.replace(/\[technology=.*\]/g, '[research]');
+        if (data.includes('[recipe=')) return data.replace(/\[recipe=.*\]/g, '[recipe]');
+        if (data.includes('[item-group=')) return data.replace(/\[item-group=.*\]/g, '[item group]');
+        if (data.includes('[fluid=')) return data.replace(/\[fluid=.*\]/g, '[fluid]');
+        if (data.includes('[tile=')) return data.replace(/\[tile=.*\]/g, '[tile]');
+        if (data.includes('[virtual-signal=')) return data.replace(/\[virutal-signal=.*\]/g, '[signal]');
+        if (data.includes('[achievement=')) return data.replace(/\[achievement=.*\]/g, '[achievement]');
+        if (data.includes('[gps=')) return data.replace(/\[gps=.*\]/g, '[gps]');
+        if (data.includes('[special-item=')) return data.replace(/\[special-item=.*\]/g, '[bp/upgrade/decon]');
+        if (data.includes('[armor=')) return data.replace(/\[armor=.*\]/g, '[armor]');
+        if (data.includes('[train=')) return data.replace(/\[train=.*\]/g, '[train]')
+        if (data.includes('[train-stop=')) return data.replace(/\[train-stop.*\]/g, '[train stop]');
       }
-      return data;
+      return data
     } else {
       return `**${data.slice((data.indexOf(']') + 2))}**`
     }
-  },
-  arrayRemoveOne: function (arr, value) {
-    var index = arr.indexOf(value);
-    if (index > -1) {
-      arr.splice(index, 1);
-    }
-    return arr;
   },
   formatSaveData: function (data) {
     return data.slice((data.indexOf('_autosave') + 1), (data.indexOf('(') - 1));
@@ -90,88 +53,62 @@ module.exports = {
   sendToAll: function (message, sendWithUsername) {
     // gets the message as an object and if provided, will send the message with the username - if not provided, will send without (useful for commands)
     // sends a message to all servers at once
-    console.log(message.content);
+    let msg = message.content
+    let auth = message.author.username
+
     if (sendWithUsername == 1) {
-      chronoFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      coronaFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      eventFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      islandicFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      seablockFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      testFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      krastorioFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      spiderFifo.write(`${message.author.username}: ${message.content}`, () => { });
+      chronoFifo.write(`${auth}: ${msg}`, () => { });
+      coreFifo.write(`${auth}: ${msg}`, () => { });
+      coronaFifo.write(`${auth}: ${msg}`, () => { });
+      eventFifo.write(`${auth}: ${msg}`, () => { });
+      islandicFifo.write(`${auth}: ${msg}`, () => { });
+      seablockFifo.write(`${auth}: ${msg}`, () => { });
+      testFifo.write(`${auth}: ${msg}`, () => { });
+      krastorioFifo.write(`${auth}: ${msg}`, () => { });
+      spiderFifo.write(`${auth}: ${msg}`, () => { });
     } else { //sends just the message, no username, nothing
-      chronoFifo.write(`${message.content}`, () => { });
-      coreFifo.write(`${message.content}`, () => { });
-      coronaFifo.write(`${message.content}`, () => { });
-      eventFifo.write(`${message.content}`, () => { });
-      islandicFifo.write(`${message.content}`, () => { });
-      seablockFifo.write(`${message.content}`, () => { });
-      testFifo.write(`${message.content}`, () => { });
-      krastorioFifo.write(`${message.content}`, () => { });
-      spiderFifo.write(`${message.content}`, () => { });
+      chronoFifo.write(`${msg}`, () => { });
+      coreFifo.write(`${msg}`, () => { });
+      coronaFifo.write(`${msg}`, () => { });
+      eventFifo.write(`${msg}`, () => { });
+      islandicFifo.write(`${msg}`, () => { });
+      seablockFifo.write(`${msg}`, () => { });
+      testFifo.write(`${msg}`, () => { });
+      krastorioFifo.write(`${msg}`, () => { });
+      spiderFifo.write(`${msg}`, () => { });
     }
   },
   sendToServer: function (message, sendWithUsername) {
     // gets the message as an object and if provided, will send the message with the username - if not provided, will send without (useful for commands)
+    let msg = message.content
+    let auth = message.author.username
 
-    if (sendWithUsername == 1) { //sends the message with the username and colon
-      if (message.channel.id === '718056299501191189') {
-        coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-      if (message.channel.id === '718056597154299934') {
-        islandicFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-      if (message.channel.id === '718056423153598545') {
-        seablockFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-      if (message.channel.id === '723280139982471247') {
-        testFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-      if (message.channel.id === '726502816469876747') {
-        eventFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-      if (message.channel.id === '724698782264066048') {
-        chronoFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-      if (message.channel.id === '724696348871622818') {
-        coronaFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-      if (message.channel.id === '745947531875319900') {
-        krastorioFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-      if (message.channel.id === '746438501339234446') {
-        spiderFIFO.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-    } else { //sends just the message, no username, nothing
-      if (message.channel.id === '718056299501191189') {
-        coreFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '718056597154299934') {
-        islandicFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '718056423153598545') {
-        seablockFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '723280139982471247') {
-        testFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '726502816469876747') {
-        eventFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '724698782264066048') {
-        chronoFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '724696348871622818') {
-        coronaFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '745947531875319900') {
-        krastorioFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '746438501339234446') {
-        spiderFIFO.write(`${message.content}`, () => { });
-      }
+    if (message.channel.id === '718056299501191189') {
+      sendWithUsername === 1 ? coreFifo.write(`${auth}: ${msg}`, () => { }) : coreFifo.write(`${msg}`, () => { });
+    }
+    if (message.channel.id === '718056597154299934') {
+      sendWithUsername === 1 ? islandicFifo.write(`${auth}: ${msg}`, () => { }) : islandicFifo.write(`${msg}`, () => { });
+    }
+    if (message.channel.id === '718056423153598545') {
+      sendWithUsername === 1 ? seablockFifo.write(`${auth}: ${msg}`, () => { }) : seablockFifo.write(`${msg}`, () => { });
+    }
+    if (message.channel.id === '723280139982471247') {
+      sendWithUsername === 1 ? testFifo.write(`${auth}: ${msg}`, () => { }) : testFifo.write(`${msg}`, () => { });
+    }
+    if (message.channel.id === '726502816469876747') {
+      sendWithUsername === 1 ? eventFifo.write(`${auth}: ${msg}`, () => { }) : eventFifo.write(`${msg}`, () => { });
+    }
+    if (message.channel.id === '724698782264066048') {
+      sendWithUsername === 1 ? chronoFifo.write(`${auth}: ${msg}`, () => { }) : chronoFifo.write(`${msg}`, () => { });
+    }
+    if (message.channel.id === '724696348871622818') {
+      sendWithUsername === 1 ? coronaFifo.write(`${auth}: ${msg}`, () => { }) : coronaFifo.write(`${msg}`, () => { });
+    }
+    if (message.channel.id === '745947531875319900') {
+      sendWithUsername === 1 ? krastorioFifo.write(`${auth}: ${msg}`, () => { }) : krastorioFifo.write(`${msg}`, () => { });
+    }
+    if (message.channel.id === '746438501339234446') {
+      sendWithUsername === 1 ? spiderFifo.write(`${auth}: ${msg}`, () => { }) : spiderFifo.write(`${msg}`, () => { });
     }
   },
 }
