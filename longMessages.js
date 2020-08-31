@@ -31,8 +31,12 @@ const messageHelp: {
       },
       {
         name: `${prefix}griefer`,
-        value: 'Works from the Factorio game. When typed in chat, moderators and admins will be pinged so they can resolve the issue',
+        value: 'Works from the Factorio game and Discord chat. When typed in chat, moderators and admins will be pinged so they can resolve the issue',
       },
+      {
+        name: `${prefix}ltn`,
+        value: 'A short description of LTN (Logistic Train Network) for first time users or players who need a quick refresh. Has links to long description and some BPs'
+      }
     ],
     timestamp: new Date(),
     footer: {
