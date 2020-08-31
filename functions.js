@@ -88,10 +88,10 @@ module.exports = {
     return data.slice((data.indexOf('_autosave') + 1), (data.indexOf('(') - 1));
   },
   sendToAll: function (message, sendWithUsername) {
-    // gets the message as an object and if provided, will send the message with the username - if not provided, will send without (useful for commands)
+    // The $message given to this function is an object of discord.js - it has the author username, message content, mentions etc.
+    // The $sendWithUsername given to the function is a boolean value (fixed from being a 0 or 1). If sendWithUsername is true, it will send the message with the username
     // sends a message to all servers at once
-    console.log(message.content);
-    if (sendWithUsername == 1) {
+    if (sendWithUsername) { // $sendWithUsername is true, therefore the message is sent with the username
       chronoFifo.write(`${message.author.username}: ${message.content}`, () => { });
       coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
       coronaFifo.write(`${message.author.username}: ${message.content}`, () => { });
@@ -101,7 +101,7 @@ module.exports = {
       testFifo.write(`${message.author.username}: ${message.content}`, () => { });
       krastorioFifo.write(`${message.author.username}: ${message.content}`, () => { });
       spiderFifo.write(`${message.author.username}: ${message.content}`, () => { });
-    } else { //sends just the message, no username, nothing
+    } else { // sends just the message, no username, nothing because $sendWithUsername is false
       chronoFifo.write(`${message.content}`, () => { });
       coreFifo.write(`${message.content}`, () => { });
       coronaFifo.write(`${message.content}`, () => { });
