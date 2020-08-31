@@ -1,8 +1,7 @@
 //for a newline in the Discord message, have a \n at the end of a coreLineData
 const { prefix } = require('./botconfig')
 defaultColor = '#b7ab07'
-module.exports = {
-  messageHelp: {
+const messageHelp: {
     color: defaultColor,
     title: 'Help Commands',
     author: {
