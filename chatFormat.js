@@ -1,10 +1,8 @@
 const functions = require('./functions');
 const { filterBan } = require("./filterBan");
 
-
-// const helpdesk = message.guild.channels.find(channel => channel.name === "🔔helpdesk").toString()
-
 module.exports = function chatFormat(line, channel, client) {
+  const helpdesk = client.channels.cache.get('590241134740111387')
 
   if (line.includes('[JOIN]')) {
     filterBan(line.slice((line.indexOf(']') + 2), (line.indexOf('joined the game') - 1)));
