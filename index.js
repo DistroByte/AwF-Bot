@@ -77,7 +77,7 @@ var result = ''
 coreTail.on('line', function (line) {
   result = chatFormat(line, '718056299501191189', client);
   if (result != null) {
-    
+
   }
   console.log(`[CORE] ${line}`);
 });

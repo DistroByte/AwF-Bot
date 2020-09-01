@@ -135,6 +135,7 @@ module.exports = {
         line = line.split(' ');
         //somehow pass to index.js that command has worked and player $line[0] has been banned for reason $line[1]
         return `Player ${line[0]} has been banned for reason ${line[1]}`
+        if (channel)
       }
       else if (line.includes('JFEEDBACK: UNBAN: ')) {
         line = line.splice('JFEEDBACK: UNBAN: '.length);
@@ -159,13 +160,14 @@ module.exports = {
       }
     }
     else {  //if line is not a feedback for a JammyBot command
-      readJSON
+      data = readJSON('./serverData.json');
       if (line.includes('DIED: ')) {
         line = line.splice('DIED: '.length);
         line = line.split(' '); //split at separation between username and death reson
         let player = line[0];
         let reason = line[1];
         //write into data.json, server $channel, players that player $player died because of $reason
+        data.servers.channel.players
       }
       else if (line.includes('ROCKET: ')) {
         //increase rocket count for server 'channel' in data.json
