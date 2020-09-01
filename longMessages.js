@@ -253,8 +253,6 @@ const servers = {
 module.exports = {
   //dictionary of messages is exported, so they can be searched with a key instead of long ifs
   messages:  {
-    'help': messageHelp,
-    'h':    messageHelp,
     'factoriospcommands': factoriospcommands,
     'fspc': factoriospcommands,
     'factoriompcommands': factoriompcommands,
@@ -262,4 +260,4 @@ module.exports = {
     'ltn': ltn,
     'servers': servers;
   };
-}
+};
