@@ -36,7 +36,7 @@ const messageHelp: {
       {
         name: `${prefix}ltn`,
         value: 'A short description of LTN (Logistic Train Network) for first time users or players who need a quick refresh. Has links to long description and some BPs'
-      }
+      },
     ],
     timestamp: new Date(),
     footer: {
@@ -286,18 +286,40 @@ const ltn = {
     text: 'Made with ❤️ and a little bit of code by oof2win2'
   },
 };
-const factoryplanner = {
-
-};
 const servers = {
   color: defaultColor,
-  title: 'Help Commands',
+  title: 'Server Help',
   author: {
     name: 'oof2win2',
   },
-  description: 'These are all of the help commands programmed into JammyBot',
-  fields:
-}
+  description: 'This is a short description of the servers All-Weekend-Factorio has to offer',
+  fields: [
+    {
+      name: 'Core',
+      value: 'Core is a sort of map that is reset once in a while when most users agree to, a pretty long period of time (between a few weeks to a few months). It has some QoL mods installed, but nothing too big. It is password protected.',
+    },
+    {
+      name: 'Corona Daycare',
+      value: 'Corona Daycare is the type of map that is reset once a week or every other week, with lots of new players, who sometimes join the AwF community. It is completely vanilla, no password',
+    },
+    {
+      name: 'Chronotrain',
+      value: 'The Chronotrain map '
+    },
+    {
+      name: 'Krastorio 2',
+      value: 'The Krastorio 2 map. This map includes some QoL mods and quite a bit of other, complex mods that go hand-in-hand with Krastorio 2. This map is complex, but not the most complex. It is much longer and complex than the default game'
+    },
+    {
+      name: 'seablock',
+      value: 'The seablock map is basically bobangels, but you make EVERYTHING from purely water (and the seabed). Therefore, everything is muuuuch more complex, runs last hundreds of hours'
+    },
+  ],
+  timestamp: new Date(),
+  footer: {
+    text: 'Made with ❤️ and a little bit of code by oof2win2'
+  },
+};
 
 module.exports = {
   //dictionary of messages is exported, so they can be searched with a key instead of long ifs
@@ -309,5 +331,6 @@ module.exports = {
     'factoriompcommands': factoriompcommands,
     'fmpc': factoriompcommands,
     'ltn': ltn,
+    'servers': servers;
   };
 }
