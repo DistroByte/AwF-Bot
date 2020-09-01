@@ -1,64 +1,9 @@
 //for a newline in the Discord message, have a \n at the end of a coreLineData
 const { prefix } = require('./botconfig')
-defaultColor = '#b7ab07'
-const messageHelp: {
-    color: defaultColor,
-    title: 'Help Commands',
-    author: {
-      name: 'oof2win2',
-    },
-    description: 'These are all of the help commands programmed into JammyBot',
-    fields: [
-      {
-        name: `${prefix}fcommandall`,
-        value: 'Send a command to all Factorio servers. Do not use / in the command, just type +fcommand ban Windsinger and it will automatically change it to /ban Windsinger when sending the command. Admin only.',
-      },
-      {
-        name: `${prefix}fcommand`,
-        value: 'Send a command to the current Factorio server. Do not use / in the command, just type +fcommand ban Windsinger and it will automatically change it to /ban Windsinger when sending the command. Admin only.',
-      },
-      {
-        name: `${prefix}sendall`,
-        value: 'Send a message to all Factorio servers, prefixed with the username of the user on Discord. Admin only.',
-      },
-      {
-        name: `${prefix}factoriospcommands`,
-        value: 'Display all Factorio singleplayer commands',
-      },
-      {
-        name: `${prefix}factoriompcommands`,
-        value: 'Display all Factorio multiplayer commands'
-      },
-      {
-        name: `${prefix}griefer`,
-        value: 'Works from the Factorio game and Discord chat. When typed in chat, moderators and admins will be pinged so they can resolve the issue',
-      },
-      {
-        name: `${prefix}ltn`,
-        value: 'A short description of LTN (Logistic Train Network) for first time users or players who need a quick refresh. Has links to long description and some BPs'
-      },
-    ],
-    timestamp: new Date(),
-    footer: {
-      text: 'Made with :heart: and a little bit of code by oof2win2'
-    },
-    {
-      name: `${prefix}rules`,
-      value: 'Display rules of the server',
-    },
-    {
-      name: 'Faq pages for in-game mods (mods on some servers only)',
-      value:  'autodecon, ltn, factoryplanner, electrictrain, explosiveexcavation, mods'
-    },
-  ],
-  timestamp: new Date(),
-  footer: {
-    text: 'Made with ❤️ and a little bit of code by oof2win2'
-  },
-};
+defaultColor = 'GREEN'
 const factoriospcommands = {
   color: defaultColor,
-  title: 'Factorio SP Commands',
+  title: 'JammyBot Factorio SP Commands',
   author: {
     name: 'oof2win2',
   },
@@ -117,14 +62,10 @@ const factoriospcommands = {
       value: 'Prints the current game version - This is shown on Discord in channel description',
     },
   ],
-  timestamp: new Date(),
-  footer: {
-    text: 'Made with ❤️ and a little bit of code by oof2win2'
-  },
 };
 const factoriompcommands = {
   color: defaultColor,
-  title: 'Factorio SP Commands',
+  title: 'JammyBot Factorio SP Commands',
   author: {
     name: 'oof2win2',
   },
@@ -227,14 +168,10 @@ const factoriompcommands = {
       value: 'Adds or removes a player from the whitelist, where only whitelisted players can join the game. Enter nothing for “player” when using “get” to print a list of all whitelisted players. An empty whitelist disables the whitelist functionality allowing anyone to join',
     },
   ],
-  timestamp: new Date(),
-  footer: {
-    text: 'Made with ❤️ and a little bit of code by oof2win2'
-  },
 };
 const ltn = {
   color: defaultColor,
-  title: 'LTN help',
+  title: 'JammyBot LTN help',
   author: {
     name: 'oof2win2',
   },
@@ -281,14 +218,10 @@ const ltn = {
       value: 'If you would want to get the full description with everything, go [here](https://forums.factorio.com/viewtopic.php?f=214&t=51072) - the full fledged mod description by the creator, Optera'
     }
   ],
-  timestamp: new Date(),
-  footer: {
-    text: 'Made with ❤️ and a little bit of code by oof2win2'
-  },
 };
 const servers = {
   color: defaultColor,
-  title: 'Server Help',
+  title: 'JammyBot Server Help',
   author: {
     name: 'oof2win2',
   },
@@ -315,10 +248,6 @@ const servers = {
       value: 'The seablock map is basically bobangels, but you make EVERYTHING from purely water (and the seabed). Therefore, everything is muuuuch more complex, runs last hundreds of hours'
     },
   ],
-  timestamp: new Date(),
-  footer: {
-    text: 'Made with ❤️ and a little bit of code by oof2win2'
-  },
 };
 
 module.exports = {
