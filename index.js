@@ -3,7 +3,7 @@ var Tail = require('tail').Tail;
 const chatFormat = require('./chatFormat');
 const { token, prefix } = require('./botconfig.json');
 const { sendToServer, sendToAll } = require('./functions');
-const { messageHelp, factoriospcommands, factoriompcommands } = require('./longMessages');
+const { messages } = require('./longMessages');
 
 const chronoTail = new Tail('../servers/chronotrain/server.out');
 const coreTail = new Tail('../servers/members-core/server.out');
@@ -50,10 +50,23 @@ const client = new Client();
 //       return message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
 //     }
 //   }
+//   //handle longMessages.js (embedded messages)
+//   if (message.content.startsWith(prefix)) {
+//     let key = (message.content.slice(1)); //slices at questionmark
+//     if (key in messages) { // checks if the key is in the messages object
+//       message.react('👀'); //Eyes emoji
+//       return message.channel.send({ embed: messages.key });
+//     } else {
+//       message.react('😓');  //Downcast Face with Sweat emoji (tears)
+//       message.channel.send(`Couldn't find help page ${key}`);
+//       return message.channel.send(messages.messageHelp);
+//     }
+//   }
+//
 //   if (message.content == prefix + 'h' || message.content == prefix + 'help') message.channel.send({ embed: messageHelp });
 //   if (message.content == prefix + 'factoriospcommands') message.channel.send({ embed: factoriospcommands });
 //   if (message.content == prefix + 'factoriompcommands') message.channel.send({ embed: factoriompcommands });
-
+//
 //   //checking for mentions and replacing the user/channel id with the name
 //   if (message.content.includes('<@')) { //check if the message that the bot reads has a mention of a user
 //     message.mentions.users.forEach(user => {
