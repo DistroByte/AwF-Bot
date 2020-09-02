@@ -57,12 +57,14 @@ module.exports = {
       seablockFifo.write(`${message.author.username}: ${message.content}`, () => { });
       testFifo.write(`${message.author.username}: ${message.content}`, () => { });
       krastorioFifo.write(`${message.author.username}: ${message.content}`, () => { });
+      bobangelsFifo.write(`${message.author.username}: ${message.content}`, () => { });
     } else { // sends just the message, no username, nothing because $sendWithUsername is false
       coreFifo.write(`${message.content}`, () => { });
       coronaFifo.write(`${message.content}`, () => { });
       seablockFifo.write(`${message.content}`, () => { });
       testFifo.write(`${message.content}`, () => { });
       krastorioFifo.write(`${message.content}`, () => { });
+      bobangelsFifo.write(`${message.content}`, () => { });
     }
   },
   sendToServer: function (message, sendWithUsername) {
