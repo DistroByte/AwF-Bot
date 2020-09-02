@@ -1,15 +1,12 @@
 const FIFO = require('fifo-js');
 const fs = require('fs');
 
-const chronoFifo = new FIFO('../servers/chronotrain/server.fifo');
 const coreFifo = new FIFO('../servers/members-core/server.fifo');
 const coronaFifo = new FIFO('../servers/corona-daycare/server.fifo');
-const eventFifo = new FIFO('../servers/event-biter-battles/server.fifo');
-const islandicFifo = new FIFO('../servers/members-islandic/server.fifo');
 const seablockFifo = new FIFO('../servers/members-seablock/server.fifo');
 const testFifo = new FIFO('../servers/test/server.fifo');
 const krastorioFifo = new FIFO('../servers/members-krastorio2/server.fifo');
-const spiderFifo = new FIFO('../servers/members-spidertron/server.fifo');
+const bobangelsFifo = new FIFO('../servers/members-bobs-angels/server.fifo');
 
 
 module.exports = {
@@ -57,25 +54,19 @@ module.exports = {
     // The $sendWithUsername given to the function is a boolean value (fixed from being a 0 or 1). If sendWithUsername is true, it will send the message with the username
     // sends a message to all servers at once
     if (sendWithUsername) { // $sendWithUsername is true, therefore the message is sent with the username
-      chronoFifo.write(`${message.author.username}: ${message.content}`, () => { });
       coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
       coronaFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      eventFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      islandicFifo.write(`${message.author.username}: ${message.content}`, () => { });
       seablockFifo.write(`${message.author.username}: ${message.content}`, () => { });
       testFifo.write(`${message.author.username}: ${message.content}`, () => { });
       krastorioFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      spiderFifo.write(`${message.author.username}: ${message.content}`, () => { });
+      bobangelsFifo.write(`${message.author.username}: ${message.content}`, () => { });
     } else { // sends just the message, no username, nothing because $sendWithUsername is false
-      chronoFifo.write(`${message.content}`, () => { });
       coreFifo.write(`${message.content}`, () => { });
       coronaFifo.write(`${message.content}`, () => { });
-      eventFifo.write(`${message.content}`, () => { });
-      islandicFifo.write(`${message.content}`, () => { });
       seablockFifo.write(`${message.content}`, () => { });
       testFifo.write(`${message.content}`, () => { });
       krastorioFifo.write(`${message.content}`, () => { });
-      spiderFifo.write(`${message.content}`, () => { });
+      bobangelsFifo.write(`${message.content}`, () => { });
     }
   },
   sendToServer: function (message, sendWithUsername) {
@@ -87,20 +78,11 @@ module.exports = {
       if (message.channel.id === '718056299501191189') {
         coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
       }
-      if (message.channel.id === '718056597154299934') {
-        islandicFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
       if (message.channel.id === '718056423153598545') {
         seablockFifo.write(`${message.author.username}: ${message.content}`, () => { });
       }
       if (message.channel.id === '723280139982471247') {
         testFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-      if (message.channel.id === '726502816469876747') {
-        eventFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-      if (message.channel.id === '724698782264066048') {
-        chronoFifo.write(`${message.author.username}: ${message.content}`, () => { });
       }
       if (message.channel.id === '724696348871622818') {
         coronaFifo.write(`${message.author.username}: ${message.content}`, () => { });
@@ -108,15 +90,12 @@ module.exports = {
       if (message.channel.id === '745947531875319900') {
         krastorioFifo.write(`${message.author.username}: ${message.content}`, () => { });
       }
-      if (message.channel.id === '746438501339234446') {
-        spiderFIFO.write(`${message.author.username}: ${message.content}`, () => { });
+      if (message.channel.id === '750760237610303559') {
+        bobangelsFifo.write(`${message.author.username}: ${message.content}`, () => { });
       }
     } else { //sends just the message, no username, nothing as $sendWithUsername is false
       if (message.channel.id === '718056299501191189') {
         coreFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '718056597154299934') {
-        islandicFifo.write(`${message.content}`, () => { });
       }
       if (message.channel.id === '718056423153598545') {
         seablockFifo.write(`${message.content}`, () => { });
@@ -124,20 +103,14 @@ module.exports = {
       if (message.channel.id === '723280139982471247') {
         testFifo.write(`${message.content}`, () => { });
       }
-      if (message.channel.id === '726502816469876747') {
-        eventFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '724698782264066048') {
-        chronoFifo.write(`${message.content}`, () => { });
-      }
       if (message.channel.id === '724696348871622818') {
         coronaFifo.write(`${message.content}`, () => { });
       }
       if (message.channel.id === '745947531875319900') {
         krastorioFifo.write(`${message.content}`, () => { });
       }
-      if (message.channel.id === '746438501339234446') {
-        spiderFIFO.write(`${message.content}`, () => { });
+      if (message.channel.id === '750760237610303559') {
+        bobangelsFifo.write(`${message.content}`, () => { });
       }
     }
   },
