@@ -153,83 +153,102 @@ module.exports = {
       if (err) throw err;
     });
   },
-  parseJammyLogger: function(line, channel) {
+  setupObject: function(data, server) {
+    if (data.servers === undefined)
+      data.servers = {};
+    if (data.servers[server] === undefined)
+      data.servers[server] = {};
+    if (data.servers[server].players === undefined)
+      data.servers[server].players = {};
+    if (data.servers[server].rocketLaunches === undefined)
+      data.servers[server].rocketLaunches = 0;
+    if (data.servers[server].research === undefined)
+      data.servers[server].research = {};
+    return data
+  },
+  addDeath: function(data, server, player, reason) {
+    if (data.servers[server].players[player] === undefined)
+      data.servers[server].players[player] = {};
+    if (data.servers[server].players[player][reason] === undefined)
+      data.servers[server].players[player][reason] = 0;
+    data.servers[server].players[player][reason]++; //adds to the reason
+    return data;
+  },
+  rocketLaunched: function(data, server) {
+    data.servers[server].rocketLaunches++;
+    return data;
+  },
+  addResearch: function(data, server, researched, level) {
+    if (data.servers[server].research[researched] === undefined)
+      data.servers[server].research[researched] = 0;
+    data.servers[server].research[researched]++;
+    return data;
+  },
+  parseJammyLogger: function(line, channel) { //channel is an object
     //this long asf function parses JammyLogger lines in the console and does magic stuff
     return; //for now as this doesnt work yet
-    data = readJSON("serverData.js");
     if (line.includes('JFEEDBACK: ')) { //if line is feedback for a JammyBot command to Discord
       if (line.includes('JFEEDBACK: BAN: ')) {
         line = line.splice('JFEEDBACK: BAN: '.length);
         line = line.split(' ');
         //somehow pass to index.js that command has worked and player $line[0] has been banned for reason $line[1]
-        return `Player ${line[0]} has been banned for reason ${line[1]}`
-        if (channel)
+        //return `Player ${line[0]} has been banned for reason ${line[1]}`
+        let result = ['ban', line[0], line[1]];
+        return result
+
       }
       else if (line.includes('JFEEDBACK: UNBAN: ')) {
         line = line.splice('JFEEDBACK: UNBAN: '.length);
         //somehow pass to index.js that command has worked and player $line[0] has been unbanned
-        return `Player ${line[0]} has been unbanned`
+        //return `Player ${line} has been unbanned`
+        let result = ['unban', line];
+        return result
       }
       else if (line.includes('JFEEDBACK: KICK: ')) {
         line = line.splice('JFEEDBACK: KICK: '.length);
         line = line.split(' ');
         //somehow pass to index.js that command has worked and player $line[0] has been kicked for reason $line[1]
-        return `Player ${line[0]} has been kicked for reason ${line[1]}`
+        //return `Player ${line[0]} has been kicked for reason ${line[1]}`
+        let result = ['kick', line[0], line[1]];
+        return result;
       }
       else if (line.includes('JFEEDBACK: MUTE: ')) {
         line = line.splice('JFEEDBACK: MUTE: ');
         //somehow pass to index.js that command worked and player $line has been muted
-        return `Player ${line} has been muted`
+        //return `Player ${line} has been muted`
+        let result = ['mute', line];
+        return result;
       }
       else if (line.includes('JFEEDBACK: UNMUTE: ')) {
         line = line.splice('JFEEDBACK: UNMUTE: ');
         //somehow pass to index.js that command worked and player $line has been unmuted
-        return `Player ${line} has been unmuted`
+        //return `Player ${line} has been unmuted`
+        let result = ['unmute', line];
+        return result;
       }
     }
     else {  //if line is not a feedback for a JammyBot command
+      data = readJSON("serverData.js");
+      setupObject(data, channel.name);
       data = readJSON('./serverData.json');
       if (line.includes('DIED: ')) {
         line = line.splice('DIED: '.length);
         line = line.split(' '); //split at separation between username and death reson
-        let player = line[0];
-        let reason = line[1];
         //write into data.json, server $channel, players that player $player died because of $reason
-        data.servers.channel.players
+        addDeath(data, channel.name, line[0], line[1]);
       }
-      else if (line.includes('ROCKET: ')) {
-        //increase rocket count for server 'channel' in data.json
-      }
-      else if (line.includes('HANDCRAFT: ')) {
-        line = line.splice('HANDCRAFT: '.length);
-        line = line.split(' ');
-        if (line[0] == "unnamed_item") {
-          //write into data.json, server $channel, players that $line[1] has crafted 1 "unnamed_item"
-        } else {
-          //write into data.json, server $channel, players that $line[1] has crafted 1 $line[0]
-        }
-      }
-      else if (line.includes('CAPSULE: ')) {
-        line = line.splice('CAPSULE: '.length);
-        line = line.split(' ');
-        if (line[0] == "no_player") {
-          //write into data.json, server $channel, players that "no_player" has used 1 capsule $line[0]
-        } else {
-          //write into data.json, server $channel, players that $line[1] has used 1 capsule $line[0]
-        }
-      }
+      else if (line.includes('ROCKET: '))
+        rocketLaunched(data, channel.name);
       else if (line.includes('RESEARCH FINISHED: ')) {
         line = line.splice('RESEARCH FINISHED: '.length);
         line = line.split(' ');
         if (line[1] != 0) { // if research is infinite
-          //write into data.json, server $channel, research that level $line[1] of $line[0] has been researched
+          //write into data.json, server $channel, research that $line[0] level $line[1] has been researched
+          addResearch(data, channel.name, line[0], line[1]);
         }
       }
-      else if (line.includes('ARTILLERY: ')) {
-        line = line.splice('ARTILLERY: '.length);
-        line = line.split(' ');
-        //write to data.json, server $channel that 1 more artillery shell has been sent from line[1]
-      }
+      writeJSON(data);
+      return 0;
     }
   },
 }
