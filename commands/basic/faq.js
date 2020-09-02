@@ -9,7 +9,7 @@ module.exports = {
     name: 'faq',
     aliases: ['f', 'faq'],
     usage: '(command)',
-    category: 'faq',
+    category: 'basic',
     description: 'This is a command for the Frequently Asked Questions (FAQ)',
     accessableby: 'Members',
   },
