@@ -16,10 +16,7 @@ module.exports = (client) => {
   };
   [
     "basic",
-    // "collaboration",
-    // "miscellaneous",
-    // "moderation",
     "owner",
-    // "reactions"
+    "factorio"
   ].forEach((x) => load(x));
 };

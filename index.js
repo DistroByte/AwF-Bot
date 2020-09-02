@@ -2,8 +2,6 @@ const { Client, Collection } = require('discord.js');
 var Tail = require('tail').Tail;
 const chatFormat = require('./chatFormat');
 const { token, prefix } = require('./botconfig.json');
-const { sendToServer, sendToAll } = require('./functions');
-const { messages } = require('./longMessages');
 
 const chronoTail = new Tail('../servers/chronotrain/server.out');
 const coreTail = new Tail('../servers/members-core/server.out');
@@ -17,70 +15,18 @@ const spiderTail = new Tail('../servers/members-spidertron/server.out');
 
 const client = new Client();
 
-//for sending messages from Discord to Factorio, or some random bot commands
-// client.on('message', (message) => {
-//   let slap = client.emojis.cache.find(emoji => emoji.name === "slap")
-//   if (message.content.includes('Jammy say hi')) return message.channel.send(':wave:');
-//   if (message.content.includes('Jammy work')) return message.channel.send('you coded me this way, your issue');
-//   if (message.author.bot) return
-//   if (message.content.includes('lenny')) return message.channel.send(`( ͡° ͜ʖ ͡°)`);
-//   if (message.content.includes('slap') && message.mentions) {
-//     message.delete();
-//     message.channel.send(`${message.mentions.members.first() || message.content.slice(message.content.indexOf('slap') + 5)} ${slap}`);
-//   }
 
-//   //handle bot commands
-//   if (message.content.startsWith(prefix)) {
-//     if (message.member.roles.cache.some(role => role.name === 'Admin') || message.member.roles.cache.some(role => role.name === 'Moderator') || message.member.roles.cache.some(role => role.name === 'dev'))
-//       if (message.content.startsWith(prefix + 'fcommandall')) {
-//         message.content = message.content.slice(13); //gets rid of the command prefix
-//         message.content = '/' + message.content;  //prefixes the message with a / to start commands in Factorio
-//         sendToAll(message, false); //sends the command to all servers with no username
-//         return message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
-//       }
-//     if (message.content.startsWith(prefix + 'fcommand')) {
-//       message.content = message.content.slice(10); //gets rid of the command prefix
-//       message.content = '/' + message.content;  //prefixes the message with a / to start commands in Factorio
-//       sendToServer(message, false);
-//       return message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
-//     }
-//     if (message.content.startsWith(prefix + 'sendall')) { //sends a message to all servers with the username of the person sending
-//       message.content = message.content.slice(8); //gets rid of the command prefix
-//       sendToAll(message, true);  //sends the message to all servers at once
-//       return message.channel.send('Success!').then(message => message.delete({ timeout: 5000 }));
-//     }
-//   }
-//   //handle longMessages.js (embedded messages)
-//   if (message.content.startsWith(prefix)) {
-//     let key = (message.content.slice(1)); //slices at questionmark
-//     if (key in messages) { // checks if the key is in the messages object
-//       message.react('👀'); //Eyes emoji
-//       return message.channel.send({ embed: messages.key });
-//     } else {
-//       message.react('😓');  //Downcast Face with Sweat emoji (tears)
-//       message.channel.send(`Couldn't find help page ${key}`);
-//       return message.channel.send(messages.messageHelp);
-//     }
-//   }
-//
-//   if (message.content == prefix + 'h' || message.content == prefix + 'help') message.channel.send({ embed: messageHelp });
-//   if (message.content == prefix + 'factoriospcommands') message.channel.send({ embed: factoriospcommands });
-//   if (message.content == prefix + 'factoriompcommands') message.channel.send({ embed: factoriompcommands });
-//
-//   //checking for mentions and replacing the user/channel id with the name
-//   if (message.content.includes('<@')) { //check if the message that the bot reads has a mention of a user
-//     message.mentions.users.forEach(user => {
-//       message.content = message.content.replace(/<@[\S.]*>/, '@' + user.username);
-//     });
-//   } else if (message.content.includes('<#')) { //check if the message includes a mention of a discord channel
-//     message.mentions.channels.forEach(channel => {
-//       message.content = message.content.replace(/<#[\S.]*>/, '#' + channel.name);
-//     });
-//   }
+client.prefix = prefix;
 
-//   //phase of sending the message from discord to Factorio
-//   sendToServer(message, true); // send the message to corresponding server
-// });
+["commands", "aliases"].forEach(x => client[x] = new Collection());
+["command", "event"].forEach(x => require(`./handlers/${x}`)(client));
+
+client.login(token);
+
+
+// if (message.content == prefix + 'h' || message.content == prefix + 'help') message.channel.send({ embed: messageHelp });
+// if (message.content == prefix + 'factoriospcommands') message.channel.send({ embed: factoriospcommands });
+// if (message.content == prefix + 'factoriompcommands') message.channel.send({ embed: factoriompcommands });
 
 coreTail.on('line', function (line) {
   result = chatFormat(line, '718056299501191189', client);
@@ -129,10 +75,3 @@ spiderTail.on('line', function (line) {
   chatFormat(line, '746438501339234446', client);
   console.log(`[SPIDER] ${line}`);
 });
-
-client.prefix = prefix;
-
-["commands", "aliases"].forEach(x => client[x] = new Collection());
-["command", "event"].forEach(x => require(`./handlers/${x}`)(client));
-
-client.login(token);
