@@ -3,8 +3,6 @@ var Tail = require('tail').Tail;
 const chatFormat = require('./chatFormat');
 const { token, prefix } = require('./botconfig.json');
 
-const { messageHelp, factoriospcommands, factoriompcommands } = require('./longMessages');
-
 const chronoTail = new Tail('../servers/chronotrain/server.out');
 const coreTail = new Tail('../servers/members-core/server.out');
 const coronaTail = new Tail('../servers/corona-daycare/server.out');
@@ -16,6 +14,7 @@ const krastorioTail = new Tail('../servers/members-krastorio2/server.out');
 const spiderTail = new Tail('../servers/members-spidertron/server.out');
 
 const client = new Client();
+
 
 client.prefix = prefix;
 
@@ -29,9 +28,11 @@ client.login(token);
 // if (message.content == prefix + 'factoriospcommands') message.channel.send({ embed: factoriospcommands });
 // if (message.content == prefix + 'factoriompcommands') message.channel.send({ embed: factoriompcommands });
 
-
 coreTail.on('line', function (line) {
-  chatFormat(line, '718056299501191189', client);
+  result = chatFormat(line, '718056299501191189', client);
+  if (result != null) {
+
+  }
   console.log(`[CORE] ${line}`);
 });
 
