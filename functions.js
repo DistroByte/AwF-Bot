@@ -1,14 +1,11 @@
 const FIFO = require('fifo-js');
 
-const chronoFifo = new FIFO('../servers/chronotrain/server.fifo');
 const coreFifo = new FIFO('../servers/members-core/server.fifo');
 const coronaFifo = new FIFO('../servers/corona-daycare/server.fifo');
-const eventFifo = new FIFO('../servers/event-biter-battles/server.fifo');
-const islandicFifo = new FIFO('../servers/members-islandic/server.fifo');
 const seablockFifo = new FIFO('../servers/members-seablock/server.fifo');
 const testFifo = new FIFO('../servers/test/server.fifo');
 const krastorioFifo = new FIFO('../servers/members-krastorio2/server.fifo');
-const spiderFifo = new FIFO('../servers/members-spidertron/server.fifo');
+const bobangelsFifo = new FIFO('../servers/members-bobs-angels/server.fifo');
 
 module.exports = {
   formatVersion: function (data) {
