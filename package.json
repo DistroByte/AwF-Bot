@@ -10,8 +10,10 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"common-tags": "^1.8.0",
 		"discord.js": "^12.2.0",
 		"fifo-js": "^2.1.0",
+		"node-fetch": "^2.6.0",
 		"tail": "^2.0.3"
 	}
 }

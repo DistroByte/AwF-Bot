@@ -2,6 +2,12 @@ const functions = require('./functions');
 const { filterBan } = require("./filterBan");
 
 module.exports = function chatFormat(line, channel, client) {
+  const helpdesk = client.channels.cache.get('590241134740111387')
+
+  if (line.includes('?griefer')) {
+    //mentions 548545406653431810 (Admin) and 555824650324672522 (Moderator)
+    helpdesk.send(`<@&548545406653431810> <@&555824650324672522>! Griefer on ${client.channels.cache.get(channel)}`);
+  }
   if (line.includes('[JOIN]')) {
     filterBan(line.slice((line.indexOf(']') + 2), (line.indexOf('joined the game') - 1)));
   }
@@ -18,6 +24,6 @@ module.exports = function chatFormat(line, channel, client) {
   }
   else if (line.includes('JLOGGER:')) {
     line = line.slice((line.indexOf('JLOGGER:') + 'JLOGGER:'.length + 1))
-    let result = functions.parseJammyLogger(line, client.channels.cache.get(channel).name;
+    let result = functions.parseJammyLogger(line, client.channels.cache.get(channel).name;  //sends the channel name with
   }
 }

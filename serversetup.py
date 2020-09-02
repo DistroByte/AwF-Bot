@@ -1,7 +1,12 @@
 # This is a simple Python script to reset the AwF servers and do magic on them after resetting - setting permissions etc.
 
-import subprocess
-import sys
+import os
+import glob
+import shutil
+
+# all of these must be prefixed with ../
+# used to change/work with directories
+backupPath = "../backup"
 
 
 servers = {
@@ -40,10 +45,16 @@ def ask():
 
 def removeFiles(ans):
     dir = "../servers/" + servers[ans]
-    print(dir)
-    files = "saves"  # put the folder/filenames in here, separated with spaces. this will completely wipe them
-    # subprocess.call(['rm','-rf' + files]  #remove save files
-    return 0
+    listOfFiles = glob.glob(dir + "/saves/*")
+    latestFilePath = max(listOfFiles, key=os.path.getctime)
+    latestFileName = latestFilePath[len(dir) + len("saves/") + 1 :]
+    shutil.copy2(latestFilePath, backupPath)
+    print("copied latest save to ../backup")
+    os.chdir(dir)
+    shutil.rmtree("saves", onerror=None)  # remove save files
+    os.mkdir("saves")
+    print("removed save files")
+    return
 
 
 def run():
