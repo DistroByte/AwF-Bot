@@ -5,15 +5,12 @@ const { token, prefix } = require('./botconfig.json');
 const { sendToServer, sendToAll } = require('./functions');
 const { messages } = require('./longMessages');
 
-const chronoTail = new Tail('../servers/chronotrain/server.out');
 const coreTail = new Tail('../servers/members-core/server.out');
 const coronaTail = new Tail('../servers/corona-daycare/server.out');
-const eventTail = new Tail('../servers/event-biter-battles/server.out');
-const islandicTail = new Tail('../servers/members-islandic/server.out');
 const seablockTail = new Tail('../servers/members-seablock/server.out');
 const testTail = new Tail('../servers/test/server.out');
 const krastorioTail = new Tail('../servers/members-krastorio2/server.out');
-const spiderTail = new Tail('../servers/members-spidertron/server.out');
+const bobangelsTail = new Tail('../servers/members-bobs-angels/server.out')
 
 const client = new Client();
 
@@ -87,11 +84,6 @@ coreTail.on('line', function (line) {
   console.log(`[CORE] ${line}`);
 });
 
-islandicTail.on("line", function (line) {
-  chatFormat(line, '718056597154299934', client);
-  console.log(`[ISLANDIC] ${line}`);
-});
-
 seablockTail.on('line', function (line) {
   chatFormat(line, '718056423153598545', client);
   console.log(`[SEABLOCK] ${line}`);
@@ -100,16 +92,6 @@ seablockTail.on('line', function (line) {
 testTail.on('line', function (line) {
   chatFormat(line, '723280139982471247', client);
   console.log(`[TEST] ${line}`);
-});
-
-eventTail.on('line', function (line) {
-  chatFormat(line, '726502816469876747', client);
-  console.log(`[EVENT] ${line}`);
-});
-
-chronoTail.on('line', function (line) {
-  chatFormat(line, '724698782264066048', client);
-  console.log(`[CHRONOTRAIN] ${line}`);
 });
 
 coronaTail.on('line', function (line) {
@@ -122,9 +104,9 @@ krastorioTail.on('line', function (line) {
   console.log(`[KRASTORIO] ${line}`);
 });
 
-spiderTail.on('line', function (line) {
-  chatFormat(line, '746438501339234446', client);
-  console.log(`[SPIDER] ${line}`);
+bobangelsTail.on('line', function (line) {
+  chatFormat(line, '750760237610303559', client);
+  console.log(`[BOBANGELS] ${line}`);
 });
 
 client.prefix = prefix;
