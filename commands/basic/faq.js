@@ -20,16 +20,9 @@ module.exports = {
       .setThumbnail(client.user.displayAvatarURL());
 
     if (!args[0]) { //if the argument is empty
-      embed.setDescription(
-        `These are the avaliable FAQ pages for ${message.guild.me.displayName}\nThe bot prefix is: **${prefix}**`
-      );
-      embed.setFooter(
-        `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
-        client.user.displayAvatarURL()
-      );
-      embed.addField(
-        'FAQ pages:',
-        pages = (messages) => {
+      embed.setDescription(`These are the avaliable FAQ pages for ${message.guild.me.displayName}\nThe bot prefix is: **${prefix}**`)
+        .setFooter(`© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`, client.user.displayAvatarURL())
+        .addField('FAQ pages:', pages = (messages) => {
           string = ''
           for (key in messages) {
             let a = [string, key]
@@ -37,24 +30,25 @@ module.exports = {
             string = a;
           }
         }
-      );
-      return message.channel.send(embed);
-    } else {
-      let command = args[0].toLowerCase()
-      if (!command)
-        return message.channel.send(
-          embed
-            .setTitle('Invalid Command.')
-            .setDescription(
-              `Do \`${prefix}help\` for the list of the commands.`
-            )
         );
-
-      longMessage = messages.command; //the embed from longMessages.js
-      longMessage.footer = (`© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2`,
-      client.user.displayAvatarURL());
-
-      return message.channel.send({ embed: longMessage});
+      return message.channel.send(embed);
     }
+    // else {
+    //   let command = args[0].toLowerCase()
+    //   if (!command)
+    //     return message.channel.send(
+    //       embed
+    //         .setTitle('Invalid Command.')
+    //         .setDescription(
+    //           `Do \`${prefix}help\` for the list of the commands.`
+    //         )
+    //     );
+
+    //   longMessage = messages.command; //the embed from longMessages.js
+    //   longMessage.setFooter(`© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2`,
+    //     client.user.displayAvatarURL());
+
+    //   return message.channel.send({ embed: longMessage });
+    // }
   },
 };
