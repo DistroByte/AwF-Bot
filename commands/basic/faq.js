@@ -2,7 +2,7 @@ const { MessageEmbed } = require('discord.js');
 const { prefix } = require('../../botconfig.json');
 const { readdirSync } = require('fs');
 const { stripIndents } = require('common-tags');
-const { messages } = require('../../longMessages.js');
+const { longMessages } = require('../../longMessages.js');
 
 module.exports = {
   config: {
@@ -29,14 +29,7 @@ module.exports = {
       );
       embed.addField(
         'FAQ pages:',
-        pages = (messages) => {
-          string = ''
-          for (key in messages) {
-            let a = [string, key]
-            a.join(' ');
-            string = a;
-          }
-        }
+        string => `\`${longMessages.messages}\``).join(' ')
       );
       return message.channel.send(embed);
     } else {
@@ -50,7 +43,7 @@ module.exports = {
             )
         );
 
-      longMessage = messages.command; //the embed from longMessages.js
+      longMessage = longMessages.messages.command; //the embed from longMessages.js
       longMessage.footer = (`© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2`,
       client.user.displayAvatarURL());
 

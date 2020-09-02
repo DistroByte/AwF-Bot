@@ -1,5 +1,6 @@
 //for a newline in the Discord message, have a \n at the end of a coreLineData
-const { prefix } = require('./botconfig')
+//const { prefix } = require('./botconfig')
+prefix = '?'
 defaultColor = 'GREEN'
 const factoriospcommands = {
   color: defaultColor,
@@ -258,6 +259,6 @@ module.exports = {
     'factoriompcommands': factoriompcommands,
     'fmpc': factoriompcommands,
     'ltn': ltn,
-    'servers': servers;
-  };
+    'servers': servers,
+  },
 };
