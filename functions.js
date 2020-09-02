@@ -141,19 +141,19 @@ module.exports = {
       }
     }
   },
-  readJSON: function(file) {
-    fs.readFile(file, function(err, data) {
+  readJSON: function (file) {
+    fs.readFile(file, function (err, data) {
       if (err) throw err;
       var data = JSON.parse(data);  //the data is now an Object
     });
     return data;
   },
-  writeJSON: function(data) {
+  writeJSON: function (data) {
     fs.writeFile("serverData.json", JSON.stringify(data), err => {
       if (err) throw err;
     });
   },
-  setupObject: function(data, server) {
+  setupObject: function (data, server) {
     if (data.servers === undefined)
       data.servers = {};
     if (data.servers[server] === undefined)
@@ -166,7 +166,7 @@ module.exports = {
       data.servers[server].research = {};
     return data
   },
-  addDeath: function(data, server, player, reason) {
+  addDeath: function (data, server, player, reason) {
     if (data.servers[server].players[player] === undefined)
       data.servers[server].players[player] = {};
     if (data.servers[server].players[player][reason] === undefined)
@@ -174,19 +174,19 @@ module.exports = {
     data.servers[server].players[player][reason]++; //adds to the reason
     return data;
   },
-  rocketLaunched: function(data, server) {
+  rocketLaunched: function (data, server) {
     data.servers[server].rocketLaunches++;
     return data;
   },
-  addResearch: function(data, server, researched, level) {
+  addResearch: function (data, server, researched, level) {
     if (data.servers[server].research[researched] === undefined)
       data.servers[server].research[researched] = 0;
     data.servers[server].research[researched]++;
     return data;
   },
-  parseJammyLogger: function(line, channel) { //channel is an object
+  parseJammyLogger: function (line, channel) { //channel is an object
     //this long asf function parses JammyLogger lines in the console and does magic stuff
-    return; //for now as this doesnt work yet
+    //for now as this doesnt work yet
     if (line.includes('JFEEDBACK: ')) { //if line is feedback for a JammyBot command to Discord
       if (line.includes('JFEEDBACK: BAN: ')) {
         line = line.splice('JFEEDBACK: BAN: '.length);
