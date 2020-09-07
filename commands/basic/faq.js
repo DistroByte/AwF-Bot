@@ -2,7 +2,7 @@ const { MessageEmbed } = require('discord.js');
 const { prefix } = require('../../botconfig.json');
 const { readdirSync } = require('fs');
 const { stripIndents } = require('common-tags');
-const { longMessages } = require('../../longMessages.js');
+const { messages } = require('../../longMessages.js');
 
 module.exports = {
   config: {
@@ -29,11 +29,11 @@ module.exports = {
       );
       embed.addField(
         'FAQ pages:',
-        string => `\`${Object.getOwnPropertyNames(longMessages)}\``).join(' ');
+        `\`${Object.getOwnPropertyNames(messages).join('` `')}\``,
       );
       return message.channel.send(embed);
     } else {
-      let command = args[0].toLowerCase()
+      let command = args[0].toLowerCase();
       if (!command)
         return message.channel.send(
           embed
@@ -42,10 +42,11 @@ module.exports = {
               `Do \`${prefix}help\` for the list of the commands.`
             )
         );
-
-      longMessage = longMessages[command]; //the embed from longMessages.js
-      longMessage.footer = (`© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2`,
-      client.user.displayAvatarURL());
+      longMessage = messages[command]; //the embed from longMessages.js
+      longMessage.footer = {};
+      longMessage.footer.text = (`© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2`);
+      longMessage.footer.icon_url = client.user.displayAvatarURL();
+      console.log(longMessage);
 
       return message.channel.send({ embed: longMessage});
     }
