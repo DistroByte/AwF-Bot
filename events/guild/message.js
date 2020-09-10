@@ -9,6 +9,8 @@ module.exports = async (client, message) => {
   let slap = client.emojis.cache.find(emoji => emoji.name === "slap");
   if (message.content.includes('Jammy say hi')) return message.channel.send(':wave:');
   if (message.content.includes('Jammy work')) return message.channel.send('you coded me this way, your issue');
+  if (message.content.includes('soon'))
+    message.react(message.guild.emojis.cache.find(emoji => emoji.name === 'soon'));
   if (message.content.includes('lenny')) return message.channel.send(`( ͡° ͜ʖ ͡°)`);
   if (message.content.includes('slap') && message.mentions) {
     message.delete();
