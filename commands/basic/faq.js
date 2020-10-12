@@ -46,8 +46,6 @@ module.exports = {
       longMessage.footer = {};
       longMessage.footer.text = (`© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2`);
       longMessage.footer.icon_url = client.user.displayAvatarURL();
-      console.log(longMessage);
-
       return message.channel.send({ embed: longMessage});
     }
   },

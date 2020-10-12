@@ -236,10 +236,6 @@ const servers = {
       value: 'Corona Daycare is the type of map that is reset once a week or every other week, with lots of new players, who sometimes join the AwF community. It is completely vanilla, no password',
     },
     {
-      name: 'Chronotrain',
-      value: 'The Chronotrain map '
-    },
-    {
       name: 'Krastorio 2',
       value: 'The Krastorio 2 map. This map includes some QoL mods and quite a bit of other, complex mods that go hand-in-hand with Krastorio 2. This map is complex, but not the most complex. It is much longer and complex than the default game'
     },
@@ -247,6 +243,10 @@ const servers = {
       name: 'seablock',
       value: 'The seablock map is basically bobangels, but you make EVERYTHING from purely water (and the seabed). Therefore, everything is muuuuch more complex, runs last hundreds of hours'
     },
+    {
+      name: 'bobs-angels',
+      value: 'A BobAngels playthrough. Includes mods from great authors, Bobingabout and Arch666Angel. They make the playthrough complex, but not as complex as seablock - here you have land, lots of it - but you also have biters'
+    }
   ],
 };
 
