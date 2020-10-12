@@ -53,9 +53,14 @@ module.exports = {
           if (dirData[i] && dirData[i].endsWith('.zip')) {
             let data = fs.statSync(dir+'/'+dirData[i])
             let date = new Date(data.birthtimeMs)
-            choiceEmbed.addField(`\`${dirData[i]}\``, `Save created on: ${date.toUTCString()}`);
+            dataDic[dirData[i]] = date.toUTCString();
           }
         }
+
+        // somehow sort dirData and date pairs by the newest date
+
+        choiceEmbed.addField(`\`${dirData[i]}\``, `Save created on: ${date.toUTCString()}`);
+
         return message.channel.send(choiceEmbed)
       }
       if (args[0] && args[1]) { // both server name and save name are provided
