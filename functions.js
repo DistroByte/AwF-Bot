@@ -7,6 +7,7 @@ const seablockFifo = new FIFO('../servers/members-seablock/server.fifo');
 const testFifo = new FIFO('../servers/test/server.fifo');
 const krastorioFifo = new FIFO('../servers/members-krastorio2/server.fifo');
 const bobangelsFifo = new FIFO('../servers/members-bobs-angels/server.fifo');
+const redbrickFifo = new FIFO('../servers/redbrick/server.fifo');
 
 
 module.exports = {
@@ -60,13 +61,16 @@ module.exports = {
       testFifo.write(`${message.author.username}: ${message.content}`, () => { });
       krastorioFifo.write(`${message.author.username}: ${message.content}`, () => { });
       bobangelsFifo.write(`${message.author.username}: ${message.content}`, () => { });
+      redbrickFifo.write(`${message.author.username}: ${message.content}`, () => { });
     } else { // sends just the message, no username, nothing because $sendWithUsername is false
-      coreFifo.write(`${message.content}`, () => { });
-      coronaFifo.write(`${message.content}`, () => { });
-      seablockFifo.write(`${message.content}`, () => { });
-      testFifo.write(`${message.content}`, () => { });
-      krastorioFifo.write(`${message.content}`, () => { });
-      bobangelsFifo.write(`${message.content}`, () => { });
+      let toSend = message.content || message
+      coreFifo.write(`${toSend}`, () => { });
+      coronaFifo.write(`${toSend}`, () => { });
+      seablockFifo.write(`${toSend}`, () => { });
+      testFifo.write(`${toSend}`, () => { });
+      krastorioFifo.write(`${toSend}`, () => { });
+      bobangelsFifo.write(`${toSend}`, () => { });
+      redbrickFifo.write(`${toSend}`, () => { });
     }
   },
   sendToServer: function (message, sendWithUsername) {
@@ -93,6 +97,9 @@ module.exports = {
       if (message.channel.id === '750760237610303559') {
         bobangelsFifo.write(`${message.author.username}: ${message.content}`, () => { });
       }
+      if (message.channel.id === '764651709632348162') {
+        redbrickFifo.write(`${message.author.username}: ${message.content}`, () => { });
+      }
     } else { //sends just the message, no username, nothing as $sendWithUsername is false
       if (message.channel.id === '718056299501191189') {
         coreFifo.write(`${message.content}`, () => { });
@@ -111,6 +118,9 @@ module.exports = {
       }
       if (message.channel.id === '750760237610303559') {
         bobangelsFifo.write(`${message.content}`, () => { });
+      }
+      if (message.channel.id === '764651709632348162') {
+        redbrickFifo.write(`${message.content}`, () => { });
       }
     }
   },
