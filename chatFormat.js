@@ -9,7 +9,7 @@ module.exports = function chatFormat(line, channel, client) {
     helpdesk.send(`<@&548545406653431810> <@&555824650324672522>! Griefer on ${client.channels.cache.get(channel)}`);
   }
   if (line.includes('[JOIN]')) {
-    filterBan(line.slice((line.indexOf(']') + 2), (line.indexOf('joined the game') - 1)));
+    filterBan(line.slice((line.indexOf(']') + 2), (line.indexOf('joined the game') - 1)), channel, client);
   }
   if (line.includes('<server>')) return
   if (line.includes('; Factorio')) {
