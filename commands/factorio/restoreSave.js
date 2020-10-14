@@ -47,17 +47,27 @@ module.exports = {
           )
         let dir = '../servers/'+args[0]
         let dirData = fs.readdirSync(dir) // add in all file names that end with .zip
-        dirData = bubbleSort(dirData);
+
+        //sort dirData by date last modified
+        dirData = dirData.map(function (fileName) {
+            return {
+              name: fileName,
+              time: fs.statSync(dir + '/' + fileName).mtime.getTime()
+            };
+          })
+          .sort(function (a, b) {
+            return a.time - b.time; })
+          .map(function (v) {
+            return v.name; });
+
+
         for (let i = 0; i < 25; i++) { // max number of fields in a Discord Embed is 25
           if (!dirData[i]) break;
           if (dirData[i] && dirData[i].endsWith('.zip')) {
             let data = fs.statSync(dir+'/'+dirData[i])
             let date = new Date(data.birthtimeMs)
-            dataDic[dirData[i]] = date.toUTCString();
           }
         }
-
-        // somehow sort dirData and date pairs by the newest date
 
         choiceEmbed.addField(`\`${dirData[i]}\``, `Save created on: ${date.toUTCString()}`);
 
