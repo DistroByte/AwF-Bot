@@ -248,20 +248,5 @@ module.exports = {
       }
     }
     return arr;
-  },
-  sortDir: function (data, dir) { // sort a directory's files+folders by date modified by the input of the path (str) and data (array)
-    data = data.map(function (fileName) {
-      return {
-        name: fileName,
-        time: fs.statSync(dir + '/' + fileName).mtime.getTime()
-      };
-    })
-    .sort(function (a, b) {
-      return a.time - b.time;
-    })
-    .map(function (v) {
-      return v.name;
-    });
-    return data;
   }
 }
