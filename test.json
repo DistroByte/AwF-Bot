@@ -1,0 +1,42 @@
+{
+  "server0": {
+    "path": "../servers/members-core/",
+    "id": "718056299501191189"
+  },
+  "server1": {
+    "path": "../servers/test/",
+    "id": ""
+  },
+  "server2": {
+    "path": "../servers/test/",
+    "id": ""
+  },
+  "server3": {
+    "path": "../servers/test/",
+    "id": ""
+  },
+  "server4": {
+    "path": "../servers/test/",
+    "id": ""
+  },
+  "server5": {
+    "path": "../servers/test/",
+    "id": ""
+  },
+  "server6": {
+    "path": "../servers/test/",
+    "id": ""
+  },
+  "server7": {
+    "path": "../servers/test/",
+    "id": ""
+  },
+  "server8": {
+    "path": "../servers/test/",
+    "id": ""
+  },
+  "server9": {
+    "path": "../servers/test/",
+    "id": "723280139982471247"
+  }
+}
