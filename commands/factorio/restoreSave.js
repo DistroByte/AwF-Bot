@@ -1,6 +1,6 @@
 const { sendToAll, bubbleSort } = require('../../functions')
 const fs = require('fs')
-const { exec } = require("child_process")
+const { execSync } = require("child_process")
 const { absPath } = require('../../botconfig.json');
 const Discord = require('discord.js')
 
@@ -85,48 +85,27 @@ module.exports = {
             client.user.displayAvatarURL()
           )
           .addField(`Rolling back server \`${args[0]}\` to save \`${args[1]}\``, '\u200B');
-        exec(absPath+'/'+args[0]+'/factorio-init/factorio stop', (error, stdout, stderr) => { //stop the factorio server
-          if (error) {
-              console.log(`server restore: stop error: ${error.message}`);
-              message.channel.send(`server restore: stop error: ${error.message}`)
-              return;
-          }
-          if (stderr) {
-              console.log(`server restore: stop stderr: ${stderr}`);
-              message.channel.send(`server restore: stop stderr: ${stderr}`)
-              return;
-          }
-          console.log(`server restore: stop stdout: ${stdout}`);
-          message.channel.send(`server restore: stop stdout: ${stdout}`);
-        });
-        exec(absPath+'/'+args[0]+'/factorio-init/factorio load-save '+args[1], (error, stdout, stderr) => { //reload save of the factorio server
-          if (error) {
-              console.log(`server restore: load error: ${error.message}`);
-              message.channel.send(`server restore: load error: ${error.message}`);
-              return;
-          }
-          if (stderr) {
-              console.log(`server restore: load stderr: ${stderr}`);
-              message.channel.send((`server restore: load stderr: ${stderr}`));
-              return;
-          }
-          console.log(`server restore: load stdout: ${stdout}`);
-          message.channel.send(`server restore: load stdout: ${stdout}`);
-        });
-        exec(absPath+'/'+args[0]+'/factorio-init/factorio start', (error, stdout, stderr) => { //start the factorio server
-          if (error) {
-              console.log(`server restore: start error: ${error.message}`);
-              message.channel.send(`server restore: start error: ${error.message}`);
-              return;
-          }
-          if (stderr) {
-              console.log(`server restore: start stderr: ${stderr}`);
-              message.channel.send(`server restore: start stderr: ${stderr}`);
-              return;
-          }
-          console.log(`server restore: start stdout: ${stdout}`);
-          message.channel.send(`server restore: start stdout: ${stdout}`);
-        });
+        try {
+          execSync('test -w /');
+        } catch (e) {
+          return message.channel.send(`Insufficient permissions. Error: ${e}`).then(message.delete, { timeout: 5000 });
+        }
+        try {
+          execSync(absPath + '/' + args[0] + '/factorio-init/factorio stop');
+        } catch (e) {
+          return message.channel.send(`server restore: stop error: ${e}`).then(message.delete, {timeout: 5000});
+        }
+        try {
+          execSync(absPath + '/' + args[0] + '/factorio-init/factorio load-save ' + args[1]);
+        } catch (e) {
+          return message.channel.send(`server restore: load error: ${e}`).then(message.delete, { timeout: 5000 });
+        }
+        try {
+          execSync(absPath + '/' + args[0] + '/factorio-init/factorio start');
+        } catch (e) {
+          return message.channel.send(`server restore: start error: ${e}`).then(message.delete, { timeout: 5000 });
+        }
+        
         return message.channel.send(choiceEmbed);
       }
     }
