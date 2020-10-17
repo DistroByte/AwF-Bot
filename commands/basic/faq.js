@@ -1,7 +1,5 @@
 const { MessageEmbed } = require('discord.js');
 const { prefix } = require('../../botconfig.json');
-const { readdirSync } = require('fs');
-const { stripIndents } = require('common-tags');
 const { messages } = require('../../longMessages.js');
 
 module.exports = {
@@ -9,7 +7,7 @@ module.exports = {
     name: 'faq',
     aliases: ['f', 'faq'],
     usage: '(command)',
-    category: 'faq',
+    category: 'basic',
     description: 'This is a command for the Frequently Asked Questions (FAQ)',
     accessableby: 'Members',
   },

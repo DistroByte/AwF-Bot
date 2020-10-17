@@ -45,7 +45,7 @@ module.exports = {
             `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
             client.user.displayAvatarURL()
           )
-        let dir = '../servers/'+args[0]
+        let dir = '../servers/'+args[0]+'/saves'
         let dirData = fs.readdirSync(dir) // add in all file names that end with .zip
 
         //sort dirData by date last modified
@@ -66,10 +66,10 @@ module.exports = {
           if (dirData[i] && dirData[i].endsWith('.zip')) {
             let data = fs.statSync(dir+'/'+dirData[i])
             let date = new Date(data.birthtimeMs)
+            choiceEmbed.addField(`\`${dirData[i]}\``, `Save created on: ${date.toUTCString()}`);
           }
         }
 
-        choiceEmbed.addField(`\`${dirData[i]}\``, `Save created on: ${date.toUTCString()}`);
 
         return message.channel.send(choiceEmbed)
       }
