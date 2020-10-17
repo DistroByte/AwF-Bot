@@ -1,8 +1,8 @@
-const { sendToAll, bubbleSort } = require('../../functions')
+const { bubbleSort } = require('../../functions')
 const fs = require('fs')
 const { execSync } = require("child_process")
 const { absPath } = require('../../botconfig.json');
-const Discord = require('discord.js')
+const MessageEmbed = require('discord.js')
 
 module.exports = {
   config: {
@@ -17,7 +17,7 @@ module.exports = {
     let authRoles = message.member.roles.cache
     if (authRoles.some(r => r.name === 'Admin') || authRoles.some(r => r.name === 'Moderator') || authRoles.some(r => r.name === 'dev')) {
       if (!args[0]) { // no argument at all
-        let choiceEmbed = new Discord.MessageEmbed()
+        let choiceEmbed = new MessageEmbed()
           .setTitle('Server Rollback Choices')
           .setDescription('Choices of a Factorio Server Rollback. This shows **all** folders in the `servers` directory, some may not be Factorio server folders')
           .setColor('GREEN')
@@ -27,15 +27,15 @@ module.exports = {
             `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
             client.user.displayAvatarURL()
           )
-        let dirData = fs.readdirSync('../servers/')
+        let dirData = fs.readdirSync(absPath)
         dirData = bubbleSort(dirData);
         dirData.forEach(dir => {
-          if (fs.statSync('../servers/'+dir).isDirectory()) choiceEmbed.addField(`\`${dir}\``, '\u200B'); //check if it is a directory and if yes add it to the embed
+          if (fs.statSync(absPath+'/'+dir).isDirectory()) choiceEmbed.addField(`\`${dir}\``, '\u200B'); //check if it is a directory and if yes add it to the embed
         });
         return message.channel.send(choiceEmbed)
       }
       if (!args[1]) { // no second argument, only server name
-        let choiceEmbed = new Discord.MessageEmbed()
+        let choiceEmbed = new MessageEmbed()
           .setTitle('Server Rollback Choices')
           .setDescription('Choices of a Factorio Server Rollback. This shows **all** .zip files, some may not be Factorio saves')
           .setColor('GREEN')
@@ -45,21 +45,11 @@ module.exports = {
             `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
             client.user.displayAvatarURL()
           )
-        let dir = '../servers/'+args[0]
+        let dir = absPath+'/'+args[0]
         let dirData = fs.readdirSync(dir) // add in all file names that end with .zip
 
         //sort dirData by date last modified
-        dirData = dirData.map(function (fileName) {
-            return {
-              name: fileName,
-              time: fs.statSync(dir + '/' + fileName).mtime.getTime()
-            };
-          })
-          .sort(function (a, b) {
-            return a.time - b.time; })
-          .map(function (v) {
-            return v.name; });
-
+        dirData = sortDir(dirData, dir);
 
         for (let i = 0; i < 25; i++) { // max number of fields in a Discord Embed is 25
           if (!dirData[i]) break;
@@ -74,7 +64,7 @@ module.exports = {
         return message.channel.send(choiceEmbed)
       }
       if (args[0] && args[1]) { // both server name and save name are provided
-        let choiceEmbed = new Discord.MessageEmbed()
+        let choiceEmbed = new MessageEmbed()
           .setTitle('Server Rollback')
           .setDescription('Server restore success.')
           .setColor('GREEN')
@@ -85,22 +75,22 @@ module.exports = {
             client.user.displayAvatarURL()
           )
           .addField(`Rolling back server \`${args[0]}\` to save \`${args[1]}\``, '\u200B');
-        try {
+        try { // see if priviliges are ok
           execSync('test -w /');
         } catch (e) {
           return message.channel.send(`Insufficient permissions. Error: ${e}`).then(message.delete, { timeout: 5000 });
         }
-        try {
+        try { // stop the server
           execSync(absPath + '/' + args[0] + '/factorio-init/factorio stop');
         } catch (e) {
           return message.channel.send(`server restore: stop error: ${e}`).then(message.delete, {timeout: 5000});
         }
-        try {
+        try { // load a different server
           execSync(absPath + '/' + args[0] + '/factorio-init/factorio load-save ' + args[1]);
         } catch (e) {
           return message.channel.send(`server restore: load error: ${e}`).then(message.delete, { timeout: 5000 });
         }
-        try {
+        try { // start the server back up
           execSync(absPath + '/' + args[0] + '/factorio-init/factorio start');
         } catch (e) {
           return message.channel.send(`server restore: start error: ${e}`).then(message.delete, { timeout: 5000 });
