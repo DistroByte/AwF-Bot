@@ -49,18 +49,7 @@ module.exports = {
         let dirData = fs.readdirSync(dir) // add in all file names that end with .zip
 
         //sort dirData by date last modified
-        dirData = dirData.map(function (fileName) {
-          return {
-            name: fileName,
-            time: fs.statSync(dir + '/' + fileName).mtime.getTime()
-          };
-        })
-          .sort(function (a, b) {
-            return a.time - b.time;
-          })
-          .map(function (v) {
-            return v.name;
-          });
+        dirData = modifiedSort(dirData, dir);
 
 
         for (let i = 0; i < 25; i++) { // max number of fields in a Discord Embed is 25

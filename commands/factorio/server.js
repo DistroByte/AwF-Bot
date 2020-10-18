@@ -16,7 +16,7 @@ module.exports = {
         if (authRoles.some(r => r.name === 'Admin') || authRoles.some(r => r.name === 'Moderator') || authRoles.some(r => r.name === 'dev')) {
             try {
                 console.log('attempt');
-                let a = child.exec(`/opt/factorio/servers/test/factorio-init/factorio start`);
+                let a = child.exec(`${absPath}/test/factorio-init/factorio start`);
             } catch (e) {
                 return console.log(e);
             }

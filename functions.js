@@ -248,5 +248,20 @@ module.exports = {
       }
     }
     return arr;
+  },
+  modifiedSort: function (data, dir) {
+    data.map(function (fileName) {
+      return {
+        name: fileName,
+        time: fs.statSync(dir + '/' + fileName).mtime.getTime()
+      };
+    })
+    .sort(function (a, b) {
+      return a.time - b.time;
+    })
+    .map(function (v) {
+      return v.name;
+    });
+    return data;
   }
 }
