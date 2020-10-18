@@ -1,6 +1,6 @@
-const { sendToAll, bubbleSort } = require('../../functions')
+const { bubbleSort } = require('../../functions')
 const fs = require('fs')
-const { execSync } = require("child_process").execSync
+const { exec } = require("child_process")
 const { absPath } = require('../../botconfig.json');
 const Discord = require('discord.js')
 
@@ -30,7 +30,7 @@ module.exports = {
         let dirData = fs.readdirSync('../servers/')
         dirData = bubbleSort(dirData);
         dirData.forEach(dir => {
-          if (fs.statSync('../servers/'+dir).isDirectory()) choiceEmbed.addField(`\`${dir}\``, '\u200B'); //check if it is a directory and if yes add it to the embed
+          if (fs.statSync('../servers/' + dir).isDirectory()) choiceEmbed.addField(`\`${dir}\``, '\u200B'); //check if it is a directory and if yes add it to the embed
         });
         return message.channel.send(choiceEmbed)
       }
@@ -45,26 +45,28 @@ module.exports = {
             `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
             client.user.displayAvatarURL()
           )
-        let dir = '../servers/'+args[0]+'/saves'
+        let dir = '../servers/' + args[0] + '/saves'
         let dirData = fs.readdirSync(dir) // add in all file names that end with .zip
 
         //sort dirData by date last modified
         dirData = dirData.map(function (fileName) {
-            return {
-              name: fileName,
-              time: fs.statSync(dir + '/' + fileName).mtime.getTime()
-            };
-          })
+          return {
+            name: fileName,
+            time: fs.statSync(dir + '/' + fileName).mtime.getTime()
+          };
+        })
           .sort(function (a, b) {
-            return a.time - b.time; })
+            return a.time - b.time;
+          })
           .map(function (v) {
-            return v.name; });
+            return v.name;
+          });
 
 
         for (let i = 0; i < 25; i++) { // max number of fields in a Discord Embed is 25
           if (!dirData[i]) break;
           if (dirData[i] && dirData[i].endsWith('.zip')) {
-            let data = fs.statSync(dir+'/'+dirData[i])
+            let data = fs.statSync(dir + '/' + dirData[i])
             let date = new Date(data.birthtimeMs)
             choiceEmbed.addField(`\`${dirData[i]}\``, `Save created on: ${date.toUTCString()}`);
           }
@@ -84,31 +86,45 @@ module.exports = {
             `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
             client.user.displayAvatarURL()
           )
-          .addField(`Rolling back server \`${args[0]}\` to save \`${args[1]}\``, '\u200B');
-          function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-          }
+          .addField(`Rolled back server \`${args[0]}\` to save \`${args[1]}\``, '\u200B');
 
-          try { // see if priviliges are ok
-            execSync('test -w .');
-          } catch (e) {
-            return message.channel.send(`Insufficient permissions. Error: ${e}`);
-          }
-          try { // stop the server
-            execSync(absPath + '/' + args[0] + '/factorio-init/factorio stop');
-          } catch (e) {
-            return message.channel.send(`server restore: stop error: ${e}`);
-          }
-          try { // load a different server
-            execSync(absPath + '/' + args[0] + '/factorio-init/factorio load-save ' + args[1]);
-          } catch (e) {
-            return message.channel.send(`server restore: load error: ${e}`);
-          }
-          try { // start the server back up
-            execSync(absPath + '/' + args[0] + '/factorio-init/factorio start');
-          } catch (e) {
-            return message.channel.send(`server restore: start error: ${e}`);
-          }
+        try { // see if priviliges are ok
+          await exec('test -w .');
+        } catch (e) {
+          console.log(`Insufficient permissions. Error: ${e}`);
+          return message.channel.send(`Insufficient permissions. Error: ${e}`);
+        }
+        try { // stop the server
+          let out = await exec(absPath + '/' + args[0] + '/factorio-init/factorio stop');
+          if (out.stdout) console.log(out.stdout.toString());
+        } catch (e) {
+          console.log(`server restore: stop error: ${e}`);
+          return message.channel.send(`server restore: stop error: ${e}`);
+        } finally {
+          console.log('stopped correctly');
+        }
+
+        try { // load a different server
+          let out = await exec(absPath + '/' + args[0] + '/factorio-init/factorio load-save ' + args[1]);
+          if (out.stdout) console.log(out.stdout.toString());
+        } catch (e) {
+          console.log(`server restore: load error: ${e}`);
+          return message.channel.send(`server restore: load error: ${e}`);
+        } finally {
+          console.log('loaded correctly');
+        }
+
+        try { // start the server back up
+          console.log('attempting')
+          let out = await exec(absPath + '/' + args[0] + '/factorio-init/factorio start');
+          if (out.stdout) console.log(out.stdout.toString());
+          console.log(absPath + '/' + args[0] + '/factorio-init/factorio start');
+          console.log('attempted')
+        } catch (e) {
+          return message.channel.send(`server restore: start error: ${e}`);
+        } finally {
+          console.log('started correctly');
+        }
         return message.channel.send(choiceEmbed);
       }
     }
