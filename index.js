@@ -13,7 +13,6 @@ const redbrickTail = new Tail('../servers/redbrick/server.out');
 
 const client = new Client();
 
-
 client.prefix = prefix;
 
 ["commands", "aliases"].forEach(x => client[x] = new Collection());
