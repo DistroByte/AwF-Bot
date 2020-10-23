@@ -1,5 +1,5 @@
 const { bubbleSort, modifiedSort } = require('../../functions')
-const fs = require('fs')
+const fs = require('fs');
 const { exec } = require("child_process")
 const { absPath } = require('../../botconfig.json');
 const Discord = require('discord.js')

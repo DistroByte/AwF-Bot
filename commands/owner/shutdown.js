@@ -7,7 +7,7 @@ module.exports = {
     usage: '',
     category: 'owner',
     accessableby: 'owner',
-    aliases: ['botstop'],
+    aliases: ['botstop', 'restart'],
   },
   run: async (client, message, args) => {
     if (message.author.id != ownerid)
