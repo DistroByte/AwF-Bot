@@ -249,18 +249,24 @@ module.exports = {
     }
     return arr;
   },
-  modifiedSort: function (data, dir) {
-    data.map((fileName) => ({
-        name: fileName,
-        time: fs.statSync(dir + '/' + fileName).mtime.getTime()
-      }))
-      .sort((a, b) => {
-        return b.time - a.time;
-      })
-      .map((v) => {
-        return v.name;
+  sortModifiedDate: async function(dir) {
+    return new Promise((resolve, reject) => {
+      fs.readdir(dir, function (err, files) {
+        if (err) reject(err);
+        files = files.map(function (fileName) {
+          return {
+            name: fileName,
+            time: fs.statSync(dir + '/' + fileName).mtime.getTime()
+          };
+        })
+          .sort(function (a, b) {
+            return b.time - a.time;
+          })
+          .map(function (v) {
+            return v.name;
+          });
+        resolve(files);
       });
-    console.log(data)
-    return data;
+    })
   }
 }
