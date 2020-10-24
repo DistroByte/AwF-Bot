@@ -250,18 +250,17 @@ module.exports = {
     return arr;
   },
   modifiedSort: function (data, dir) {
-    data.map(function (fileName) {
-      return {
+    data.map((fileName) => ({
         name: fileName,
         time: fs.statSync(dir + '/' + fileName).mtime.getTime()
-      };
-    })
-    .sort(function (a, b) {
-      return a.time - b.time;
-    })
-    .map(function (v) {
-      return v.name;
-    });
+      }))
+      .sort((a, b) => {
+        return b.time - a.time;
+      })
+      .map((v) => {
+        return v.name;
+      });
+    console.log(data)
     return data;
   }
 }

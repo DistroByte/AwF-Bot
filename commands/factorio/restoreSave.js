@@ -75,44 +75,29 @@ module.exports = {
             `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
             client.user.displayAvatarURL()
           )
-          .addField(`Rolled back server \`${args[0]}\` to save \`${args[1]}\``, '\u200B');
+          .addField(`Rolled back server \`${args[0]}\` to save \`${args[1]}\``, 'You may need to start the server with a separate command');
 
         try { // see if priviliges are ok
           await exec('test -w .');
         } catch (e) {
-          console.log(`Insufficient permissions. Error: ${e}`);
           return message.channel.send(`Insufficient permissions. Error: ${e}`);
         }
         try { // stop the server
           let out = await exec(absPath + '/' + args[0] + '/factorio-init/factorio stop');
-          if (out.stdout) console.log(out.stdout.toString());
         } catch (e) {
-          console.log(`server restore: stop error: ${e}`);
           return message.channel.send(`server restore: stop error: ${e}`);
-        } finally {
-          console.log('stopped correctly');
         }
 
         try { // load a different server
           let out = await exec(absPath + '/' + args[0] + '/factorio-init/factorio load-save ' + args[1]);
-          if (out.stdout) console.log(out.stdout.toString());
         } catch (e) {
-          console.log(`server restore: load error: ${e}`);
           return message.channel.send(`server restore: load error: ${e}`);
-        } finally {
-          console.log('loaded correctly');
         }
 
         try { // start the server back up
-          console.log('attempting')
           let out = await exec(absPath + '/' + args[0] + '/factorio-init/factorio start');
-          if (out.stdout) console.log(out.stdout.toString());
-          console.log(absPath + '/' + args[0] + '/factorio-init/factorio start');
-          console.log('attempted')
         } catch (e) {
           return message.channel.send(`server restore: start error: ${e}`);
-        } finally {
-          console.log('started correctly');
         }
         return message.channel.send(choiceEmbed);
       }
