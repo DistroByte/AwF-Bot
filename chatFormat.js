@@ -25,7 +25,7 @@ module.exports = function chatFormat(line, channel, client) {
   else if (line.includes('JLOGGER:')) {
     line = line.slice((line.indexOf('JLOGGER:') + 'JLOGGER:'.length + 1))
     let result = functions.parseJammyLogger(line, client.channels.cache.get(channel));  //sends the channel object
-    if (typeof (result) === 'object') { //if result is an array, js doesn't differentiate betwee objects and arrays when using typeOf()
+    if (typeof(result) === 'object') { //if result is an array, js doesn't differentiate betwee objects and arrays when using typeOf()
       if (result[0] === 'ban')
         return client.channels.cache.get(channel).send(`Command worked, player \`${result[1]}\` has been banned for reason \`${result[2]}\``);
       if (result[0] === 'unban')
