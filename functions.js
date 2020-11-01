@@ -23,9 +23,12 @@ module.exports = {
     if (data.includes('[CHAT]') || data.includes('(shout)')) {
       data = data.slice((data.indexOf(']') + 2)); //removing the [CHAT] from sending to Discord
       if (data.includes('[')) {
-        //These all are for Factorio rich text magic, in order of https://wiki.factorio.com/Rich_text
-        //for now, the discord will show [image], [item], [gps] but that can be removed completely by just
-        //replacing the second phrase in the .replace with an empty string, i.e. ''
+        if (data.replace(/(.*:)\s*\[.*=.*\]\s*/g, '') == '') {
+          return ''; // if it is only the [] and whitespaces, nothing else
+        }
+        // These all are for Factorio rich text magic, in order of https://wiki.factorio.com/Rich_text
+        // for now, the discord will show [image], [item], [gps] but that can be removed completely by just
+        // replacing the second phrase in the .replace with an empty string, i.e. ''
         if (data.includes('[img=')) return data.replace(/\[img=.*\]/g, '[image]');
         if (data.includes('[item=')) return data.replace(/\[item=.*\]/g, '[item]');
         if (data.includes('[entity=')) return data.replace(/\[entity=.*\]/g, '[entity]');
@@ -43,7 +46,7 @@ module.exports = {
         if (data.includes('[train-stop=')) return data.replace(/\[train-stop.*\]/g, '[train stop]');
       }
       return data
-    } else {
+      } else {
       return `**${data.slice((data.indexOf(']') + 2))}**`
     }
   },
@@ -249,19 +252,24 @@ module.exports = {
     }
     return arr;
   },
-  modifiedSort: function (data, dir) {
-    data.map(function (fileName) {
-      return {
-        name: fileName,
-        time: fs.statSync(dir + '/' + fileName).mtime.getTime()
-      };
+  sortModifiedDate: async function(dir) {
+    return new Promise((resolve, reject) => {
+      fs.readdir(dir, function (err, files) {
+        if (err) reject(err);
+        files = files.map(function (fileName) {
+          return {
+            name: fileName,
+            time: fs.statSync(dir + '/' + fileName).mtime.getTime()
+          };
+        })
+          .sort(function (a, b) {
+            return b.time - a.time;
+          })
+          .map(function (v) {
+            return v.name;
+          });
+        resolve(files);
+      });
     })
-    .sort(function (a, b) {
-      return a.time - b.time;
-    })
-    .map(function (v) {
-      return v.name;
-    });
-    return data;
   }
 }

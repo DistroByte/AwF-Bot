@@ -17,7 +17,11 @@ module.exports = function chatFormat(line, channel, client) {
   }
   else if (line.includes('[JOIN]') || line.includes('[LEAVE]') || line.includes('[CHAT]')) {
     if (line.includes('[CHAT]')) {
-      return client.channels.cache.get(channel).send(`<Game Chat> ${functions.formatChatData(line)}`);
+      line = functions.formatChatData(line);
+      if (line != '') //see the last regex in formatChatData, tests if the line is only whitespaces and things such as [gps]
+        return client.channels.cache.get(channel).send(`<Game Chat> ${line}`);
+      else
+        return
     } else {
       return client.channels.cache.get(channel).send(`**${functions.formatChatData(line)}**`);
     }

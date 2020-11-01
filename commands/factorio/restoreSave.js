@@ -1,4 +1,4 @@
-const { bubbleSort, modifiedSort } = require('../../functions')
+const { bubbleSort, sortModifiedDate } = require('../../functions')
 const fs = require('fs');
 const { exec } = require("child_process")
 const { absPath } = require('../../botconfig.json');
@@ -37,7 +37,7 @@ module.exports = {
       if (!args[1]) { // no second argument, only server name
         let choiceEmbed = new Discord.MessageEmbed()
           .setTitle('Server Rollback Choices')
-          .setDescription('Choices of a Factorio Server Rollback. This shows **all** .zip files, some may not be Factorio saves')
+          .setDescription('Choices of a Factorio Server Rollback. This shows **all** .zip files, some may not be Factorio saves. **Most are sorted by date last modified, check the date in the field below the save name**')
           .setColor('GREEN')
           .setAuthor(`${message.guild.me.displayName} Help`, message.guild.iconURL)
           .setThumbnail(client.user.displayAvatarURL())
@@ -46,10 +46,9 @@ module.exports = {
             client.user.displayAvatarURL()
           )
         let dir = '../servers/' + args[0] + '/saves'
-        let dirData = fs.readdirSync(dir) // add in all file names that end with .zip
 
-        //sort dirData by date last modified
-        dirData = modifiedSort(dirData, dir);
+        // find all files in $dir and sort them by date modified
+        dirData = await sortModifiedDate(dir).catch((err) => { console.log(err) });
 
 
         for (let i = 0; i < 25; i++) { // max number of fields in a Discord Embed is 25
@@ -57,7 +56,7 @@ module.exports = {
           if (dirData[i] && dirData[i].endsWith('.zip')) {
             let data = fs.statSync(dir + '/' + dirData[i])
             let date = new Date(data.birthtimeMs)
-            choiceEmbed.addField(`\`${dirData[i]}\``, `Save created on: ${date.toUTCString()}`);
+            choiceEmbed.addField(`\`${dirData[i].split('.')[0]}\``, `Save created on: ${date.toUTCString()}`);
           }
         }
 
@@ -75,44 +74,29 @@ module.exports = {
             `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
             client.user.displayAvatarURL()
           )
-          .addField(`Rolled back server \`${args[0]}\` to save \`${args[1]}\``, '\u200B');
+          .addField(`Rolled back server \`${args[0]}\` to save \`${args[1]}\``, 'You may need to start the server with a separate command');
 
         try { // see if priviliges are ok
           await exec('test -w .');
         } catch (e) {
-          console.log(`Insufficient permissions. Error: ${e}`);
           return message.channel.send(`Insufficient permissions. Error: ${e}`);
         }
         try { // stop the server
           let out = await exec(absPath + '/' + args[0] + '/factorio-init/factorio stop');
-          if (out.stdout) console.log(out.stdout.toString());
         } catch (e) {
-          console.log(`server restore: stop error: ${e}`);
           return message.channel.send(`server restore: stop error: ${e}`);
-        } finally {
-          console.log('stopped correctly');
         }
 
         try { // load a different server
           let out = await exec(absPath + '/' + args[0] + '/factorio-init/factorio load-save ' + args[1]);
-          if (out.stdout) console.log(out.stdout.toString());
         } catch (e) {
-          console.log(`server restore: load error: ${e}`);
           return message.channel.send(`server restore: load error: ${e}`);
-        } finally {
-          console.log('loaded correctly');
         }
 
         try { // start the server back up
-          console.log('attempting')
           let out = await exec(absPath + '/' + args[0] + '/factorio-init/factorio start');
-          if (out.stdout) console.log(out.stdout.toString());
-          console.log(absPath + '/' + args[0] + '/factorio-init/factorio start');
-          console.log('attempted')
         } catch (e) {
           return message.channel.send(`server restore: start error: ${e}`);
-        } finally {
-          console.log('started correctly');
         }
         return message.channel.send(choiceEmbed);
       }
