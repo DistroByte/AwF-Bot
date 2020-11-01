@@ -207,6 +207,7 @@ async function addDeath (server, player, reason) {
     return;
   } else {
     var replaceWith = lodash.cloneDeep(res); // duplicate the object
+    console.log(reason);
     if (replaceWith.deaths[reason])
       replaceWith.deaths[reason]++;
     else
