@@ -1,5 +1,6 @@
 const FIFO = require('fifo-js');
 const fs = require('fs');
+const { replace } = require('lodash');
 const MongoClient = require('mongodb').MongoClient;
 const lodash = require('lodash');
 
@@ -192,7 +193,7 @@ async function findOneAndReplaceDB(dat, coll, param1, param2) {
 }
 
 async function addDeath (server, player, reason) {
-  var res = await searchOneDB("servers", server, { player: `${player}` });
+  var res = await searchOneDB(server, "deaths", { player: `${player}` });
   //TODO: somehow find out how the object could be retrieved+written into
   if (res == null) { // if the player wasn't found in the server's database
     var writeObj = {
@@ -201,50 +202,77 @@ async function addDeath (server, player, reason) {
         [reason]: 1,
       }
     }
-    var out = await insertOneDB("servers", server, writeObj);
+    var out = await insertOneDB(server, "deaths", writeObj);
     if (out.result.ok !== 1) console.log('error adding to database');
-    else console.log('added to database');
     return;
   } else {
     var replaceWith = lodash.cloneDeep(res); // duplicate the object
-    console.log(reason);
     if (replaceWith.deaths[reason])
       replaceWith.deaths[reason]++;
     else
       replaceWith.deaths[reason] = 1;
-    console.log(res);
-    console.log(replaceWith);
-    var out = await findOneAndReplaceDB("servers", server, res, replaceWith);
-    if (typeof(out) == "object") {
-      if (out.ok !== 1) console.log('error adding to database');
-      else console.log('added to database');
-    } else {
-      console.log(out);
-    }
-    
+    var out = await findOneAndReplaceDB(server, "deaths", res, replaceWith);
     return;
-    
   }
   //TODO: add when the player already exists
   return 0;
 }
-function rocketLaunched (data, server) {
-  data.servers[server].rocketLaunches++;
-  return data;
+async function addRocket (server) {
+  var res = await searchOneDB(server, "stats", { rocketLaunches: { $exists: true } });
+  if (res == null) { // if the server wasn't found in the server's database
+    var writeObj = {
+      rocketLaunches: 1
+    }
+    var out = await insertOneDB(server, "stats", writeObj);
+    if (out.result.ok !== 1) console.log('error adding to database');
+    return 1;
+  } else {
+    var replaceWith = await lodash.cloneDeep(res); // duplicate the object
+    if (replaceWith.rocketLaunches)
+      replaceWith.rocketLaunches++;
+    else
+      replaceWith.rocketLaunches = 1;
+    var out = await findOneAndReplaceDB(server, "stats", res, replaceWith);
+    if (typeof (out) == "object") {
+      if (out.ok !== 1) console.log('error adding to database');
+    } else {
+      console.log(out);
+    }
+    return replaceWith.rocketLaunches;
+  }
 }
-function addResearch (data, server, researched, level) {
-  if (data.servers[server].research[researched] === undefined)
-    data.servers[server].research[researched] = 0;
-  data.servers[server].research[researched]++;
-  return data;
+async function addResearch (server, research, level) {
+  var res = await searchOneDB(server, "stats", { research: 'researchData' });
+  if (res == null) { // if the server's research wasn't found in the server's database (first research)
+    var writeObj = {
+      research: 'researchData',
+      completedResearch: {
+        [research]: level
+      }
+    }
+    var out = await insertOneDB(server, "stats", writeObj);
+    if (out.result.ok !== 1) console.log('error adding to database');
+    return;
+  } else {
+    var replaceWith = lodash.cloneDeep(res); // duplicate the object
+    if (res.completedResearch[research] <= 1)
+      replaceWith.completedResearch[research]++;
+    else
+      replaceWith.completedResearch[research] = level;
+    var out = await findOneAndReplaceDB(server, "stats", res, replaceWith);
+    if (typeof (out) == "object") {
+      if (out.ok !== 1) console.log('error adding to database');
+    } else {
+      console.log(out);
+    }
+  }
+  return;
 }
 function parseJammyLogger (line, channel) { //channel is an object
-  //this long asf function parses JammyLogger lines in the console and does magic stuff
-  //for now as this doesnt work yet
-  console.log('parseJLogger:', line, channel.name)
+  //this long asf function parses JammyLogger lines in the console and handles basic statistics
   if (line.includes('JFEEDBACK: ')) { //if line is feedback for a JammyBot command to Discord
     if (line.includes('JFEEDBACK: BAN: ')) {
-      line = line.splice('JFEEDBACK: BAN: '.length);
+      line = line.slice('JFEEDBACK: BAN: '.length);
       line = line.split(' ');
       //somehow pass to index.js that command has worked and player $line[0] has been banned for reason $line[1]
       //return `Player ${line[0]} has been banned for reason ${line[1]}`
@@ -253,14 +281,14 @@ function parseJammyLogger (line, channel) { //channel is an object
 
     }
     else if (line.includes('JFEEDBACK: UNBAN: ')) {
-      line = line.splice('JFEEDBACK: UNBAN: '.length);
+      line = line.slice('JFEEDBACK: UNBAN: '.length);
       //somehow pass to index.js that command has worked and player $line[0] has been unbanned
       //return `Player ${line} has been unbanned`
       let result = ['unban', line];
       return result
     }
     else if (line.includes('JFEEDBACK: KICK: ')) {
-      line = line.splice('JFEEDBACK: KICK: '.length);
+      line = line.slice('JFEEDBACK: KICK: '.length);
       line = line.split(' ');
       //somehow pass to index.js that command has worked and player $line[0] has been kicked for reason $line[1]
       //return `Player ${line[0]} has been kicked for reason ${line[1]}`
@@ -268,14 +296,14 @@ function parseJammyLogger (line, channel) { //channel is an object
       return result;
     }
     else if (line.includes('JFEEDBACK: MUTE: ')) {
-      line = line.splice('JFEEDBACK: MUTE: ');
+      line = line.slice('JFEEDBACK: MUTE: ');
       //somehow pass to index.js that command worked and player $line has been muted
       //return `Player ${line} has been muted`
       let result = ['mute', line];
       return result;
     }
     else if (line.includes('JFEEDBACK: UNMUTE: ')) {
-      line = line.splice('JFEEDBACK: UNMUTE: ');
+      line = line.slice('JFEEDBACK: UNMUTE: ');
       //somehow pass to index.js that command worked and player $line has been unmuted
       //return `Player ${line} has been unmuted`
       let result = ['unmute', line];
@@ -285,19 +313,24 @@ function parseJammyLogger (line, channel) { //channel is an object
     if (line.includes('DIED: ')) {
       line = line.slice('DIED: '.length);
       line = line.split(' '); //split at separation between username and death reson
-      //write into data.json, server $channel, players that player $player died because of $reason
-      console.log('parseJammyLogger:', channel.name, line[0], line[1])
       addDeath(channel.name, line[0], line[1]);
+      channel.send(`Player \`${line[0]}\` died due to \`${line[1]}\``);
     }
-    else if (line.includes('ROCKET: '))
-      rocketLaunched(data, channel.name);
+    else if (line.includes('ROCKET: ')) {
+      addRocket(channel.name).then((count) => {
+        if(count == 1)
+          channel.send("Hooray! This server's first rocket has been sent!");
+        if (count % 100 == 0)
+          channel.send(`${count} rockets have been sent!`);
+      })
+        .catch((err) => {console.log(err)});
+      
+    }
     else if (line.includes('RESEARCH FINISHED: ')) {
-      line = line.splice('RESEARCH FINISHED: '.length);
+      line = line.slice('RESEARCH FINISHED: '.length);
       line = line.split(' ');
-      if (line[1] != 0) { // if research is infinite
-        //write into data.json, server $channel, research that $line[0] level $line[1] has been researched
-        addResearch(data, channel.name, line[0], line[1]);
-      }
+      addResearch(channel.name, line[0], line[1]);
+      channel.send(`Research \`${line[0]}\` on level \`${line[1]}\` was completed!`);
     }
     return 0;
   }
