@@ -6,11 +6,9 @@ const lodash = require('lodash');
 
 const coreFifo = new FIFO('../servers/members-core/server.fifo');
 const coronaFifo = new FIFO('../servers/corona-daycare/server.fifo');
-const seablockFifo = new FIFO('../servers/members-seablock/server.fifo');
 const testFifo = new FIFO('../servers/test/server.fifo');
-const krastorioFifo = new FIFO('../servers/members-krastorio2/server.fifo');
-const bobangelsFifo = new FIFO('../servers/members-bobs-angels/server.fifo');
 const redbrickFifo = new FIFO('../servers/redbrick/server.fifo');
+const sevanillaFifo = new FIFO('../servers/members-se-vanilla/server.fifo');
 
 const { uri } = require('./botconfig.json');
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -52,7 +50,7 @@ module.exports = {
         if (data.includes('[train-stop=')) return data.replace(/\[train-stop.*\]/g, '[train stop]');
       }
       return data
-      } else {
+    } else {
       return `**${data.slice((data.indexOf(']') + 2))}**`
     }
   },
@@ -66,20 +64,16 @@ module.exports = {
     if (sendWithUsername) { // $sendWithUsername is true, therefore the message is sent with the username
       coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
       coronaFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      seablockFifo.write(`${message.author.username}: ${message.content}`, () => { });
       testFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      krastorioFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      bobangelsFifo.write(`${message.author.username}: ${message.content}`, () => { });
       redbrickFifo.write(`${message.author.username}: ${message.content}`, () => { });
+      sevanillaFifo.write(`${message.author.username}: ${message.content}`, () => { });
     } else { // sends just the message, no username, nothing because $sendWithUsername is false
       let toSend = message.content || message
       coreFifo.write(`${toSend}`, () => { });
       coronaFifo.write(`${toSend}`, () => { });
-      seablockFifo.write(`${toSend}`, () => { });
       testFifo.write(`${toSend}`, () => { });
-      krastorioFifo.write(`${toSend}`, () => { });
-      bobangelsFifo.write(`${toSend}`, () => { });
       redbrickFifo.write(`${toSend}`, () => { });
+      sevanillaFifo.write(`${toSend}`, () => { });
     }
   },
   sendToServer: function (message, sendWithUsername) {
@@ -91,30 +85,21 @@ module.exports = {
       if (message.channel.id === '718056299501191189') {
         coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
       }
-      if (message.channel.id === '718056423153598545') {
-        seablockFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
       if (message.channel.id === '723280139982471247') {
         testFifo.write(`${message.author.username}: ${message.content}`, () => { });
       }
       if (message.channel.id === '724696348871622818') {
         coronaFifo.write(`${message.author.username}: ${message.content}`, () => { });
       }
-      if (message.channel.id === '745947531875319900') {
-        krastorioFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-      if (message.channel.id === '750760237610303559') {
-        bobangelsFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
       if (message.channel.id === '764651709632348162') {
         redbrickFifo.write(`${message.author.username}: ${message.content}`, () => { });
+      }
+      if (message.channel.id === '772057588317552640') {
+        sevanillaFifo.write(`${message.author.username}: ${message.content}`, () => { })
       }
     } else { //sends just the message, no username, nothing as $sendWithUsername is false
       if (message.channel.id === '718056299501191189') {
         coreFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '718056423153598545') {
-        seablockFifo.write(`${message.content}`, () => { });
       }
       if (message.channel.id === '723280139982471247') {
         testFifo.write(`${message.content}`, () => { });
@@ -122,33 +107,30 @@ module.exports = {
       if (message.channel.id === '724696348871622818') {
         coronaFifo.write(`${message.content}`, () => { });
       }
-      if (message.channel.id === '745947531875319900') {
-        krastorioFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '750760237610303559') {
-        bobangelsFifo.write(`${message.content}`, () => { });
-      }
       if (message.channel.id === '764651709632348162') {
         redbrickFifo.write(`${message.content}`, () => { });
+      }
+      if (message.channel.id === '772057588317552640') {
+        sevanillaFifo.write(`${message.content}`, () => { })
       }
     }
   },
   bubbleSort: function (arr) {
     var len = arr.length;
 
-    for (var i = 0; i < len ; i++) {
-      for(var j = 0 ; j < len - i - 1; j++){
+    for (var i = 0; i < len; i++) {
+      for (var j = 0; j < len - i - 1; j++) {
         if (arr[j] > arr[j + 1]) {
           // swap
           var temp = arr[j];
-          arr[j] = arr[j+1];
+          arr[j] = arr[j + 1];
           arr[j + 1] = temp;
         }
       }
     }
     return arr;
   },
-  sortModifiedDate: async function(dir) {
+  sortModifiedDate: async function (dir) {
     return new Promise((resolve, reject) => {
       fs.readdir(dir, function (err, files) {
         if (err) reject(err);
@@ -195,7 +177,7 @@ async function findOneAndReplaceDB(dat, coll, param1, param2) {
   return collection.findOneAndReplace(param1, param2);
 }
 
-async function addDeath (server, player, reason) {
+async function addDeath(server, player, reason) {
   var res = await searchOneDB(server, "deaths", { player: `${player}` });
   //TODO: somehow find out how the object could be retrieved+written into
   if (res == null) { // if the player wasn't found in the server's database
@@ -220,7 +202,7 @@ async function addDeath (server, player, reason) {
   //TODO: add when the player already exists
   return 0;
 }
-async function addRocket (server) {
+async function addRocket(server) {
   var res = await searchOneDB(server, "stats", { rocketLaunches: { $exists: true } });
   if (res == null) { // if the server wasn't found in the server's database
     var writeObj = {
@@ -244,7 +226,7 @@ async function addRocket (server) {
     return replaceWith.rocketLaunches;
   }
 }
-async function addResearch (server, research, level) {
+async function addResearch(server, research, level) {
   var res = await searchOneDB(server, "stats", { research: 'researchData' });
   if (res == null) { // if the server's research wasn't found in the server's database (first research)
     var writeObj = {
@@ -271,7 +253,7 @@ async function addResearch (server, research, level) {
   }
   return;
 }
-function parseJammyLogger (line, channel) { //channel is an object
+function parseJammyLogger(line, channel) { //channel is an object
   //this long asf function parses JammyLogger lines in the console and handles basic statistics
   if (line.includes('JFEEDBACK: ')) { //if line is feedback for a JammyBot command to Discord
     if (line.includes('JFEEDBACK: BAN: ')) {
@@ -321,13 +303,13 @@ function parseJammyLogger (line, channel) { //channel is an object
     }
     else if (line.includes('ROCKET: ')) {
       addRocket(channel.name).then((count) => {
-        if(count == 1)
+        if (count == 1)
           channel.send("Hooray! This server's first rocket has been sent!");
         if (count % 100 == 0)
           channel.send(`${count} rockets have been sent!`);
       })
-        .catch((err) => {console.log(err)});
-      
+        .catch((err) => { console.log(err) });
+
     }
     else if (line.includes('RESEARCH FINISHED: ')) {
       line = line.slice('RESEARCH FINISHED: '.length);
