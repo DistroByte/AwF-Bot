@@ -43,9 +43,25 @@ module.exports = {
                 }
 
                 try { // stop the server
-                    exec(absPath + '/' + args[0] + '/factorio-init/factorio stop');
+                    //this wasn't finishing last time
+                    let res = await new Promise((resolve, reject) => {
+                        exec(`${absPath}/${args[0]}/factorio-init/factorio stop`, (error, stdout, stderr) => {
+                            if (error) {
+                                console.log(error.message)
+                                reject(['error', error.message]);
+                            }
+                            if (stderr) {
+                                console.log(stderr)
+                                reject(['stderr', stderr]);
+                            }
+                            console.log(stdout)
+                            resolve(stdout);
+                        });
+                    })
+                    console.log(res);
+                    message.channel.send(`out: ${res[0]}: ${res[1]}`);
                 } catch (e) {
-                    return message.channel.send(`server restore: stop error: ${e}`);
+                    return message.channel.send(`61 server stop error: ${e}`);
                 }
 
                 return message.channel.send('Server stop success')

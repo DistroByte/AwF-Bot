@@ -43,13 +43,13 @@ module.exports = {
                         `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
                         client.user.displayAvatarURL()
                     )
-                let rockets = await searchOneDB(message.channel.name, "stats", { rocketLaunches: { $exists: true } });
+                let rockets = await searchOneDB(args[0], "stats", { rocketLaunches: { $exists: true } });
                 if (rockets == null)
                     rockets = 0
                 else 
                     rockets = rockets.rocketLaunches
                 statsEmbed.addField('Rockets launched', rockets)
-                let research = await searchOneDB(message.channel.name, "stats", { completedResearch: { $exists: true } });
+                let research = await searchOneDB(args[0], "stats", { completedResearch: { $exists: true } });
                 research = research.completedResearch;
                 let maxLevelResearch = ["str", 0];
                 Object.keys(research).forEach(function (key) {
