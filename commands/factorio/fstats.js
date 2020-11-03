@@ -30,7 +30,7 @@ module.exports = {
             });
             return message.channel.send(choiceEmbed)
         }
-        if (!args[1]) { // if the server name is provided but no 2nd argument
+        if (!args[1]) { // if the server name is provided but no 2nd argument, searches for generic server data
             let statsEmbed = new Discord.MessageEmbed()
                 .setTitle(`Server Statistics of \`${args[0]}\``)
                 .setDescription(`Some statistics of the ${args[0]} Factorio server. Please check use to see other statistics`)
@@ -59,40 +59,12 @@ module.exports = {
             statsEmbed.addField('Highest level research', `\`${maxLevelResearch[0]}\` at level \`${maxLevelResearch[1]}\``)
             return message.channel.send(statsEmbed);
         }
-        if (!args[2]) { // if the server name AND options are provided
-            let statsEmbed = new Discord.MessageEmbed()
-                .setTitle(`Server Statistics of \`${args[0]}\``)
-                .setDescription(`Some statistics of the ${args[0]} Factorio server. Please check use to see other statistics`)
-                .setColor('GREEN')
-                .setAuthor(`${message.guild.me.displayName} Help`, message.guild.iconURL)
-                .setThumbnail(client.user.displayAvatarURL())
-                .setFooter(
-                    `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
-                    client.user.displayAvatarURL()
-                )
-            let rockets = await searchOneDB(args[0], "stats", { rocketLaunches: { $exists: true } });
-            if (rockets == null)
-                rockets = 0
-            else
-                rockets = rockets.rocketLaunches
-            statsEmbed.addField('Rockets launched', rockets)
-            let research = await searchOneDB(args[0], "stats", { completedResearch: { $exists: true } });
-            research = research.completedResearch;
-            let maxLevelResearch = ["str", 0];
-            Object.keys(research).forEach(function (key) {
-                if (parseInt(research[key]) > maxLevelResearch[1]) {
-                    maxLevelResearch[0] = key;
-                    maxLevelResearch[1] = parseInt(research[key]);
-                }
-            });
-            statsEmbed.addField('Highest level research', `\`${maxLevelResearch[0]}\` at level \`${maxLevelResearch[1]}\``)
-            return message.channel.send(statsEmbed);
-        }
-        if (!args[3]) {
-            if (!args[2]) return message.channel.send('Please supply with player name!');
-            let statsEmbed = new Discord.MessageEmbed()
-                .setTitle(`Server Statistics of \`${args[0]}\``)
-                .setDescription(`Some statistics of the ${args[0]} Factorio server. Please check use to see other statistics`)
+        if (!args[3]) { // if supplied with both the username of player & deaths
+            if (args[1] != "deaths") return message.channel.send('invalid parameter. please see help')
+            if (!args[2]) return message.channel.send('Please supply with player name to view deaths!');
+            let statsEmbed = new Discord.MessageEmbed() 
+                .setTitle(`Death Statistics of \`${args[2]}\` on server \`${args[0]}\``)
+                .setDescription(`The death statistics of player \`${args[2]}\` from server  \`${args[0]}\``)
                 .setColor('GREEN')
                 .setAuthor(`${message.guild.me.displayName} Help`, message.guild.iconURL)
                 .setThumbnail(client.user.displayAvatarURL())
@@ -101,6 +73,7 @@ module.exports = {
                     client.user.displayAvatarURL()
                 )
             let player = await searchOneDB(args[0], "deaths", { player: `${args[2]}` });
+            if (player == null) return message.channel.send(`Player \`${args[2]}\` not found on server \`${args[0]}\``)
             let maxDeaths = ["str", 0];
             Object.keys(player.deaths).forEach(function (key) {
                 if (parseInt(player.deaths[key]) > maxDeaths[1]) {
