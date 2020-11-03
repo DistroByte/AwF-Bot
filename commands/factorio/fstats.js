@@ -111,12 +111,21 @@ module.exports = {
             statsEmbed.addField('Highest amount of deaths', `\`${maxDeaths[1]}\` due to cause \`${maxDeaths[0]}\``)
             delete player.deaths[maxDeaths[0]]; //delete the already added maxDeaths from the rest of the deaths to prevent it being there twice
 
-            Object.keys(player.deaths).sort().reduce(function (result, key) {
-                result[key] = player.deaths[key];
-                return result;
-            }, {})
+            // to sort deaths by most deaths
+            var sortable = [];
+            for (var death in player.deaths) {
+                sortable.push([death, player.deaths[death]]);
+            }
+            sortable.sort(function (a, b) {
+                return b[1] - a[1];
+            });
+            player.deaths = undefined;
+            player.deaths = {}
+            sortable.forEach(function (item) {
+                player.deaths[item[0]] = item[1]
+            })
 
-            let i = 4
+            let i = 1
             for (var key of Object.keys(player.deaths)) {
                 if (i == 24) break; // discord embed limit of max fields, we already added one
                 statsEmbed.addField(`Death cause: \`${key}\``, `Number of deaths from cause: ${player.deaths[key]}`)
