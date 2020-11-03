@@ -1,11 +1,19 @@
 const FIFO = require('fifo-js');
 const fs = require('fs');
+const { replace } = require('lodash');
+const MongoClient = require('mongodb').MongoClient;
+const lodash = require('lodash');
 const servers = require('./servers.json'); // tails, fifo, discord IDs etc.
 
 let serverFifos = []
 Object.keys(servers).forEach(element => {
   serverFifos.push([new FIFO(servers[element].serverFifo), servers[element]]);
 })
+
+const { uri } = require('./botconfig.json');
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+const dBclientConnectionPromise = client.connect();
+
 
 module.exports = {
   formatVersion: function (data) {
@@ -43,7 +51,7 @@ module.exports = {
         if (data.includes('[train-stop=')) return data.replace(/\[train-stop.*\]/g, '[train stop]');
       }
       return data
-      } else {
+    } else {
       return `**${data.slice((data.indexOf(']') + 2))}**`
     }
   },
@@ -84,132 +92,22 @@ module.exports = {
       })
     }
   },
-  readJSON: function (file) {
-    fs.readFile(file, function (err, data) {
-      if (err) throw err;
-      var data = JSON.parse(data);  //the data is now an Object
-    });
-    return data;
-  },
-  writeJSON: function (data) {
-    fs.writeFile("serverData.json", JSON.stringify(data), err => {
-      if (err) throw err;
-    });
-  },
-  setupObject: function (data, server) {
-    if (data.servers === undefined)
-      data.servers = {};
-    if (data.servers[server] === undefined)
-      data.servers[server] = {};
-    if (data.servers[server].players === undefined)
-      data.servers[server].players = {};
-    if (data.servers[server].rocketLaunches === undefined)
-      data.servers[server].rocketLaunches = 0;
-    if (data.servers[server].research === undefined)
-      data.servers[server].research = {};
-    return data
-  },
-  addDeath: function (data, server, player, reason) {
-    if (data.servers[server].players[player] === undefined)
-      data.servers[server].players[player] = {};
-    if (data.servers[server].players[player][reason] === undefined)
-      data.servers[server].players[player][reason] = 0;
-    data.servers[server].players[player][reason]++; //adds to the reason
-    return data;
-  },
-  rocketLaunched: function (data, server) {
-    data.servers[server].rocketLaunches++;
-    return data;
-  },
-  addResearch: function (data, server, researched, level) {
-    if (data.servers[server].research[researched] === undefined)
-      data.servers[server].research[researched] = 0;
-    data.servers[server].research[researched]++;
-    return data;
-  },
-  parseJammyLogger: function (line, channel) { //channel is an object
-    //this long asf function parses JammyLogger lines in the console and does magic stuff
-    //for now as this doesnt work yet
-    if (line.includes('JFEEDBACK: ')) { //if line is feedback for a JammyBot command to Discord
-      if (line.includes('JFEEDBACK: BAN: ')) {
-        line = line.splice('JFEEDBACK: BAN: '.length);
-        line = line.split(' ');
-        //somehow pass to index.js that command has worked and player $line[0] has been banned for reason $line[1]
-        //return `Player ${line[0]} has been banned for reason ${line[1]}`
-        let result = ['ban', line[0], line[1]];
-        return result
-
-      }
-      else if (line.includes('JFEEDBACK: UNBAN: ')) {
-        line = line.splice('JFEEDBACK: UNBAN: '.length);
-        //somehow pass to index.js that command has worked and player $line[0] has been unbanned
-        //return `Player ${line} has been unbanned`
-        let result = ['unban', line];
-        return result
-      }
-      else if (line.includes('JFEEDBACK: KICK: ')) {
-        line = line.splice('JFEEDBACK: KICK: '.length);
-        line = line.split(' ');
-        //somehow pass to index.js that command has worked and player $line[0] has been kicked for reason $line[1]
-        //return `Player ${line[0]} has been kicked for reason ${line[1]}`
-        let result = ['kick', line[0], line[1]];
-        return result;
-      }
-      else if (line.includes('JFEEDBACK: MUTE: ')) {
-        line = line.splice('JFEEDBACK: MUTE: ');
-        //somehow pass to index.js that command worked and player $line has been muted
-        //return `Player ${line} has been muted`
-        let result = ['mute', line];
-        return result;
-      }
-      else if (line.includes('JFEEDBACK: UNMUTE: ')) {
-        line = line.splice('JFEEDBACK: UNMUTE: ');
-        //somehow pass to index.js that command worked and player $line has been unmuted
-        //return `Player ${line} has been unmuted`
-        let result = ['unmute', line];
-        return result;
-      }
-    }
-    else {  //if line is not a feedback for a JammyBot command
-      data = readJSON("serverData.js");
-      setupObject(data, channel.name);
-      data = readJSON('./serverData.json');
-      if (line.includes('DIED: ')) {
-        line = line.splice('DIED: '.length);
-        line = line.split(' '); //split at separation between username and death reson
-        //write into data.json, server $channel, players that player $player died because of $reason
-        addDeath(data, channel.name, line[0], line[1]);
-      }
-      else if (line.includes('ROCKET: '))
-        rocketLaunched(data, channel.name);
-      else if (line.includes('RESEARCH FINISHED: ')) {
-        line = line.splice('RESEARCH FINISHED: '.length);
-        line = line.split(' ');
-        if (line[1] != 0) { // if research is infinite
-          //write into data.json, server $channel, research that $line[0] level $line[1] has been researched
-          addResearch(data, channel.name, line[0], line[1]);
-        }
-      }
-      writeJSON(data);
-      return 0;
-    }
-  },
   bubbleSort: function (arr) {
     var len = arr.length;
 
-    for (var i = 0; i < len ; i++) {
-      for(var j = 0 ; j < len - i - 1; j++){
+    for (var i = 0; i < len; i++) {
+      for (var j = 0; j < len - i - 1; j++) {
         if (arr[j] > arr[j + 1]) {
           // swap
           var temp = arr[j];
-          arr[j] = arr[j+1];
+          arr[j] = arr[j + 1];
           arr[j + 1] = temp;
         }
       }
     }
     return arr;
   },
-  sortModifiedDate: async function(dir) {
+  sortModifiedDate: async function (dir) {
     return new Promise((resolve, reject) => {
       fs.readdir(dir, function (err, files) {
         if (err) reject(err);
@@ -228,5 +126,174 @@ module.exports = {
         resolve(files);
       });
     })
+  },
+  searchOneDB,
+  insertOneDB,
+  findOneAndReplaceDB,
+  parseJammyLogger,
+}
+
+async function searchOneDB(dat, coll, params) {
+  await dBclientConnectionPromise; //just wait so the database is connected
+  // Returns an object of the thing found or null if not found
+  const collection = client.db(dat).collection(coll);
+  return collection.findOne(params);
+}
+
+async function insertOneDB(dat, coll, params) {
+  await dBclientConnectionPromise; //just wait so the database is connected
+  // To check if written in correctly, use: ret.result.ok (1 if correctly, 0 if written falsely)
+  const collection = client.db(dat).collection(coll);
+  return collection.insertOne(params)
+}
+
+async function findOneAndReplaceDB(dat, coll, param1, param2) {
+  await dBclientConnectionPromise; //just wait so the database is connected
+  // To check if written in correctly, use: ret.result.ok (1 if correctly, 0 if written falsely)
+  const collection = client.db(dat).collection(coll);
+  return collection.findOneAndReplace(param1, param2);
+}
+
+async function addDeath(server, player, reason) {
+  var res = await searchOneDB(server, "deaths", { player: `${player}` });
+  //TODO: somehow find out how the object could be retrieved+written into
+  if (res == null) { // if the player wasn't found in the server's database
+    var writeObj = {
+      player: `${player}`,
+      deaths: {
+        [reason]: 1,
+      }
+    }
+    var out = await insertOneDB(server, "deaths", writeObj);
+    if (out.result.ok !== 1) console.log('error adding to database');
+    return;
+  } else {
+    var replaceWith = lodash.cloneDeep(res); // duplicate the object
+    if (replaceWith.deaths[reason])
+      replaceWith.deaths[reason]++;
+    else
+      replaceWith.deaths[reason] = 1;
+    var out = await findOneAndReplaceDB(server, "deaths", res, replaceWith);
+    return;
+  }
+  //TODO: add when the player already exists
+  return 0;
+}
+async function addRocket(server) {
+  var res = await searchOneDB(server, "stats", { rocketLaunches: { $exists: true } });
+  if (res == null) { // if the server wasn't found in the server's database
+    var writeObj = {
+      rocketLaunches: 1
+    }
+    var out = await insertOneDB(server, "stats", writeObj);
+    if (out.result.ok !== 1) console.log('error adding to database');
+    return 1;
+  } else {
+    var replaceWith = await lodash.cloneDeep(res); // duplicate the object
+    if (replaceWith.rocketLaunches)
+      replaceWith.rocketLaunches++;
+    else
+      replaceWith.rocketLaunches = 1;
+    var out = await findOneAndReplaceDB(server, "stats", res, replaceWith);
+    if (typeof (out) == "object") {
+      if (out.ok !== 1) console.log('error adding to database');
+    } else {
+      console.log(out);
+    }
+    return replaceWith.rocketLaunches;
+  }
+}
+async function addResearch(server, research, level) {
+  var res = await searchOneDB(server, "stats", { research: 'researchData' });
+  if (res == null) { // if the server's research wasn't found in the server's database (first research)
+    var writeObj = {
+      research: 'researchData',
+      completedResearch: {
+        [research]: level
+      }
+    }
+    var out = await insertOneDB(server, "stats", writeObj);
+    if (out.result.ok !== 1) console.log('error adding to database');
+    return;
+  } else {
+    var replaceWith = lodash.cloneDeep(res); // duplicate the object
+    if (res.completedResearch[research] <= 1)
+      replaceWith.completedResearch[research]++;
+    else
+      replaceWith.completedResearch[research] = level;
+    var out = await findOneAndReplaceDB(server, "stats", res, replaceWith);
+    if (typeof (out) == "object") {
+      if (out.ok !== 1) console.log('error adding to database');
+    } else {
+      console.log(out);
+    }
+  }
+  return;
+}
+function parseJammyLogger(line, channel) { //channel is an object
+  //this long asf function parses JammyLogger lines in the console and handles basic statistics
+  if (line.includes('JFEEDBACK: ')) { //if line is feedback for a JammyBot command to Discord
+    if (line.includes('JFEEDBACK: BAN: ')) {
+      line = line.slice('JFEEDBACK: BAN: '.length);
+      line = line.split(' ');
+      //somehow pass to index.js that command has worked and player $line[0] has been banned for reason $line[1]
+      //return `Player ${line[0]} has been banned for reason ${line[1]}`
+      let result = ['ban', line[0], line[1]];
+      return result
+
+    }
+    else if (line.includes('JFEEDBACK: UNBAN: ')) {
+      line = line.slice('JFEEDBACK: UNBAN: '.length);
+      //somehow pass to index.js that command has worked and player $line[0] has been unbanned
+      //return `Player ${line} has been unbanned`
+      let result = ['unban', line];
+      return result
+    }
+    else if (line.includes('JFEEDBACK: KICK: ')) {
+      line = line.slice('JFEEDBACK: KICK: '.length);
+      line = line.split(' ');
+      //somehow pass to index.js that command has worked and player $line[0] has been kicked for reason $line[1]
+      //return `Player ${line[0]} has been kicked for reason ${line[1]}`
+      let result = ['kick', line[0], line[1]];
+      return result;
+    }
+    else if (line.includes('JFEEDBACK: MUTE: ')) {
+      line = line.slice('JFEEDBACK: MUTE: ');
+      //somehow pass to index.js that command worked and player $line has been muted
+      //return `Player ${line} has been muted`
+      let result = ['mute', line];
+      return result;
+    }
+    else if (line.includes('JFEEDBACK: UNMUTE: ')) {
+      line = line.slice('JFEEDBACK: UNMUTE: ');
+      //somehow pass to index.js that command worked and player $line has been unmuted
+      //return `Player ${line} has been unmuted`
+      let result = ['unmute', line];
+      return result;
+    }
+  } else {  //if line is not a feedback for a JammyBot command
+    if (line.includes('DIED: ')) {
+      line = line.slice('DIED: '.length);
+      line = line.split(' '); //split at separation between username and death reson
+      addDeath(channel.name, line[0], line[1]);
+      channel.send(`Player \`${line[0]}\` died due to \`${line[1]}\``);
+    }
+    else if (line.includes('ROCKET: ')) {
+      addRocket(channel.name).then((count) => {
+        if (count == 1)
+          channel.send("Hooray! This server's first rocket has been sent!");
+        if (count % 100 == 0)
+          channel.send(`${count} rockets have been sent!`);
+      })
+        .catch((err) => { console.log(err) });
+
+    }
+    else if (line.includes('RESEARCH FINISHED: ')) {
+      line = line.slice('RESEARCH FINISHED: '.length);
+      line = line.split(' ');
+      addResearch(channel.name, line[0], line[1]);
+      channel.send(`Research \`${line[0]}\` on level \`${line[1]}\` was completed!`);
+    }
+    return 0;
   }
 }

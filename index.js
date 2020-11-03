@@ -4,6 +4,12 @@ const chatFormat = require('./chatFormat');
 const { token, prefix } = require('./botconfig.json');
 const servers = require('./servers.json'); // tails, fifo, discord IDs etc.
 
+let serverTails = []
+Object.keys(servers).forEach(element => {
+  serverTails.push([new Tail(servers[element].serverOut), servers[element]]);
+  console.log(servers[element].name)
+})
+
 const client = new Client();
 
 client.prefix = prefix;
@@ -12,12 +18,6 @@ client.prefix = prefix;
 ["command", "event"].forEach(x => require(`./handlers/${x}`)(client));
 
 client.login(token);
-
-let serverTails = []
-Object.keys(servers).forEach(element => {
-  serverTails.push([new Tail(servers[element].serverOut), servers[element]]);
-  console.log(servers[element].name)
-})
 
 serverTails.forEach(element => {
   element[0].on('line', function (line) {

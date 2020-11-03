@@ -2,42 +2,37 @@ local handler = require("event_handler")
 handler.add_lib(require("freeplay"))
 handler.add_lib(require("silo-script"))
 
+
 -- Grafana logging
-local function logDeath(event) --player death
-	print ("JLOGGER: DIED: " .. game.get_player(event.player_index).name .. ' ' .. event.cause.name or "no_cause") --jammylogger
+local function log1(event) --player death
+	if (event.cause)
+	then
+		print ("JLOGGER: DIED: " .. game.get_player(event.player_index).name .. " " .. event.cause.name or "no_cause") --jammylogger
+	else
+		print ("JLOGGER: DIED: " .. game.get_player(event.player_index).name .. " " .. "no-cause") --e.g. poison damage
+	end
 end
-local function logRocket()  --rocket launched
-	print ("JLOGGER: ROCKET: " .. "ROCKET_LAUNCHED") --jammylogger
+local function log2()  --rocket launched
+	print ("JLOGGER: ROCKET: " .. "ROCKET LAUNCHED") --jammylogger
 end
-local function logResearch(event)  --research finished
-	print ("JLOGGER: RESEARCH FINISHED: " .. event.research.name .. ' ' event.research.level) --jammylogger
+local function log3(event)  --handcraft
+	print ("JLOGGER: HANDCRAFT: " ..  event.item_stack.name or "unnamed_item" .. " " .. game.get_player(event.player_index)) --jammylogger
 end
-
-local function bannedPlayer(event) --player has been banned
-	print("JLOGGER: JFEEDBACK: BAN: " .. event.player_name .. ' ' .. event.reason or "no_reason")
+local function log4(event)  --capsule
+	print ("JLOGGER: CAPSULE: " .. game.get_player(event.player_index).name or "no player" .. event.item.name) --jammylogger
 end
-local function unbannedPlayer(event) --player has been unbanned
-	print("JLOGGER: JFEEDBACK: UNBAN: " .. event.player_name)
+local function log5(event)  --research finished
+	print ("JLOGGER: RESEARCH FINISHED: " ..  event.research.name) --jammylogger
 end
-local function kickedPlayer(event) --player has been kicked
-	print("JLOGGER: JFEEDBACK: KICK: " .. game.get_player(event.player_index).name .. ' ' .. event.reason or "no_reason")
+local function log6(event)  --fired artillery
+	print ("JLOGGER: ARTILLERY: " ..  event.entity.name .. " " .. event.source.name or "no source") --jammylogger
 end
-local function mutedPlayer(event) --player has been muted
-	print("JLOGGER: JFEEDBACK: MUTE: " .. game.get_player(event.player_index).name)
-end
-local function unmutedPlayer(event) --player has been unmuted
-	print("JLOGGER: JFEEDBACK: UNMUTE: " .. game.get_player(event.player_index).name)
-end
-
--- Jammy feedback to ? commands on Discord
-script.on_event(defines.events.on_player_banned, 						function(event) bannedPlayer(event) end)
-script.on_event(defines.events.on_player_unbanned, 					function(event) unbannedPlayer(event) end)
-script.on_event(defines.events.on_player_kicked, 						function(event) kickedPlayer(event) end)
-script.on_event(defines.events.on_player_muted, 						function(event) mutedPlayer(event) end)
-script.on_event(defines.events.on_player_unmuted, 					function(event) unmutedPlayer(event) end)
 
 
 -- Data collection
-script.on_event(defines.events.on_player_died,              function(event) logDeath(event) end)
-script.on_event(defines.events.on_rocket_launched,          function(event) logRocket() end)
-script.on_event(defines.events.on_research_finished,        function(event) logResearch(event) end)
+script.on_event(defines.events.on_player_died,              function(event) log1(event) end)
+script.on_event(defines.events.on_rocket_launched,          function(event) log2() end)
+script.on_event(defines.events.on_player_crafted_item,      function(event) log3(event) end)
+script.on_event(defines.events.on_player_used_capsule,      function(event) log4(event) end)
+script.on_event(defines.events.on_research_finished,        function(event) log5(event) end)
+script.on_event(defines.events.on_trigger_fired_artillery,  function(event) log6(event) end)
