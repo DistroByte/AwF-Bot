@@ -1,6 +1,6 @@
 const fs = require('fs');
 const Discord = require('discord.js')
-const { searchOneDB } = require('../../functions')
+const { searchOneDB, bubbleSort } = require('../../functions')
 
 module.exports = {
     config: {
