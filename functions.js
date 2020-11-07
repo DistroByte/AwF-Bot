@@ -131,6 +131,7 @@ module.exports = {
   insertOneDB,
   findOneAndReplaceDB,
   parseJammyLogger,
+  linkFactorioDiscordUser,
 }
 
 async function searchOneDB(dat, coll, params) {
@@ -144,7 +145,7 @@ async function insertOneDB(dat, coll, params) {
   await dBclientConnectionPromise; //just wait so the database is connected
   // To check if written in correctly, use: ret.result.ok (1 if correctly, 0 if written falsely)
   const collection = client.db(dat).collection(coll);
-  return collection.insertOne(params)
+  return collection.insertOne(params);
 }
 
 async function findOneAndReplaceDB(dat, coll, param1, param2) {
@@ -296,4 +297,34 @@ function parseJammyLogger(line, channel) { //channel is an object
     }
     return 0;
   }
+}
+async function linkFactorioDiscordUser(discordClient, factorioName, discordName) {
+  //links the Factorio and Discord usernames, can be used for verification later
+  //discordName is the name and tag of the user, e.g. SomeRandomPerson#0000
+  //TODO: somehow parse the discord name and tag into a valid user
+  console.log(`${factorioName} name+tag: ${discordName}`);
+  return;
+  let sendToUser = await discordClient.users.fetch(discordID);
+  let sentMsg = await sendToUser.send(`You have chosen to link your Discord account, \`${sendToUser.username}\` with your Factorio account on AwF, \`${factorioName}\`. The request will timeout after 120s`)
+  sentMsg.react('✅')
+  const filter = (reaction, user) => {
+    return reaction.emoji.name === '✅' && user.id === sendToUser.id;
+  };
+  // TODO: finish the adding to database part
+  sentMsg.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] })
+    .then(async() => {
+      let dat = {
+        factorioName: factorioName,
+        discordID: discordID
+      }
+      let found = await searchOneDB("otherData", "linkedPlayers", dat);
+      if (found !== null) return sendToUser.send('Already linked. Please contact devs/admins for unlinking');
+      let res = await insertOneDB("otherData", "linkedPlayers", dat);
+      if (res.result.ok == 0) return sendToUser.send('Failed linking. Contact devs/admins');
+      else return sendToUser.send('Linked successfully');
+    })
+    .catch((out) => {
+      if (out.size == 0) return sendToUser.send(`Didn't react in time. Please try again.`);
+    })
+  // if (user == null)
 }
