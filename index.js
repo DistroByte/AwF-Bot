@@ -7,7 +7,6 @@ const servers = require('./servers.json'); // tails, fifo, discord IDs etc.
 let serverTails = []
 Object.keys(servers).forEach(element => {
   serverTails.push([new Tail(servers[element].serverOut), servers[element]]);
-  console.log(servers[element].name)
 })
 
 const client = new Client();

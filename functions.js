@@ -131,6 +131,7 @@ module.exports = {
   insertOneDB,
   findOneAndReplaceDB,
   parseJammyLogger,
+  getServerList,
 }
 
 async function searchOneDB(dat, coll, params) {
@@ -296,4 +297,12 @@ function parseJammyLogger(line, channel) { //channel is an object
     }
     return 0;
   }
+}
+
+function getServerList() {
+  let serverNames = []
+  Object.keys(servers).forEach(element => {
+    serverNames.push(servers[element].serverFolderName);
+  })
+  return serverNames;
 }
