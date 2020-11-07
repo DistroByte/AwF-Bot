@@ -3,16 +3,17 @@ const fs = require('fs');
 const { replace } = require('lodash');
 const MongoClient = require('mongodb').MongoClient;
 const lodash = require('lodash');
+const servers = require('./servers.json'); // tails, fifo, discord IDs etc.
 
-const coreFifo = new FIFO('../servers/members-core/server.fifo');
-const coronaFifo = new FIFO('../servers/corona-daycare/server.fifo');
-const testFifo = new FIFO('../servers/test/server.fifo');
-const redbrickFifo = new FIFO('../servers/redbrick/server.fifo');
-const sevanillaFifo = new FIFO('../servers/members-se-vanilla/server.fifo');
+let serverFifos = []
+Object.keys(servers).forEach(element => {
+  serverFifos.push([new FIFO(servers[element].serverFifo), servers[element]]);
+})
 
 const { uri } = require('./botconfig.json');
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 const dBclientConnectionPromise = client.connect();
+
 
 module.exports = {
   formatVersion: function (data) {
@@ -62,18 +63,14 @@ module.exports = {
     // The $sendWithUsername given to the function is a boolean value (fixed from being a 0 or 1). If sendWithUsername is true, it will send the message with the username
     // sends a message to all servers at once
     if (sendWithUsername) { // $sendWithUsername is true, therefore the message is sent with the username
-      coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      coronaFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      testFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      redbrickFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      sevanillaFifo.write(`${message.author.username}: ${message.content}`, () => { });
+      serverFifos.forEach(fifo => {
+        fifo.write(`${message.author.username}: ${message.content}`, () => { });
+      })
     } else { // sends just the message, no username, nothing because $sendWithUsername is false
       let toSend = message.content || message
-      coreFifo.write(`${toSend}`, () => { });
-      coronaFifo.write(`${toSend}`, () => { });
-      testFifo.write(`${toSend}`, () => { });
-      redbrickFifo.write(`${toSend}`, () => { });
-      sevanillaFifo.write(`${toSend}`, () => { });
+      serverFifos.forEach(fifo => {
+        fifo.write(`${toSend}`, () => { });
+      })
     }
   },
   sendToServer: function (message, sendWithUsername) {
@@ -82,37 +79,17 @@ module.exports = {
     // sends a message to only one server with or without the username
 
     if (sendWithUsername == true) { //sends the message with the username and colon, as $sendWithUsername is true
-      if (message.channel.id === '718056299501191189') {
-        coreFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-      if (message.channel.id === '723280139982471247') {
-        testFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-      if (message.channel.id === '724696348871622818') {
-        coronaFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-      if (message.channel.id === '764651709632348162') {
-        redbrickFifo.write(`${message.author.username}: ${message.content}`, () => { });
-      }
-      if (message.channel.id === '772057588317552640') {
-        sevanillaFifo.write(`${message.author.username}: ${message.content}`, () => { })
-      }
+      serverFifos.forEach(factorioServer => {
+        if (message.channel.id === factorioServer[1].discordChannelID) {
+          factorioServer[0].write(`${message.author.username}: ${message.content}`, () => { });
+        }
+      })
     } else { //sends just the message, no username, nothing as $sendWithUsername is false
-      if (message.channel.id === '718056299501191189') {
-        coreFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '723280139982471247') {
-        testFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '724696348871622818') {
-        coronaFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '764651709632348162') {
-        redbrickFifo.write(`${message.content}`, () => { });
-      }
-      if (message.channel.id === '772057588317552640') {
-        sevanillaFifo.write(`${message.content}`, () => { })
-      }
+      serverFifos.forEach(factorioServer => {
+        if (message.channel.id === factorioServer[1].discordChannelID) {
+          factorioServer[0].write(`${message.content}`, () => { });
+        }
+      })
     }
   },
   bubbleSort: function (arr) {
