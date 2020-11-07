@@ -2,7 +2,7 @@ local function on_rocket_launched(event)
 	print ("JLOGGER: ROCKET: " .. "ROCKET LAUNCHED")
 end
 
-local function on_player_died(event)
+local function on_pre_player_died(event)
 	if (event.cause)
 	then
 		print ("JLOGGER: DIED: " .. game.get_player(event.player_index).name .. " " .. event.cause.name or "no-cause")
@@ -31,7 +31,7 @@ local lib = {}
 lib.events =
 {
 	[defines.events.on_rocket_launched] = on_rocket_launched,
-	[defines.events.on_player_died] = on_player_died,
+	[defines.events.on_pre_player_died] = on_pre_player_died,
 	[defines.events.on_research_finished] = on_research_finished,
 	[defines.events.on_trigger_fired_artillery] = on_trigger_fired_artillery
 }
