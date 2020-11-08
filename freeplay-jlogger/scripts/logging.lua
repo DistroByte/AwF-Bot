@@ -3,8 +3,10 @@ local function on_rocket_launched(event)
 end
 
 local function on_pre_player_died(event)
-	if (event.cause)
-	then
+	print (event.cause.type)
+	if event.cause and event.cause.type == "character" then
+		print("JLOGGER: DIED: PLAYER: " .. game.get_player(event.player_index).name .. " " .. game.get_player(event.cause.player.index).name or "no-cause")
+	elseif (event.cause) then
 		print ("JLOGGER: DIED: " .. game.get_player(event.player_index).name .. " " .. event.cause.name or "no-cause")
 	else
 		print ("JLOGGER: DIED: " .. game.get_player(event.player_index).name .. " " .. "no-cause") --e.g. poison damage
