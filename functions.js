@@ -284,6 +284,10 @@ function parseJammyLogger(line, channel) { //channel is an object
     if (line.includes('DIED: ')) {
       line = line.slice('DIED: '.length);
       line = line.split(' '); //split at separation between username and death reson
+      if (line[0].includes('PLAYER: ')) {
+        line[0] = line[0].slice('PLAYER: '.length);
+        line[1] = `Player ${line[1]}`;
+      }
       addDeath(channel.name, line[0], line[1]);
       channel.send(`Player \`${line[0]}\` died due to \`${line[1]}\``);
       changePoints(line[0], -100);
