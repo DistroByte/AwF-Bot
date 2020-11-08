@@ -241,84 +241,42 @@ async function addResearch(server, research, level) {
 }
 function parseJammyLogger(line, channel) { //channel is an object
   //this long asf function parses JammyLogger lines in the console and handles basic statistics
-  if (line.includes('JFEEDBACK: ')) { //if line is feedback for a JammyBot command to Discord
-    if (line.includes('JFEEDBACK: BAN: ')) {
-      line = line.slice('JFEEDBACK: BAN: '.length);
-      line = line.split(' ');
-      //somehow pass to index.js that command has worked and player $line[0] has been banned for reason $line[1]
-      //return `Player ${line[0]} has been banned for reason ${line[1]}`
-      let result = ['ban', line[0], line[1]];
-      return result
-
+  if (line.includes('DIED: ')) {
+    line = line.slice('DIED: '.length);
+    line = line.split(' '); //split at separation between username and death reson
+    if (line[0].includes('PLAYER: ')) {
+      line[0] = line[0].slice('PLAYER: '.length);
+      line[1] = `Player ${line[1]}`;
     }
-    else if (line.includes('JFEEDBACK: UNBAN: ')) {
-      line = line.slice('JFEEDBACK: UNBAN: '.length);
-      //somehow pass to index.js that command has worked and player $line[0] has been unbanned
-      //return `Player ${line} has been unbanned`
-      let result = ['unban', line];
-      return result
-    }
-    else if (line.includes('JFEEDBACK: KICK: ')) {
-      line = line.slice('JFEEDBACK: KICK: '.length);
-      line = line.split(' ');
-      //somehow pass to index.js that command has worked and player $line[0] has been kicked for reason $line[1]
-      //return `Player ${line[0]} has been kicked for reason ${line[1]}`
-      let result = ['kick', line[0], line[1]];
-      return result;
-    }
-    else if (line.includes('JFEEDBACK: MUTE: ')) {
-      line = line.slice('JFEEDBACK: MUTE: ');
-      //somehow pass to index.js that command worked and player $line has been muted
-      //return `Player ${line} has been muted`
-      let result = ['mute', line];
-      return result;
-    }
-    else if (line.includes('JFEEDBACK: UNMUTE: ')) {
-      line = line.slice('JFEEDBACK: UNMUTE: ');
-      //somehow pass to index.js that command worked and player $line has been unmuted
-      //return `Player ${line} has been unmuted`
-      let result = ['unmute', line];
-      return result;
-    }
-  } else {  //if line is not a feedback for a JammyBot command
-    if (line.includes('DIED: ')) {
-      line = line.slice('DIED: '.length);
-      line = line.split(' '); //split at separation between username and death reson
-      if (line[0].includes('PLAYER: ')) {
-        line[0] = line[0].slice('PLAYER: '.length);
-        line[1] = `Player ${line[1]}`;
-      }
-      addDeath(channel.name, line[0], line[1]);
-      channel.send(`Player \`${line[0]}\` died due to \`${line[1]}\``);
-      changePoints(line[0], -100);
-    }
-    else if (line.includes('ROCKET: ')) {
-      addRocket(channel.name).then((count) => {
-        if (count == 1)
-          channel.send("Hooray! This server's first rocket has been sent!");
-        if (count % 100 == 0)
-          channel.send(`${count} rockets have been sent!`);
-      })
-        .catch((err) => { console.log(err) });
-
-    }
-    else if (line.includes('RESEARCH FINISHED: ')) {
-      line = line.slice('RESEARCH FINISHED: '.length);
-      line = line.split(' ');
-      addResearch(channel.name, line[0], line[1]);
-      channel.send(`Research \`${line[0]}\` on level \`${line[1]}\` was completed!`);
-    }
-    return 0;
+    addDeath(channel.name, line[0], line[1]);
+    channel.send(`Player \`${line[0]}\` died due to \`${line[1]}\``);
+    changePoints(line[0], -100);
   }
+  else if (line.includes('ROCKET: ')) {
+    addRocket(channel.name).then((count) => {
+      if (count == 1)
+        channel.send("Hooray! This server's first rocket has been sent!");
+      if (count % 100 == 0)
+        channel.send(`${count} rockets have been sent!`);
+    })
+      .catch((err) => { console.log(err) });
+
+  }
+  else if (line.includes('RESEARCH FINISHED: ')) {
+    line = line.slice('RESEARCH FINISHED: '.length);
+    line = line.split(' ');
+    addResearch(channel.name, line[0], line[1]);
+    channel.send(`Research \`${line[0]}\` on level \`${line[1]}\` was completed!`);
+  }
+  return 0;
 }
 async function linkFactorioDiscordUser(discordClient, factorioName, discordName) {
   //links the Factorio and Discord usernames, can be used for verification later
   //discordName is the name and tag of the user, e.g. SomeRandomPerson#0000
-  let sendToUser = await discordClient.users.cache.find((user) => { //find the user in the cached users
-    if (user.tag === discordName)
-      return user;
-  });
-  let sentMsg = await sendToUser.send(`You have chosen to link your Discord account, \`${sendToUser.username}\` with your Factorio account on AwF, \`${factorioName}\`. The request will timeout after 120s. React with 🛑 to re-link your account. If complications arise, please contact devs/admins (relinking is when switching Factorio username, for switching Discord account contact admins/devs. changing username **IS NOT** changing an account)`)
+  let server = await discordClient.guilds.cache.get('548410604679856151');
+  let sendToUser = await server.members.fetch({query: discordName, limit: 1});
+  sendToUser = sendToUser.first()
+  let sentMsg = await sendToUser.send(`You have chosen to link your Discord account, \`${discordName}\` with your Factorio account on AwF, \`${factorioName}\`. The request will timeout after 120s. React with 🛑 to re-link your account. If complications arise, please contact devs/admins (relinking is when switching Factorio username, for switching Discord account contact admins/devs. Changing your Discord username **IS NOT** changing an account, whilst changing your Factorio username **is**)`);
   sentMsg.react('✅')
   sentMsg.react('❌')
   sentMsg.react('🛑')
