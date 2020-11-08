@@ -301,22 +301,21 @@ function parseJammyLogger(line, channel) { //channel is an object
 async function linkFactorioDiscordUser(discordClient, factorioName, discordName) {
   //links the Factorio and Discord usernames, can be used for verification later
   //discordName is the name and tag of the user, e.g. SomeRandomPerson#0000
-  //TODO: somehow parse the discord name and tag into a valid user
-  console.log(`${factorioName} name+tag: ${discordName}`);
-  return;
-  let sendToUser = await discordClient.users.fetch(discordID);
+  let sendToUser = discordClient.users.cache.find((user) => { //find the user in the cached users
+    if (user.tag === discordName)
+      return user;
+  });
   let sentMsg = await sendToUser.send(`You have chosen to link your Discord account, \`${sendToUser.username}\` with your Factorio account on AwF, \`${factorioName}\`. The request will timeout after 120s`)
   sentMsg.react('✅')
+  sentMsg.react('❌')
   const filter = (reaction, user) => {
-    return reaction.emoji.name === '✅' && user.id === sendToUser.id;
+    return user.id === sendToUser.id;
   };
-  // TODO: finish the adding to database part
-  sentMsg.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] })
-    .then(async() => {
-      let dat = {
-        factorioName: factorioName,
-        discordID: discordID
-      }
+  sentMsg.awaitReactions(filter, { max: 1, time: 10000, errors: ['time'] })
+    .then(async(messageReaction) => {
+      let reaction = messageReaction.first();
+      if (reaction.emoji.name === '❌') return sendToUser.send('Linking cancelled');
+      let dat = { factorioName: factorioName, discordID: sendToUser.id };
       let found = await searchOneDB("otherData", "linkedPlayers", dat);
       if (found !== null) return sendToUser.send('Already linked. Please contact devs/admins for unlinking');
       let res = await insertOneDB("otherData", "linkedPlayers", dat);
