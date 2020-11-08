@@ -69,7 +69,7 @@ module.exports = {
     } else { // sends just the message, no username, nothing because $sendWithUsername is false
       let toSend = message.content || message
       serverFifos.forEach(fifo => {
-        fifo.write(`${toSend}`, () => { });
+        fifo[0].write(`${toSend}`, () => { });
       })
     }
   },
