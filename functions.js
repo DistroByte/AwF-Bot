@@ -325,5 +325,4 @@ async function linkFactorioDiscordUser(discordClient, factorioName, discordName)
     .catch((out) => {
       if (out.size == 0) return sendToUser.send(`Didn't react in time. Please try again.`);
     })
-  // if (user == null)
 }
