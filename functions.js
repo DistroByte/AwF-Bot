@@ -130,8 +130,10 @@ module.exports = {
   searchOneDB,
   insertOneDB,
   findOneAndReplaceDB,
+  deleteOneDB,
   parseJammyLogger,
   linkFactorioDiscordUser,
+  changePoints,
 }
 
 async function searchOneDB(dat, coll, params) {
@@ -140,21 +142,27 @@ async function searchOneDB(dat, coll, params) {
   const collection = client.db(dat).collection(coll);
   return collection.findOne(params);
 }
-
 async function insertOneDB(dat, coll, params) {
   await dBclientConnectionPromise; //just wait so the database is connected
   // To check if written in correctly, use: ret.result.ok (1 if correctly, 0 if written falsely)
   const collection = client.db(dat).collection(coll);
   return collection.insertOne(params);
 }
-
 async function findOneAndReplaceDB(dat, coll, param1, param2) {
   await dBclientConnectionPromise; //just wait so the database is connected
   // To check if written in correctly, use: ret.result.ok (1 if correctly, 0 if written falsely)
   const collection = client.db(dat).collection(coll);
   return collection.findOneAndReplace(param1, param2);
 }
-
+async function deleteOneDB(dat, coll, params, filter) {
+  // deletes the data object {params} from the database dat collection coll
+  // filter is what to delete, see https://docs.mongodb.com/manual/reference/method/db.collection.deleteOne
+  // if filter is {}, it will delete the first thing found
+  await dBclientConnectionPromise; //just wait so the database is connected
+  // To check if written in correctly, use: ret.acknowledged (1 if correctly, 0 if written falsely)
+  const collection = client.db(dat).collection(coll);
+  return collection.deleteOne(params);
+}
 async function addDeath(server, player, reason) {
   var res = await searchOneDB(server, "deaths", { player: `${player}` });
   //TODO: somehow find out how the object could be retrieved+written into
@@ -278,6 +286,7 @@ function parseJammyLogger(line, channel) { //channel is an object
       line = line.split(' '); //split at separation between username and death reson
       addDeath(channel.name, line[0], line[1]);
       channel.send(`Player \`${line[0]}\` died due to \`${line[1]}\``);
+      changePoints(line[0], -100);
     }
     else if (line.includes('ROCKET: ')) {
       addRocket(channel.name).then((count) => {
@@ -301,28 +310,60 @@ function parseJammyLogger(line, channel) { //channel is an object
 async function linkFactorioDiscordUser(discordClient, factorioName, discordName) {
   //links the Factorio and Discord usernames, can be used for verification later
   //discordName is the name and tag of the user, e.g. SomeRandomPerson#0000
-  let sendToUser = discordClient.users.cache.find((user) => { //find the user in the cached users
+  let sendToUser = await discordClient.users.cache.find((user) => { //find the user in the cached users
     if (user.tag === discordName)
       return user;
   });
-  let sentMsg = await sendToUser.send(`You have chosen to link your Discord account, \`${sendToUser.username}\` with your Factorio account on AwF, \`${factorioName}\`. The request will timeout after 120s`)
+  let sentMsg = await sendToUser.send(`You have chosen to link your Discord account, \`${sendToUser.username}\` with your Factorio account on AwF, \`${factorioName}\`. The request will timeout after 120s. React with 🛑 to re-link your account. If complications arise, please contact devs/admins (relinking is when switching Factorio username, for switching Discord account contact admins/devs. changing username **IS NOT** changing an account)`)
   sentMsg.react('✅')
   sentMsg.react('❌')
+  sentMsg.react('🛑')
   const filter = (reaction, user) => {
     return user.id === sendToUser.id;
   };
-  sentMsg.awaitReactions(filter, { max: 1, time: 10000, errors: ['time'] })
+  sentMsg.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] })
     .then(async(messageReaction) => {
       let reaction = messageReaction.first();
       if (reaction.emoji.name === '❌') return sendToUser.send('Linking cancelled');
       let dat = { factorioName: factorioName, discordID: sendToUser.id };
-      let found = await searchOneDB("otherData", "linkedPlayers", dat);
-      if (found !== null) return sendToUser.send('Already linked. Please contact devs/admins for unlinking');
-      let res = await insertOneDB("otherData", "linkedPlayers", dat);
-      if (res.result.ok == 0) return sendToUser.send('Failed linking. Contact devs/admins');
-      else return sendToUser.send('Linked successfully');
+      let found = await searchOneDB("otherData", "linkedPlayers", { discordID: sendToUser.id });
+      if (found !== null && reaction.emoji.name === '🛑') { // re-link user
+        let res = await findOneAndReplaceDB("otherData", "linkedPlayers", found, dat);
+        if (res.ok == 1) return await sendToUser.send('Re-linked succesfully!')
+        else return sendToUser.send('Please contact devs/admins for re-linking');
+      }
+      else if (found !== null && reaction.emoji.name === '✅') // cancel
+        return sendToUser.send('Already linked');
+      else if (found === null) {
+        let res = await insertOneDB("otherData", "linkedPlayers", dat);
+        if (res.result.ok == 0) return sendToUser.send('Failed linking. Contact devs/admins');
+        else return sendToUser.send('Linked successfully');
+      }
     })
     .catch((out) => {
       if (out.size == 0) return sendToUser.send(`Didn't react in time. Please try again.`);
     })
+}
+async function changePoints(playerName, numPoints) {
+  var res = await searchOneDB("otherData", "globPlayerStats", { [playerName]: { $exists: true } });
+  if (res == null) { // if the server's research wasn't found in the server's database (first research)
+    var writeObj = {
+      points: numPoints
+    }
+    var out = await insertOneDB("otherData", "globPlayerStats", writeObj);
+    if (out.result.ok !== 1) console.log('error adding to database');
+    return;
+  } else {
+    var replaceWith = lodash.cloneDeep(res); // duplicate the object
+    if (typeof res.points == 'number')
+      replaceWith.points += numPoints;
+    else
+      replaceWith.points = numPoints;
+    var out = await findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
+    if (typeof (out) == "object") {
+      if (out.ok !== 1) console.log('error adding to database');
+    } else {
+      console.log(out);
+    }
+  }
 }
