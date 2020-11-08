@@ -26,7 +26,9 @@ local function on_trigger_fired_artillery(event)
 	print ("JLOGGER: ARTILLERY: " .. event.entity.name .. event.source.name or "no source")
 end
 
-
+local function on_built_entity(event)
+	print ("JLOGGER: BUILT ENTITY: " .. game.get_player(event.player_index).name .. " " .. event.created_entity.name)
+end
 
 local lib = {}
 
@@ -35,7 +37,8 @@ lib.events =
 	[defines.events.on_rocket_launched] = on_rocket_launched,
 	[defines.events.on_pre_player_died] = on_pre_player_died,
 	[defines.events.on_research_finished] = on_research_finished,
-	[defines.events.on_trigger_fired_artillery] = on_trigger_fired_artillery
+	[defines.events.on_trigger_fired_artillery] = on_trigger_fired_artillery,
+	[defines.events.on_built_entity] = on_built_entity
 }
 
 lib.on_event = function(event)
