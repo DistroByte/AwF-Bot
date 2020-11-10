@@ -7,9 +7,9 @@ const Discord = require('discord.js')
 module.exports = {
   config: {
     name: 'restoresave',
-    aliases: ['restore', 'getbackup'],
+    aliases: ['restoresave', 'restore', 'getbackup'],
     usage: '<save name>',
-    category: 'factorio',
+    category: 'moderator',
     description: 'Restores a save',
     accessableby: 'Moderators'
   },
