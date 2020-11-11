@@ -2,7 +2,7 @@ const fs = require('fs');
 const child = require('child_process');
 const { absPath } = require('../../botconfig.json');
 const { MessageEmbed } = require('discord.js');
-const { bubbleSort, modifiedSort } = require('../../functions')
+const { bubbleSort, modifiedSort, runShellCommand } = require('../../functions')
 
 module.exports = {
     config: {
@@ -35,14 +35,15 @@ module.exports = {
                 });
                 return message.channel.send(choiceEmbed);
             } else {
-                try {
-                    let a = child.exec(`${absPath}/test/factorio-init/factorio start`);
-                } catch (e) {
-                    return console.log(e);
-                }
-
-                return message.channel.send(`Started server ${args[0]}`)
-                    .then((m) => m.delete({ timeout: 5000, reason: 'tidying up' }));
+                await runShellCommand('test -w .; echo $?')
+                    .then(out => {
+                        if (out == 1) return message.channel.send('no file permissions')
+                    })
+                    .catch(e => { return message.channel.send(`error testing file permissions: \`${e}\``) })
+                
+                runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio start`)
+                    .catch(e => { return message.channel.send(`Error starting: \`${e}\``) })
+                    .then((out) => { return message.channel.send(`Server started succesfully: \`${out}\``)})
             }
         }
     }

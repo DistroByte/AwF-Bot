@@ -1,8 +1,7 @@
 const fs = require('fs');
-const { exec } = require('child_process');
 const { absPath } = require('../../botconfig.json');
 const { MessageEmbed } = require('discord.js');
-const { bubbleSort, modifiedSort } = require('../../functions')
+const { bubbleSort, modifiedSort, runShellCommand } = require('../../functions')
 
 module.exports = {
     config: {
@@ -35,37 +34,15 @@ module.exports = {
                 });
                 return message.channel.send(choiceEmbed)
             } else {
-                try { // see if priviliges are ok
-                    exec('test -w .');
-                } catch (e) {
-                    console.log(`Insufficient permissions. Error: ${e}`);
-                    return message.channel.send(`Insufficient permissions. Error: ${e}`);
-                }
-
-                try { // stop the server
-                    //this wasn't finishing last time
-                    let res = await new Promise((resolve, reject) => {
-                        exec(`${absPath}/${args[0]}/factorio-init/factorio stop`, (error, stdout, stderr) => {
-                            if (error) {
-                                console.log(error.message)
-                                reject(['error', error.message]);
-                            }
-                            if (stderr) {
-                                console.log(stderr)
-                                reject(['stderr', stderr]);
-                            }
-                            console.log(stdout)
-                            resolve(stdout);
-                        });
+                await runShellCommand('test -w .; echo $?')
+                    .then(out => {
+                        if (out == 1) return message.channel.send('no file permissions')
                     })
-                    console.log(res);
-                    message.channel.send(`out: ${res[0]}: ${res[1]}`);
-                } catch (e) {
-                    return message.channel.send(`61 server stop error: ${e}`);
-                }
-
-                return message.channel.send('Server stop success')
-                    .then((m) => m.delete({ timeout: 5000, reason: 'tidying up' }));
+                    .catch(e => { return message.channel.send(`error testing file permissions: \`${e}\``) })
+                
+                runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio stop`)
+                    .catch(e => { return message.channel.send(`Error stopping: \`${e}\``) })
+                    .then((out) => { return message.channel.send(`Server stopped: \`${out}\``) })
             }
         }
     }

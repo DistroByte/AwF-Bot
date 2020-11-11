@@ -32,7 +32,7 @@ end
 local function logPlayerTime()
 	for _, p in pairs(game.players)
 	do
-		print ("JLOGGER: TIME_PLAYED: " .. p.name .. " " .. p.online_time)
+		print ("JLOGGER: TIME PLAYED: " .. p.name .. " " .. p.online_time)
 		-- prints player name and player online time
 	end
 end
@@ -50,7 +50,7 @@ lib.events =
 
 lib.on_nth_tick = {
 	-- 60 ticks/s (same as UPS)
-	-- 60s * 60t * 15m
+	-- 60s * 60t * 15m = logging every 15 minutes
 	[60*60*15] = function()
 		logPlayerTime()
 	end

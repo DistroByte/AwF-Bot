@@ -4,6 +4,7 @@ const { replace } = require('lodash');
 const MongoClient = require('mongodb').MongoClient;
 const lodash = require('lodash');
 const servers = require('./servers.json'); // tails, fifo, discord IDs etc.
+const { exec } = require('child_process');
 
 let serverFifos = []
 Object.keys(servers).forEach(element => {
@@ -134,6 +135,17 @@ module.exports = {
   parseJammyLogger,
   linkFactorioDiscordUser,
   changePoints,
+  runShellCommand,
+}
+
+async function runShellCommand(cmd) {
+  return new Promise((resolve, reject) => {
+    exec(cmd, function (error, stdout, stderr) {
+      if (stdout) resolve(stdout);
+      if (stderr) reject(stderr);
+      if (error) reject(error);
+    });
+  })
 }
 
 async function searchOneDB(dat, coll, params) {
