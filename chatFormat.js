@@ -58,6 +58,7 @@ module.exports = function chatFormat(line, channel, client) {
   }
   if (line.includes('<server>')) return
   if (line.includes('; Factorio')) {
+    client.channels.cache.get(channel).send('Server started');
     return client.channels.cache.get(channel).setTopic(`Running ${functions.formatVersion(line)} since ${functions.formatDate(line)}`);
   }
   else if (line.includes('[JOIN]') || line.includes('[LEAVE]') || line.includes('[CHAT]')) {
