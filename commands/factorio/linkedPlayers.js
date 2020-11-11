@@ -17,9 +17,15 @@ module.exports = {
             else return message.channel.send('You are already linked!'); 
         }
         if (!args[1]) { // if the server name is provided but no 2nd argument, searches for generic server data
-            let res = await searchOneDB("otherData", "linkedPlayers", { factorioName: args[0] })
-            if (res == null) return message.channel.send(`\`${args[0]}\` is not linked yet`);
-            else return message.channel.send(`\`${args[0]}\` is already linked!`); 
+            if (message.mentions.users.first()) {
+                let res = await searchOneDB("otherData", "linkedPlayers", { discordID: message.mentions.members.first().id })
+                if (res == null) return message.channel.send(`\`${message.mentions.members.first().user.username}\` is not linked yet`);
+                else return message.channel.send(`\`${message.mentions.members.first().user.username}\` is already linked!`); 
+            } else {
+                let res = await searchOneDB("otherData", "linkedPlayers", { factorioName: args[0] })
+                if (res == null) return message.channel.send(`\`${args[0]}\` is not linked yet`);
+                else return message.channel.send(`\`${args[0]}\` is already linked!`);
+            }
         }
     }
 }
