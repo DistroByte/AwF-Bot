@@ -4,6 +4,9 @@ const { filterBan } = require("./filterBan");
 module.exports = function chatFormat(line, channel, client) {
   const helpdesk = client.channels.cache.get('590241134740111387')
 
+  if (line.includes("Error")) {
+    client.channels.cache.get('697146357819113553').send(`Error in ${client.channels.cache.get(channel).name}: ${line}`)
+  }
   if (line.includes('?griefer')) {
     //mentions 548545406653431810 (Admin) and 555824650324672522 (Moderator)
     helpdesk.send(`<@&548545406653431810> <@&555824650324672522>! Griefer on ${client.channels.cache.get(channel)}`);
@@ -29,7 +32,7 @@ module.exports = function chatFormat(line, channel, client) {
   else if (line.includes('JLOGGER:')) {
     line = line.slice((line.indexOf('JLOGGER:') + 'JLOGGER:'.length + 1))
     let result = functions.parseJammyLogger(line, client.channels.cache.get(channel));  //sends the channel object
-    if (typeof(result) === 'object') { //if result is an array, js doesn't differentiate betwee objects and arrays when using typeOf()
+    if (typeof (result) === 'object') { //if result is an array, js doesn't differentiate betwee objects and arrays when using typeOf()
       if (result[0] === 'ban')
         return client.channels.cache.get(channel).send(`Command worked, player \`${result[1]}\` has been banned for reason \`${result[2]}\``);
       if (result[0] === 'unban')
