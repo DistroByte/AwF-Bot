@@ -45,12 +45,12 @@ module.exports = {
             else 
                 rockets = rockets.rocketLaunches
             statsEmbed.addField('Rockets launched', rockets)
-            let research = await searchOneDB(args[0], "stats", { completedResearch: { $exists: true } });
+            let research = await searchOneDB(message.channel.name, "stats", { research: "researchData" });
             if (research == null)
                     research = {};
             else
                 research = research.completedResearch;
-            let maxLevelResearch = ["str", 0];
+            let maxLevelResearch = ["none", 0];
             Object.keys(research).forEach(function (key) {
                 if (parseInt(research[key]) > maxLevelResearch[1]) {
                     maxLevelResearch[0] = key;
