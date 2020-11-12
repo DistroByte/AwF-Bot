@@ -6,7 +6,7 @@ module.exports = {
         aliases: [],
         usage: '<factorio discord channel name>',
         category: 'moderator',
-        description: 'Resets the deaths and other statistics of servers',
+        description: 'Resets the deaths and other statistics of servers, not global statistics',
         accessableby: 'Moderators'
     },
     run: async (client, message, args) => {
@@ -34,7 +34,7 @@ module.exports = {
                         if (res == null) break;
                         await deleteOneDB(args[0], 'stats', res);
                     }
-                    message.channel.send('server cleaned!');
+                    message.channel.send('Server stats cleaned!');
                 })
                 .catch((out) => {
                     if (out.size == 0) return sendToUser.send(`Didn't react in time. Please try again.`);

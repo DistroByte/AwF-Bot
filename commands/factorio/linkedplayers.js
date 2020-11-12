@@ -3,8 +3,8 @@ const { searchOneDB, bubbleSort } = require('../../functions')
 
 module.exports = {
     config: {
-        name: 'amILinked',
-        aliases: ['amilinked', 'islinked'],
+        name: 'amilinked',
+        aliases: ['islinked'],
         usage: '[factorioName]',
         category: 'factorio',
         description: 'Search if player is linked between Factorio and Discord',

@@ -28,6 +28,9 @@ module.exports = {
             });
             return message.channel.send(choiceEmbed)
         }
+        const serverName; // the name of the server to look for, allows for pinging servers with #general etc
+        if (message.mentions.first()) serverName = message.mentions.first().name
+        else serverName = args[0]
         if (!args[1]) { // if the server name is provided but no 2nd argument, searches for generic server data
             let statsEmbed = new Discord.MessageEmbed()
                 .setTitle(`Server Statistics of \`${args[0]}\``)
@@ -47,7 +50,7 @@ module.exports = {
             statsEmbed.addField('Rockets launched', rockets)
             let research = await searchOneDB(args[0], "stats", { research: "researchData" });
             if (research == null)
-                    research = {};
+                research = {};
             else
                 research = research.completedResearch;
             let maxLevelResearch = ["none", 0];

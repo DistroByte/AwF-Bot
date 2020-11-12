@@ -3,7 +3,7 @@ local function on_rocket_launched(event)
 end
 
 local function on_pre_player_died(event)
-	if event.cause and event.cause.type == "character" then
+	if event.cause and event.cause.type == "character" then --PvP death
 		print("JLOGGER: DIED: PLAYER: " .. game.get_player(event.player_index).name .. " " .. game.get_player(event.cause.player.index).name or "no-cause")
 	elseif (event.cause) then
 		print ("JLOGGER: DIED: " .. game.get_player(event.player_index).name .. " " .. event.cause.name or "no-cause")
@@ -26,7 +26,22 @@ local function on_trigger_fired_artillery(event)
 end
 
 local function on_built_entity(event)
-	print ("JLOGGER: BUILT ENTITY: " .. game.get_player(event.player_index).name .. " " .. event.created_entity.name)
+        if global[event.player_index] == nil then
+                global[event.player_index] = 1
+        else
+                global[event.player_index] = global[event.player_index] + 1
+        end
+end
+
+local function printPlayerBuilds(event)
+        -- prints player name and player online time
+        for _, p in pairs(game.players)
+        do
+                if global[p.index] ~= nil then -- ~= is lua's != operator
+						print ("JLOGGER: BUILT ENTITY: " .. p.name .. " " .. global[p.index])
+						global[p.index] = 0
+                end
+        end
 end
 
 local function logPlayerTime()
@@ -53,6 +68,7 @@ lib.on_nth_tick = {
 	-- 60s * 60t * 15m = logging every 15 minutes
 	[60*60*15] = function()
 		logPlayerTime()
+		printPlayerBuilds()
 	end
 }
 
