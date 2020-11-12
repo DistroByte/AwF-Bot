@@ -2,8 +2,8 @@ const { deleteOneDB, searchOneDB } = require('../../functions')
 
 module.exports = {
     config: {
-        name: 'resetServerStats',
-        aliases: ['resetServerStats', 'resetserverstats'],
+        name: 'resetserverstats',
+        aliases: [],
         usage: '<factorio discord channel name>',
         category: 'moderator',
         description: 'Resets the deaths and other statistics of servers',
