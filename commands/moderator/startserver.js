@@ -1,38 +1,40 @@
 const fs = require('fs');
+const child = require('child_process');
 const { absPath } = require('../../botconfig.json');
 const { MessageEmbed } = require('discord.js');
-const { bubbleSort, modifiedSort, runShellCommand } = require('../../functions')
+const { bubbleSort, modifiedSort, getServerList } = require('../../functions')
+
 
 module.exports = {
     config: {
-        name: 'stopServer',
-        aliases: ['stopServer', 'stopS', 'stops'],
+        name: 'startserver',
+        aliases: ['startS', 'starts'],
         usage: '<server name>',
         category: 'moderator',
         description: 'Start a server testing server',
         accessableby: 'Moderators'
     },
     run: async (client, message, args) => {
-        let authRoles = message.member.roles.cache
-
+        let authRoles = message.member.roles.cache;
         if (authRoles.some(r => r.name === 'Admin') || authRoles.some(r => r.name === 'Moderator') || authRoles.some(r => r.name === 'dev')) {
             if (!args[0]) { // no argument at all
                 let choiceEmbed = new MessageEmbed()
-                    .setTitle('Server Stop Choices')
-                    .setDescription('Choices of a Factorio Server Stop. This shows **all** folders in the `servers` directory, some may not be Factorio server folders')
+                    .setTitle('Server Rollback Choices')
+                    .setDescription('Choices of a Factorio Server Rollback. This shows **all** folders in the `servers` directory, some may not be Factorio server folders')
                     .setColor('GREEN')
                     .setAuthor(`${message.guild.me.displayName} Help`, message.guild.iconURL)
                     .setThumbnail(client.user.displayAvatarURL())
                     .setFooter(
                         `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
                         client.user.displayAvatarURL()
-                    )
-                let dirData = fs.readdirSync('../servers/')
+                    );
+                let dirData = getServerList();
                 dirData = bubbleSort(dirData);
                 dirData.forEach(dir => {
-                    if (fs.statSync('../servers/' + dir).isDirectory()) choiceEmbed.addField(`\`${dir}\``, '\u200B'); //check if it is a directory and if yes add it to the embed
+                    if (fs.statSync('../servers/' + dir).isDirectory())
+                        choiceEmbed.addField(`\`${dir}\``, '\u200B'); //check if it is a directory and if yes add it to the embed
                 });
-                return message.channel.send(choiceEmbed)
+                return message.channel.send(choiceEmbed);
             } else {
                 await runShellCommand('test -w .; echo $?')
                     .then(out => {
@@ -40,9 +42,9 @@ module.exports = {
                     })
                     .catch(e => { return message.channel.send(`error testing file permissions: \`${e}\``) })
                 
-                runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio stop`)
-                    .catch(e => { return message.channel.send(`Error stopping: \`${e}\``) })
-                    .then((out) => { return message.channel.send(`Server stopped: \`${out}\``) })
+                runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio start`)
+                    .catch(e => { return message.channel.send(`Error starting: \`${e}\``) })
+                    .then((out) => { return message.channel.send(`Server started succesfully: \`${out}\``)})
             }
         }
     }

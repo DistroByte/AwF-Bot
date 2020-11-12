@@ -2,6 +2,7 @@ const { bubbleSort, sortModifiedDate, runShellCommand } = require('../../functio
 const fs = require('fs');
 const { absPath } = require('../../botconfig.json');
 const Discord = require('discord.js')
+const { getServerList } = require('../../functions')
 
 module.exports = {
   config: {
@@ -26,7 +27,7 @@ module.exports = {
             `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
             client.user.displayAvatarURL()
           )
-        let dirData = fs.readdirSync('../servers/')
+        let dirData = getServerList();
         dirData = bubbleSort(dirData);
         dirData.forEach(dir => {
           if (fs.statSync('../servers/' + dir).isDirectory()) choiceEmbed.addField(`\`${dir}\``, '\u200B'); //check if it is a directory and if yes add it to the embed

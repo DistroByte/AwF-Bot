@@ -1,10 +1,9 @@
-const fs = require('fs');
 const Discord = require('discord.js')
-const { searchOneDB, bubbleSort } = require('../../functions')
+const { searchOneDB, bubbleSort, getServerList } = require('../../functions')
 
 module.exports = {
     config: {
-        name: 'fStatsServer',
+        name: 'fstatsserver',
         aliases: ['fstatss', 'statss'],
         usage: '<server name> <"server"/"death"> [player]',
         category: 'factorio',
@@ -23,17 +22,16 @@ module.exports = {
                     `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
                     client.user.displayAvatarURL()
                 )
-            let dirData = fs.readdirSync('../servers/')
-            dirData = bubbleSort(dirData);
-            dirData.forEach(dir => {
-                if (fs.statSync('../servers/' + dir).isDirectory()) choiceEmbed.addField(`\`${dir}\``, '\u200B'); //check if it is a directory and if yes add it to the embed
+            let serverNames = getServerList();
+            serverNames.forEach(server => {
+                choiceEmbed.addField(`\`${server}\``, '\u200B');
             });
             return message.channel.send(choiceEmbed)
         }
         if (!args[1]) { // if the server name is provided but no 2nd argument, searches for generic server data
             let statsEmbed = new Discord.MessageEmbed()
                 .setTitle(`Server Statistics of \`${args[0]}\``)
-                .setDescription(`Some statistics of the ${args[0]} Factorio server. Please check use to see other statistics`)
+                .setDescription(`Some statistics of the ${args[0]} Factorio server. Please check use to see other statistics. Server also may not exist, this message is however being sent`)
                 .setColor('GREEN')
                 .setAuthor(`${message.guild.me.displayName} Help`, message.guild.iconURL)
                 .setThumbnail(client.user.displayAvatarURL())
@@ -41,15 +39,18 @@ module.exports = {
                     `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
                     client.user.displayAvatarURL()
                 )
-            let rockets = await searchOneDB(message.channel.name, "stats", { rocketLaunches: { $exists: true } });
+            let rockets = await searchOneDB(args[0], "stats", { rocketLaunches: { $exists: true } });
             if (rockets == null)
                 rockets = 0
             else 
                 rockets = rockets.rocketLaunches
             statsEmbed.addField('Rockets launched', rockets)
-            let research = await searchOneDB(message.channel.name, "stats", { completedResearch: { $exists: true } });
-            research = research.completedResearch;
-            let maxLevelResearch = ["str", 0];
+            let research = await searchOneDB(args[0], "stats", { research: "researchData" });
+            if (research == null)
+                    research = {};
+            else
+                research = research.completedResearch;
+            let maxLevelResearch = ["none", 0];
             Object.keys(research).forEach(function (key) {
                 if (parseInt(research[key]) > maxLevelResearch[1]) {
                     maxLevelResearch[0] = key;

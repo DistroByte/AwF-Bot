@@ -133,19 +133,9 @@ module.exports = {
   findOneAndReplaceDB,
   deleteOneDB,
   parseJammyLogger,
+  getServerList,
   linkFactorioDiscordUser,
   changePoints,
-  runShellCommand,
-}
-
-async function runShellCommand(cmd) {
-  return new Promise((resolve, reject) => {
-    exec(cmd, function (error, stdout, stderr) {
-      if (stdout) resolve(stdout);
-      if (stderr) reject(stderr);
-      if (error) reject(error);
-    });
-  })
 }
 
 async function searchOneDB(dat, coll, params) {
@@ -340,4 +330,11 @@ async function changePoints(playerName, numPoints) {
       console.log(out);
     }
   }
+}
+function getServerList() {
+  let serverNames = []
+  Object.keys(servers).forEach(element => {
+    serverNames.push(servers[element].serverFolderName);
+  })
+  return serverNames;
 }

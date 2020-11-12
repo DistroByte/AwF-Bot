@@ -13,7 +13,6 @@ TODO: add a points system that gives points according to this https://discord.co
 let serverTails = []
 Object.keys(servers).forEach(element => {
   serverTails.push([new Tail(servers[element].serverOut), servers[element]]);
-  console.log(servers[element].name)
 })
 
 const client = new Client();
