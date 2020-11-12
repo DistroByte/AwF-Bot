@@ -28,7 +28,7 @@ module.exports = {
             });
             return message.channel.send(choiceEmbed)
         }
-        const serverName; // the name of the server to look for, allows for pinging servers with #general etc
+        let serverName; // the name of the server to look for, allows for pinging servers with #general etc
         if (message.mentions.first()) serverName = message.mentions.first().name
         else serverName = args[0]
         if (!args[1]) { // if the server name is provided but no 2nd argument, searches for generic server data
