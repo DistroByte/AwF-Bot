@@ -3,7 +3,7 @@ const { searchOneDB, bubbleSort, getServerList } = require('../../functions')
 
 module.exports = {
     config: {
-        name: 'fStatsServer',
+        name: 'fstatsserver',
         aliases: ['fstatss', 'statss'],
         usage: '<server name> <"server"/"death"> [player]',
         category: 'factorio',
@@ -45,7 +45,7 @@ module.exports = {
             else 
                 rockets = rockets.rocketLaunches
             statsEmbed.addField('Rockets launched', rockets)
-            let research = await searchOneDB(message.channel.name, "stats", { research: "researchData" });
+            let research = await searchOneDB(args[0], "stats", { research: "researchData" });
             if (research == null)
                     research = {};
             else

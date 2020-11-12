@@ -6,7 +6,7 @@ const { bubbleSort, modifiedSort, getServerList } = require('../../functions')
 
 module.exports = {
     config: {
-        name: 'stopServer',
+        name: 'stopserver',
         aliases: ['stopS', 'stops'],
         usage: '<server name>',
         category: 'factorio',
