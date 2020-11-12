@@ -13,7 +13,8 @@ Servers.json is here to easen the job of adding and removing servers. Simply hav
         "discordChannelID": "723280139982471247",   //discord channel id
         "discordChannelName": "dev-dump",           //discord channel name
         "serverOut": "../servers/test/server.out",  //the server.out file of the server
-        "serverFifo": "../servers/test/server.fifo" //the server.fifo file of the server
+        "serverFifo": "../servers/test/server.fifo",//the server.fifo file of the server
+        "serverFolderName": "test"
     }
 }
 ```

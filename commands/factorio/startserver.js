@@ -2,11 +2,12 @@ const fs = require('fs');
 const child = require('child_process');
 const { absPath } = require('../../botconfig.json');
 const { MessageEmbed } = require('discord.js');
-const { bubbleSort, modifiedSort } = require('../../functions')
+const { bubbleSort, modifiedSort, getServerList } = require('../../functions')
+
 
 module.exports = {
     config: {
-        name: 'startServer',
+        name: 'startserver',
         aliases: ['startS', 'starts'],
         usage: '<server name>',
         category: 'factorio',
@@ -27,7 +28,7 @@ module.exports = {
                         `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
                         client.user.displayAvatarURL()
                     );
-                let dirData = fs.readdirSync('../servers/');
+                let dirData = getServerList();
                 dirData = bubbleSort(dirData);
                 dirData.forEach(dir => {
                     if (fs.statSync('../servers/' + dir).isDirectory())
