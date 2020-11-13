@@ -17,21 +17,7 @@ module.exports = {
             else server = args[0];
         }
         if (!args[0]) { // no argument at all
-            let choiceEmbed = new Discord.MessageEmbed()
-                .setTitle('Server Statistics')
-                .setDescription('Display the statistics of a Factorio server.')
-                .setColor('GREEN')
-                .setAuthor(`${message.guild.me.displayName} Help`, message.guild.iconURL)
-                .setThumbnail(client.user.displayAvatarURL())
-                .setFooter(
-                    `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
-                    client.user.displayAvatarURL()
-                )
-            let serverNames = getServerList();
-            serverNames.forEach(server => {
-                choiceEmbed.addField(`\`${server}\``, '\u200B');
-            });
-            return message.channel.send(choiceEmbed)
+            return message.channel.send(`Please add a server name or ping a server channel (\`#core\`)`)
         }
         if (!args[1]) { // if the server name is provided but no 2nd argument, searches for generic server data
             let statsEmbed = new Discord.MessageEmbed()
