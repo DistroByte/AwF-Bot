@@ -306,8 +306,14 @@ async function linkFactorioDiscordUser(discordClient, factorioName, discordName)
       let found = await searchOneDB("otherData", "linkedPlayers", { discordID: sendToUser.id });
       if (found !== null && reaction.emoji.name === '🛑') { // re-link user
         let res = await findOneAndReplaceDB("otherData", "linkedPlayers", found, dat);
-        if (res.ok == 1) return await sendToUser.send('Re-linked succesfully!')
-        else return sendToUser.send('Please contact devs/admins for re-linking');
+        if (res.ok != 1) return sendToUser.send('Please contact devs/admins for re-linking, process failed');
+        //redo statistics
+        let prevStats = await searchOneDB("otherData", "globPlayerStats", { discordID: found.discordID });
+        let newStats = lodash.cloneDeep(prevStats);
+        newStats.factorioName = factorioName;
+        res = await findOneAndReplaceDB("otherData", "globPlayerStats", prevStats, newStats);
+        if (res.ok != 1) return sendToUser.send('Please contact devs/admins for re-linking, process failed');
+        return sendToUser.send('Re-linked succesfully!')
       }
       else if (found !== null && reaction.emoji.name === '✅') // cancel
         return sendToUser.send('Already linked');
