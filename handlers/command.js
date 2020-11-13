@@ -17,6 +17,7 @@ module.exports = (client) => {
   [
     "basic",
     "owner",
-    "factorio"
+    "factorio",
+    "moderator",
   ].forEach((x) => load(x));
 };

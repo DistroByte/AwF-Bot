@@ -3,9 +3,9 @@ const { sendToAll } = require('../../functions')
 module.exports = {
   config: {
     name: 'sendall',
-    aliases: ['fcommandall'],
+    aliases: ['sendall', 'fcommandall'],
     usage: '<factorio server command>',
-    category: 'factorio',
+    category: 'moderator',
     description: 'Sends a command to all servers with a username',
     accessableby: 'Moderators'
   },

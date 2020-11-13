@@ -4,6 +4,9 @@ const chatFormat = require('./chatFormat');
 const { token, prefix } = require('./botconfig.json');
 const servers = require('./servers.json'); // tails, fifo, discord IDs etc.
 
+//TODO: add the built+time logging, saved time (improvement), test+implement it
+//TODO: make sure that the time and build logging doesn't collide at all (or minimally)
+
 let serverTails = []
 Object.keys(servers).forEach(element => {
   serverTails.push([new Tail(servers[element].serverOut), servers[element]]);

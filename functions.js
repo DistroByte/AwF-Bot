@@ -4,6 +4,7 @@ const { replace } = require('lodash');
 const MongoClient = require('mongodb').MongoClient;
 const lodash = require('lodash');
 const servers = require('./servers.json'); // tails, fifo, discord IDs etc.
+const { exec } = require('child_process');
 
 let serverFifos = []
 Object.keys(servers).forEach(element => {
@@ -64,12 +65,12 @@ module.exports = {
     // sends a message to all servers at once
     if (sendWithUsername) { // $sendWithUsername is true, therefore the message is sent with the username
       serverFifos.forEach(fifo => {
-        fifo.write(`${message.author.username}: ${message.content}`, () => { });
+        fifo[0].write(`${message.author.username}: ${message.content}`, () => { });
       })
     } else { // sends just the message, no username, nothing because $sendWithUsername is false
       let toSend = message.content || message
       serverFifos.forEach(fifo => {
-        fifo.write(`${toSend}`, () => { });
+        fifo[0].write(`${toSend}`, () => { });
       })
     }
   },
@@ -130,8 +131,12 @@ module.exports = {
   searchOneDB,
   insertOneDB,
   findOneAndReplaceDB,
+  deleteOneDB,
   parseJammyLogger,
   getServerList,
+  linkFactorioDiscordUser,
+  changePoints,
+  runShellCommand,
 }
 
 async function searchOneDB(dat, coll, params) {
@@ -140,21 +145,27 @@ async function searchOneDB(dat, coll, params) {
   const collection = client.db(dat).collection(coll);
   return collection.findOne(params);
 }
-
 async function insertOneDB(dat, coll, params) {
   await dBclientConnectionPromise; //just wait so the database is connected
   // To check if written in correctly, use: ret.result.ok (1 if correctly, 0 if written falsely)
   const collection = client.db(dat).collection(coll);
-  return collection.insertOne(params)
+  return collection.insertOne(params);
 }
-
 async function findOneAndReplaceDB(dat, coll, param1, param2) {
   await dBclientConnectionPromise; //just wait so the database is connected
   // To check if written in correctly, use: ret.result.ok (1 if correctly, 0 if written falsely)
   const collection = client.db(dat).collection(coll);
   return collection.findOneAndReplace(param1, param2);
 }
-
+async function deleteOneDB(dat, coll, params, filter) {
+  // deletes the data object {params} from the database dat collection coll
+  // filter is what to delete, see https://docs.mongodb.com/manual/reference/method/db.collection.deleteOne
+  // if filter is {}, it will delete the first thing found
+  await dBclientConnectionPromise; //just wait so the database is connected
+  // To check if written in correctly, use: ret.acknowledged (1 if correctly, 0 if written falsely)
+  const collection = client.db(dat).collection(coll);
+  return collection.deleteOne(params);
+}
 async function addDeath(server, player, reason) {
   var res = await searchOneDB(server, "deaths", { player: `${player}` });
   //TODO: somehow find out how the object could be retrieved+written into
@@ -231,78 +242,135 @@ async function addResearch(server, research, level) {
   }
   return;
 }
-function parseJammyLogger(line, channel) { //channel is an object
+async function parseJammyLogger(line, channel) { //channel is an object
   //this long asf function parses JammyLogger lines in the console and handles basic statistics
-  if (line.includes('JFEEDBACK: ')) { //if line is feedback for a JammyBot command to Discord
-    if (line.includes('JFEEDBACK: BAN: ')) {
-      line = line.slice('JFEEDBACK: BAN: '.length);
-      line = line.split(' ');
-      //somehow pass to index.js that command has worked and player $line[0] has been banned for reason $line[1]
-      //return `Player ${line[0]} has been banned for reason ${line[1]}`
-      let result = ['ban', line[0], line[1]];
-      return result
+  if (line.includes('DIED: ')) {
+    line = line.slice('DIED: '.length);
+    line = line.split(' '); //split at separation between username and death reson
+    if (line[0].includes('PLAYER: ')) {
+      line[0] = line[0].slice('PLAYER: '.length);
+      line[1] = `Player ${line[1]}`;
+    }
+    addDeath(channel.name, line[0], line[1]);
+    channel.send(`Player \`${line[0]}\` died due to \`${line[1]}\``);
+    let user = await searchOneDB("otherData", "linkedPlayers", { factorioName: line[0] });
+    if (user == null) return; //non-linked user
+    changePoints(user, 0, 0, 1); //0 built, 0 time but 1 death
+  }
+  else if (line.includes('ROCKET: ')) {
+    addRocket(channel.name).then((count) => {
+      if (count == 1)
+        channel.send("Hooray! This server's first rocket has been sent!");
+      if (count % 100 == 0)
+        channel.send(`${count} rockets have been sent!`);
+    })
+      .catch((err) => { console.log(err) });
 
-    }
-    else if (line.includes('JFEEDBACK: UNBAN: ')) {
-      line = line.slice('JFEEDBACK: UNBAN: '.length);
-      //somehow pass to index.js that command has worked and player $line[0] has been unbanned
-      //return `Player ${line} has been unbanned`
-      let result = ['unban', line];
-      return result
-    }
-    else if (line.includes('JFEEDBACK: KICK: ')) {
-      line = line.slice('JFEEDBACK: KICK: '.length);
-      line = line.split(' ');
-      //somehow pass to index.js that command has worked and player $line[0] has been kicked for reason $line[1]
-      //return `Player ${line[0]} has been kicked for reason ${line[1]}`
-      let result = ['kick', line[0], line[1]];
-      return result;
-    }
-    else if (line.includes('JFEEDBACK: MUTE: ')) {
-      line = line.slice('JFEEDBACK: MUTE: ');
-      //somehow pass to index.js that command worked and player $line has been muted
-      //return `Player ${line} has been muted`
-      let result = ['mute', line];
-      return result;
-    }
-    else if (line.includes('JFEEDBACK: UNMUTE: ')) {
-      line = line.slice('JFEEDBACK: UNMUTE: ');
-      //somehow pass to index.js that command worked and player $line has been unmuted
-      //return `Player ${line} has been unmuted`
-      let result = ['unmute', line];
-      return result;
-    }
-  } else {  //if line is not a feedback for a JammyBot command
-    if (line.includes('DIED: ')) {
-      line = line.slice('DIED: '.length);
-      line = line.split(' '); //split at separation between username and death reson
-      addDeath(channel.name, line[0], line[1]);
-      channel.send(`Player \`${line[0]}\` died due to \`${line[1]}\``);
-    }
-    else if (line.includes('ROCKET: ')) {
-      addRocket(channel.name).then((count) => {
-        if (count == 1)
-          channel.send("Hooray! This server's first rocket has been sent!");
-        if (count % 100 == 0)
-          channel.send(`${count} rockets have been sent!`);
-      })
-        .catch((err) => { console.log(err) });
-
-    }
-    else if (line.includes('RESEARCH FINISHED: ')) {
-      line = line.slice('RESEARCH FINISHED: '.length);
-      line = line.split(' ');
-      addResearch(channel.name, line[0], line[1]);
-      channel.send(`Research \`${line[0]}\` on level \`${line[1]}\` was completed!`);
-    }
-    return 0;
+  }
+  else if (line.includes('RESEARCH FINISHED: ')) {
+    line = line.slice('RESEARCH FINISHED: '.length);
+    line = line.split(' ');
+    addResearch(channel.name, line[0], line[1]);
+    channel.send(`Research \`${line[0]}\` on level \`${line[1]}\` was completed!`);
+  }
+  else if (line.includes('STATS: ')) {
+    line = line.slice('STATS: '.length);
+    line = line.split(' ');
+    let username = line[0] // username from line
+    let built = parseInt(line[1]);   // first part of the line
+    let time  = parseInt(line[2]);   // second part of the line
+    time = (time / (60 * 60)) // get time into minutes
+    let user = await searchOneDB("otherData", "linkedPlayers", { factorioName: username });
+    if (user == null) return; //non-linked user
+    changePoints(user, built, time)
   }
 }
-
+async function linkFactorioDiscordUser(discordClient, factorioName, discordName) {
+  //links the Factorio and Discord usernames, can be used for verification later
+  //discordName is the name and tag of the user, e.g. SomeRandomPerson#0000
+  let server = await discordClient.guilds.cache.get('548410604679856151');
+  let sendToUser = await server.members.fetch({query: discordName, limit: 1});
+  sendToUser = sendToUser.first()
+  let sentMsg = await sendToUser.send(`You have chosen to link your Discord account, \`${discordName}\` with your Factorio account on AwF, \`${factorioName}\`. The request will timeout after 120s. React with 🛑 to re-link your account. If complications arise, please contact devs/admins (relinking is when switching Factorio username, for switching Discord account contact admins/devs. Changing your Discord username **IS NOT** changing an account, whilst changing your Factorio username **is**)`);
+  sentMsg.react('✅')
+  sentMsg.react('❌')
+  sentMsg.react('🛑')
+  const filter = (reaction, user) => {
+    return user.id === sendToUser.id;
+  };
+  sentMsg.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] })
+    .then(async(messageReaction) => {
+      let reaction = messageReaction.first();
+      if (reaction.emoji.name === '❌') return sendToUser.send('Linking cancelled');
+      let dat = { factorioName: factorioName, discordID: sendToUser.id };
+      let found = await searchOneDB("otherData", "linkedPlayers", { discordID: sendToUser.id });
+      if (found !== null && reaction.emoji.name === '🛑') { // re-link user
+        let res = await findOneAndReplaceDB("otherData", "linkedPlayers", found, dat);
+        if (res.ok != 1) return sendToUser.send('Please contact devs/admins for re-linking, process failed');
+        //redo statistics
+        let prevStats = await searchOneDB("otherData", "globPlayerStats", { discordID: found.discordID });
+        let newStats = lodash.cloneDeep(prevStats);
+        newStats.factorioName = factorioName;
+        res = await findOneAndReplaceDB("otherData", "globPlayerStats", prevStats, newStats);
+        if (res.ok != 1) return sendToUser.send('Please contact devs/admins for re-linking, process failed');
+        return sendToUser.send('Re-linked succesfully!')
+      }
+      else if (found !== null && reaction.emoji.name === '✅') // cancel
+        return sendToUser.send('Already linked');
+      else if (found === null) {
+        let res = await insertOneDB("otherData", "linkedPlayers", dat);
+        if (res.result.ok == 0) return sendToUser.send('Failed linking. Contact devs/admins');
+        else return sendToUser.send('Linked successfully');
+      }
+    })
+    .catch((out) => {
+      if (out.size == 0) return sendToUser.send(`Didn't react in time. Please try again.`);
+    })
+}
+async function changePoints(user, built, time, death=0) {
+  let res = await searchOneDB("otherData", "globPlayerStats", { discordID: user.discordID });
+  if (res == null) {
+    pushData = {
+      discordID: user.discordID,
+      timePlayed: 0,
+      time: 0, // points for time played
+      built: 0,
+      deaths: 0,
+      points: 0,
+    }
+    await insertOneDB("otherData", "globPlayerStats", pushData);
+    res = pushData;
+  } else {
+    let replaceWith = lodash.cloneDeep(res);
+    if (replaceWith.time) replaceWith.time += time;
+    else replaceWith.time = time;
+    if (replaceWith.built) replaceWith.built += built;
+    else replaceWith.built = built;
+    if (death != 0) {
+      if (replaceWith.deaths) replaceWith.deaths += death;
+      else replaceWith.deaths = death;
+      replaceWith.points -= 100*death;    //-100pts for death
+    }
+    if (replaceWith.points == null) replaceWith.points = 0
+    replaceWith.points += built;
+    replaceWith.points += (time / 60) * 50; //50 pts/h
+    await findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
+  }
+}
 function getServerList() {
   let serverNames = []
   Object.keys(servers).forEach(element => {
     serverNames.push(servers[element].serverFolderName);
   })
   return serverNames;
+}
+
+async function runShellCommand(cmd) {
+  return new Promise((resolve, reject) => {
+    exec(cmd, function (error, stdout, stderr) {
+      if (stdout) resolve(stdout);
+      if (stderr) reject(stderr);
+      if (error) reject(error);
+    });
+  })
 }

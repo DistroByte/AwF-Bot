@@ -2,15 +2,15 @@ const fs = require('fs');
 const child = require('child_process');
 const { absPath } = require('../../botconfig.json');
 const { MessageEmbed } = require('discord.js');
-const { bubbleSort, modifiedSort, getServerList } = require('../../functions')
+const { bubbleSort, modifiedSort, getServerList, runShellCommand } = require('../../functions')
 
 
 module.exports = {
     config: {
         name: 'startserver',
-        aliases: ['startS', 'starts'],
+        aliases: ['starts'],
         usage: '<server name>',
-        category: 'factorio',
+        category: 'moderator',
         description: 'Start a server testing server',
         accessableby: 'Moderators'
     },
@@ -36,14 +36,14 @@ module.exports = {
                 });
                 return message.channel.send(choiceEmbed);
             } else {
-                try {
-                    let a = child.exec(`${absPath}/test/factorio-init/factorio start`);
-                } catch (e) {
-                    return console.log(e);
-                }
+                runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio start`)
+                    .catch(e => { return message.channel.send(`Error starting: \`${e}\``) })
 
-                return message.channel.send(`Started server ${args[0]}`)
-                    .then((m) => m.delete({ timeout: 5000, reason: 'tidying up' }));
+                setTimeout(() => {
+                    runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio status`)
+                        .catch(e => { return message.channel.send(`Error statusing: \`${e}\``) })
+                        .then((out) => { return message.channel.send(`Server status: \`${out}\``) })
+                }, 5000)
             }
         }
     }

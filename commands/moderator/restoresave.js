@@ -1,6 +1,5 @@
-const { bubbleSort, sortModifiedDate } = require('../../functions')
+const { bubbleSort, sortModifiedDate, runShellCommand } = require('../../functions')
 const fs = require('fs');
-const { exec } = require("child_process")
 const { absPath } = require('../../botconfig.json');
 const Discord = require('discord.js')
 const { getServerList } = require('../../functions')
@@ -8,9 +7,9 @@ const { getServerList } = require('../../functions')
 module.exports = {
   config: {
     name: 'restoresave',
-    aliases: ['restore', 'getbackup'],
+    aliases: ['restoresave', 'restore', 'getbackup'],
     usage: '<save name>',
-    category: 'factorio',
+    category: 'moderator',
     description: 'Restores a save',
     accessableby: 'Moderators'
   },
@@ -77,29 +76,27 @@ module.exports = {
           )
           .addField(`Rolled back server \`${args[0]}\` to save \`${args[1]}\``, 'You may need to start the server with a separate command');
 
-        try { // see if priviliges are ok
-          await exec('test -w .');
-        } catch (e) {
-          return message.channel.send(`Insufficient permissions. Error: ${e}`);
-        }
-        try { // stop the server
-          let out = await exec(absPath + '/' + args[0] + '/factorio-init/factorio stop');
-        } catch (e) {
-          return message.channel.send(`server restore: stop error: ${e}`);
-        }
+        await runShellCommand('test -w .; echo $?')
+          .then(out => {
+            if (out == 1) return message.channel.send('no file permissions')
+          })
+          .catch(e => { return message.channel.send(`error testing file permissions: \`${e}\``) })
 
-        try { // load a different server
-          let out = await exec(absPath + '/' + args[0] + '/factorio-init/factorio load-save ' + args[1]);
-        } catch (e) {
-          return message.channel.send(`server restore: load error: ${e}`);
-        }
+        command = [
+          `${absPath}/${args[0]}/factorio-init/factorio stop`,
+          `${absPath}/${args[0]}/factorio-init/factorio load-save ${args[1]}`,
+          `${absPath}/${args[0]}/factorio-init/factorio start`
+        ]
+        
+        console.log(command.join(' && '));
 
-        try { // start the server back up
-          let out = await exec(absPath + '/' + args[0] + '/factorio-init/factorio start');
-        } catch (e) {
-          return message.channel.send(`server restore: start error: ${e}`);
-        }
-        return message.channel.send(choiceEmbed);
+        runShellCommand(command.join(' && '))
+          .catch(e => { return message.channel.send(`Error restoring: \`${e}\``) })
+        setTimeout(() => {
+          runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio status`)
+            .catch(e => { return message.channel.send(`Error statusing: \`${e}\``) })
+            .then((out) => { return message.channel.send(`Server status: \`${out}\``) })
+        }, 5000)
       }
     }
   }
