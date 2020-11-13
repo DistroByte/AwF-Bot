@@ -49,6 +49,10 @@ module.exports = function chatFormat(line, channel, client) {
     return client.channels.cache.get(channel).send(`Player \`${player}\` has been UNMUTED by \`${doneBy}\``);
   }
   
+  if (line.includes("Error")) {
+    client.channels.cache.get('697146357819113553').send(`Error in ${client.channels.cache.get(channel).name}: ${line}`)
+  }
+
   if (line.includes('?griefer')) {
     //mentions 548545406653431810 (Admin) and 555824650324672522 (Moderator)
     helpdesk.send(`<@&548545406653431810> <@&555824650324672522>! Griefer on ${client.channels.cache.get(channel)}`);

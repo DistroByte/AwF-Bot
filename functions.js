@@ -65,7 +65,7 @@ module.exports = {
     // sends a message to all servers at once
     if (sendWithUsername) { // $sendWithUsername is true, therefore the message is sent with the username
       serverFifos.forEach(fifo => {
-        fifo.write(`${message.author.username}: ${message.content}`, () => { });
+        fifo[0].write(`${message.author.username}: ${message.content}`, () => { });
       })
     } else { // sends just the message, no username, nothing because $sendWithUsername is false
       let toSend = message.content || message
