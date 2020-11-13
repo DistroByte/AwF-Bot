@@ -90,16 +90,13 @@ module.exports = {
         
         console.log(command.join(' && '));
 
-        await runShellCommand(command.join(' && '))
+        runShellCommand(command.join(' && '))
           .catch(e => { return message.channel.send(`Error restoring: \`${e}\``) })
-          .then(() => {
-            setTimeout(() => { //check server status
-              runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio status`)
-                .catch(e => { return message.channel.send(`Error restoring (status): \`${e}\``) })
-                .then((out) => { return message.channel.send(`Server restored: \`${out}\``) })
-            }, 5000)
-          })
-        
+        setTimeout(() => {
+          runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio status`)
+            .catch(e => { return message.channel.send(`Error statusing: \`${e}\``) })
+            .then((out) => { return message.channel.send(`Server status: \`${out}\``) })
+        }, 5000)
       }
     }
   }

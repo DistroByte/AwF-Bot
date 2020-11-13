@@ -136,6 +136,7 @@ module.exports = {
   getServerList,
   linkFactorioDiscordUser,
   changePoints,
+  runShellCommand,
 }
 
 async function searchOneDB(dat, coll, params) {
@@ -252,7 +253,9 @@ function parseJammyLogger(line, channel) { //channel is an object
     }
     addDeath(channel.name, line[0], line[1]);
     channel.send(`Player \`${line[0]}\` died due to \`${line[1]}\``);
-    changePoints(line[0], -100);
+    let user = await searchOneDB("otherData", "linkedPlayers", { factorioName: line[0] });
+    if (user == null) return; //non-linked user
+    changePoints(user, 0, 0, 1); //0 built, 0 time but 1 death
   }
   else if (line.includes('ROCKET: ')) {
     addRocket(channel.name).then((count) => {
@@ -270,7 +273,17 @@ function parseJammyLogger(line, channel) { //channel is an object
     addResearch(channel.name, line[0], line[1]);
     channel.send(`Research \`${line[0]}\` on level \`${line[1]}\` was completed!`);
   }
-  return 0;
+  else if (line.includes('STATS: ')) {
+    line = line.slice('STATS: '.length);
+    line = line.split(' ');
+    let username = line[0] // username from line
+    let built = parseInt(line[1]);   // first part of the line
+    let time  = parseInt(line[2]);   // second part of the line
+    time = (time / (60 * 60)) // get time into minutes
+    let user = await searchOneDB("otherData", "linkedPlayers", { factorioName: username });
+    if (user == null) return; //non-linked user
+    changePoints(user, built, time)
+  }
 }
 async function linkFactorioDiscordUser(discordClient, factorioName, discordName) {
   //links the Factorio and Discord usernames, can be used for verification later
@@ -308,27 +321,35 @@ async function linkFactorioDiscordUser(discordClient, factorioName, discordName)
       if (out.size == 0) return sendToUser.send(`Didn't react in time. Please try again.`);
     })
 }
-async function changePoints(playerName, numPoints) {
-  var res = await searchOneDB("otherData", "globPlayerStats", { [playerName]: { $exists: true } });
-  if (res == null) { // if the server's research wasn't found in the server's database (first research)
-    var writeObj = {
-      points: numPoints
+async function changePoints(user, built, time, death=0) {
+  let res = await searchOneDB("otherData", "globPlayerStats", { discordID: user.discordID });
+  if (res == null) {
+    pushData = {
+      discordID: user.discordID,
+      timePlayed: 0,
+      time: 0, // points for time played
+      built: 0,
+      deaths: 0,
+      points: 0,
     }
-    var out = await insertOneDB("otherData", "globPlayerStats", writeObj);
-    if (out.result.ok !== 1) console.log('error adding to database');
-    return;
+    await insertOneDB("otherData", "globPlayerStats", pushData);
+    res = pushData;
   } else {
-    var replaceWith = lodash.cloneDeep(res); // duplicate the object
-    if (typeof res.points == 'number')
-      replaceWith.points += numPoints;
-    else
-      replaceWith.points = numPoints;
-    var out = await findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
-    if (typeof (out) == "object") {
-      if (out.ok !== 1) console.log('error adding to database');
-    } else {
-      console.log(out);
+    let replaceWith = lodash.cloneDeep(res);
+    if (replaceWith.time) replaceWith.time += time;
+    else replaceWith.time = time;
+    if (replaceWith.built) replaceWith.built += built;
+    else replaceWith.built = built;
+    if (death != 0) {
+      if (replaceWith.deaths) replaceWith.deaths += death;
+      else replaceWith.deaths = death;
+      replaceWith.points -= 100*death;    //-100pts for death
     }
+    if (replaceWith.points == null) replaceWith.points = 0
+    replaceWith.points += built;
+    replaceWith.points += (time / 60) * 50; //50 pts/h
+    console.log(res, replaceWith, built, time, death);
+    await findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
   }
 }
 function getServerList() {
@@ -337,4 +358,14 @@ function getServerList() {
     serverNames.push(servers[element].serverFolderName);
   })
   return serverNames;
+}
+
+async function runShellCommand(cmd) {
+  return new Promise((resolve, reject) => {
+    exec(cmd, function (error, stdout, stderr) {
+      if (stdout) resolve(stdout);
+      if (stderr) reject(stderr);
+      if (error) reject(error);
+    });
+  })
 }

@@ -26,20 +26,24 @@ local function on_trigger_fired_artillery(event)
 end
 
 local function on_built_entity(event)
-        if global[event.player_index] == nil then
-                global[event.player_index] = 1
-        else
-                global[event.player_index] = global[event.player_index] + 1
+		if global[event.player_index] == nil then
+				-- format of array: {entities placed, ticks played}
+                global[event.player_index] = {1, 0}
+		else
+			local toWrite = global[event.player_index]
+			toWrite[1] = toWrite[1] + 1 --indexes start with 1 in lua
+            global[event.player_index] = toWrite
         end
 end
 
-local function printPlayerBuilds(event)
+local function printPlayerBuilds()
         -- prints player name and player online time
         for _, p in pairs(game.players)
         do
-                if global[p.index] ~= nil then -- ~= is lua's != operator
-						print ("JLOGGER: BUILT ENTITY: " .. p.name .. " " .. global[p.index])
-						global[p.index] = 0
+				if global[p.index] ~= nil
+				then -- ~= is lua's != operator
+						print ("JLOGGER: BUILT ENTITY: " .. p.name .. " " .. global[p.index][1])
+						global[p.index][1] = 0
                 end
         end
 end
@@ -47,8 +51,33 @@ end
 local function logPlayerTime()
 	for _, p in pairs(game.players)
 	do
-		print ("JLOGGER: TIME PLAYED: " .. p.name .. " " .. p.online_time)
-		-- prints player name and player online time
+		if global[p.index] == nil then
+				-- format of array: {entities placed, ticks played}
+				global[p.index] = {0, p.online_time}
+				print ("JLOGGER: TIME PLAYED: " .. p.name .. " " .. p.online_time)
+		else
+			local playerStats = global[p.index]
+			print ("JLOGGER: TIME PLAYED: " .. p.name .. " " .. (p.online_time - playerStats[2]))
+			playerStats[2] = p.online_time --set it back to the time played (currently)
+			global[p.index] = playerStats
+		end
+	end
+end
+
+local function logStats()
+	for _, p in pairs(game.players)
+	do
+		if global[p.index] == nil then
+				-- format of array: {entities placed, ticks played}
+				global[p.index] = {0, p.online_time}
+				print ("JLOGGER: STATS: " .. p.name .. " " .. 0 .. " " .. p.online_time)
+		else
+			local playerStats = global[p.index]
+			print ("JLOGGER: STATS: " .. p.name .. " " .. playerStats[1] .. " " .. (p.online_time - playerStats[2]))
+			playerStats[2] = p.online_time --set it back to the time played (currently)
+			playerStats[1] = 0 --reset the number of built entities
+			global[p.index] = playerStats
+		end
 	end
 end
 
@@ -67,8 +96,9 @@ lib.on_nth_tick = {
 	-- 60 ticks/s (same as UPS)
 	-- 60s * 60t * 15m = logging every 15 minutes
 	[60*60*15] = function()
-		logPlayerTime()
-		printPlayerBuilds()
+		-- logPlayerTime()
+		-- printPlayerBuilds()
+		logStats()
 	end
 }
 
