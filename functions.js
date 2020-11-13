@@ -348,7 +348,6 @@ async function changePoints(user, built, time, death=0) {
     if (replaceWith.points == null) replaceWith.points = 0
     replaceWith.points += built;
     replaceWith.points += (time / 60) * 50; //50 pts/h
-    console.log(res, replaceWith, built, time, death);
     await findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
   }
 }
