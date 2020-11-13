@@ -242,7 +242,7 @@ async function addResearch(server, research, level) {
   }
   return;
 }
-function parseJammyLogger(line, channel) { //channel is an object
+async function parseJammyLogger(line, channel) { //channel is an object
   //this long asf function parses JammyLogger lines in the console and handles basic statistics
   if (line.includes('DIED: ')) {
     line = line.slice('DIED: '.length);

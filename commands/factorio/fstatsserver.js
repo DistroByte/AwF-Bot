@@ -11,6 +11,11 @@ module.exports = {
         accessableby: 'Members'
     },
     run: async (client, message, args) => {
+        if (args[0]) {
+            var server;
+            if (message.mentions.channels.first()) server = message.mentions.channels.first().name;
+            else server = args[0];
+        }
         if (!args[0]) { // no argument at all
             let choiceEmbed = new Discord.MessageEmbed()
                 .setTitle('Server Statistics')
@@ -28,13 +33,10 @@ module.exports = {
             });
             return message.channel.send(choiceEmbed)
         }
-        let serverName; // the name of the server to look for, allows for pinging servers with #general etc
-        if (message.mentions.first()) serverName = message.mentions.first().name
-        else serverName = args[0]
         if (!args[1]) { // if the server name is provided but no 2nd argument, searches for generic server data
             let statsEmbed = new Discord.MessageEmbed()
-                .setTitle(`Server Statistics of \`${args[0]}\``)
-                .setDescription(`Some statistics of the ${args[0]} Factorio server. Please check use to see other statistics. Server also may not exist, this message is however being sent`)
+                .setTitle(`Server Statistics of \`${server}\``)
+                .setDescription(`Some statistics of the ${server} Factorio server. Please check use to see other statistics. Server also may not exist, this message is however being sent`)
                 .setColor('GREEN')
                 .setAuthor(`${message.guild.me.displayName} Help`, message.guild.iconURL)
                 .setThumbnail(client.user.displayAvatarURL())
@@ -42,13 +44,13 @@ module.exports = {
                     `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
                     client.user.displayAvatarURL()
                 )
-            let rockets = await searchOneDB(args[0], "stats", { rocketLaunches: { $exists: true } });
+            let rockets = await searchOneDB(server, "stats", { rocketLaunches: { $exists: true } });
             if (rockets == null)
                 rockets = 0
             else 
                 rockets = rockets.rocketLaunches
             statsEmbed.addField('Rockets launched', rockets)
-            let research = await searchOneDB(args[0], "stats", { research: "researchData" });
+            let research = await searchOneDB(server, "stats", { research: "researchData" });
             if (research == null)
                 research = {};
             else
@@ -67,8 +69,8 @@ module.exports = {
             if (args[1] != "deaths") return message.channel.send('invalid parameter. please see help')
             if (!args[2]) return message.channel.send('Please supply with player name to view deaths!');
             let statsEmbed = new Discord.MessageEmbed() 
-                .setTitle(`Death Statistics of \`${args[2]}\` on server \`${args[0]}\``)
-                .setDescription(`The death statistics of player \`${args[2]}\` from server  \`${args[0]}\``)
+                .setTitle(`Death Statistics of \`${args[2]}\` on server \`${server}\``)
+                .setDescription(`The death statistics of player \`${args[2]}\` from server  \`${server}\``)
                 .setColor('GREEN')
                 .setAuthor(`${message.guild.me.displayName} Help`, message.guild.iconURL)
                 .setThumbnail(client.user.displayAvatarURL())
@@ -76,8 +78,8 @@ module.exports = {
                     `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
                     client.user.displayAvatarURL()
                 )
-            let player = await searchOneDB(args[0], "deaths", { player: `${args[2]}` });
-            if (player == null) return message.channel.send(`Player \`${args[2]}\` not found on server \`${args[0]}\``)
+            let player = await searchOneDB(server, "deaths", { player: `${args[2]}` });
+            if (player == null) return message.channel.send(`Player \`${args[2]}\` not found on server \`${server}\``)
             let maxDeaths = ["str", 0];
             Object.keys(player.deaths).forEach(function (key) {
                 if (parseInt(player.deaths[key]) > maxDeaths[1]) {
