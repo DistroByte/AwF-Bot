@@ -36,6 +36,7 @@ module.exports = {
                 });
                 return message.channel.send(choiceEmbed);
             } else {
+                console.log(`${absPath}/${args[0]}/factorio-init/factorio start`)
                 runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio start`)
                     .catch(e => { return message.channel.send(`Error starting: \`${e}\``) })
 

@@ -36,7 +36,6 @@ module.exports = {
             } else {
                 runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio stop`)
                     .catch(e => { return message.channel.send(`Error stopping: \`${e}\``) })
-                    .then((out) => { return message.channel.send(`Server stopped: \`${out}\``) })
                 
                 setTimeout(() => {
                     runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio status`)
