@@ -4,9 +4,9 @@ end
 
 local function on_pre_player_died(event)
 	if event.cause and event.cause.type == "character" then --PvP death
-		print("JLOGGER: DIED: PLAYER: " .. game.get_player(event.player_index).name .. " " .. game.get_player(event.cause.player.index).name or "no-cause")
+		print("JLOGGER: DIED: PLAYER: " .. game.get_player(event.player_index).name .. " " .. (game.get_player(event.cause.player.index).name or "no-cause"))
 	elseif (event.cause) then
-		print ("JLOGGER: DIED: " .. game.get_player(event.player_index).name .. " " .. event.cause.name or "no-cause")
+		print ("JLOGGER: DIED: " .. game.get_player(event.player_index).name .. " " .. (event.cause.name or "no-cause"))
 	else
 		print ("JLOGGER: DIED: " .. game.get_player(event.player_index).name .. " " .. "no-cause") --e.g. poison damage
 	end
@@ -18,11 +18,11 @@ end
 
 local function on_research_finished(event)
 	local research_name = get_infinite_research_name(event.research.name)
-	print ("JLOGGER: RESEARCH FINISHED: " .. research_name .. " " .. event.research.level or "no-level")
+	print ("JLOGGER: RESEARCH FINISHED: " .. research_name .. " " .. (event.research.level or "no-level"))
 end
 
 local function on_trigger_fired_artillery(event)
-	print ("JLOGGER: ARTILLERY: " .. event.entity.name .. event.source.name or "no source")
+	print ("JLOGGER: ARTILLERY: " .. event.entity.name .. (event.source.name or "no source"))
 end
 
 local function on_built_entity(event)
