@@ -14,8 +14,8 @@ module.exports = {
     run: async (client, message, args) => {
         if (!args[0]) { // no argument at all
             let choiceEmbed = new Discord.MessageEmbed()
-                .setTitle('Server Rollback Choices')
-                .setDescription('Choices of a Factorio Server Rollback. This shows **all** folders in the `servers` directory, some may not be Factorio server folders')
+                .setTitle('Server Availability Choices')
+                .setDescription('Choices of a server to status')
                 .setColor('GREEN')
                 .setAuthor(`${message.guild.me.displayName} Help`, message.guild.iconURL)
                 .setThumbnail(client.user.displayAvatarURL())
