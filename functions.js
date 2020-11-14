@@ -360,7 +360,8 @@ async function changePoints(user, built, time, death=0) {
 function getServerList() {
   let serverNames = []
   Object.keys(servers).forEach(element => {
-    serverNames.push(servers[element].serverFolderName);
+    if (servers[element].serverFolderName !== '')
+      serverNames.push(servers[element].serverFolderName);
   })
   return serverNames;
 }
