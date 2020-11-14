@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { absPath } = require('../../botconfig.json');
 const { MessageEmbed } = require('discord.js');
-const { bubbleSort, modifiedSort, getServerList, runShellCommand } = require('../../functions')
+const { bubbleSort, getServerList, runShellCommand } = require('../../functions')
 
 module.exports = {
     config: {
