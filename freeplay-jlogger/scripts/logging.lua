@@ -67,13 +67,15 @@ end
 local function logStats()
 	for _, p in pairs(game.players)
 	do
-		if global[p.index] == nil then
+		if (global[p.index] == nil) then
 				-- format of array: {entities placed, ticks played}
 				global[p.index] = {0, p.online_time}
 				print ("JLOGGER: STATS: " .. p.name .. " " .. 0 .. " " .. p.online_time)
 		else
 			local playerStats = global[p.index]
-			print ("JLOGGER: STATS: " .. p.name .. " " .. playerStats[1] .. " " .. (p.online_time - playerStats[2]))
+			if (playerStats[1] ~= 0 or (p.online_time - playerStats[2]) ~= 0) then
+				print ("JLOGGER: STATS: " .. p.name .. " " .. playerStats[1] .. " " .. (p.online_time - playerStats[2]))
+			end
 			playerStats[2] = p.online_time --set it back to the time played (currently)
 			playerStats[1] = 0 --reset the number of built entities
 			global[p.index] = playerStats
