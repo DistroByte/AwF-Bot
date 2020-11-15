@@ -1,17 +1,17 @@
 const FIFO = require('fifo-js');
 const fs = require('fs');
-const { replace } = require('lodash');
 const MongoClient = require('mongodb').MongoClient;
 const lodash = require('lodash');
 const servers = require('./servers.json'); // tails, fifo, discord IDs etc.
 const { exec } = require('child_process');
+const { uri, rconport, rconpw } = require('./botconfig.json');
+const Rcon = require('rcon-client');
 
 let serverFifos = []
 Object.keys(servers).forEach(element => {
   serverFifos.push([new FIFO(servers[element].serverFifo), servers[element]]);
 })
 
-const { uri } = require('./botconfig.json');
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 const dBclientConnectionPromise = client.connect();
 
@@ -137,6 +137,7 @@ module.exports = {
   linkFactorioDiscordUser,
   changePoints,
   runShellCommand,
+  rconCommand,
 }
 
 async function searchOneDB(dat, coll, params) {
@@ -365,7 +366,6 @@ function getServerList() {
   })
   return serverNames;
 }
-
 async function runShellCommand(cmd) {
   return new Promise((resolve, reject) => {
     exec(cmd, function (error, stdout, stderr) {
@@ -374,4 +374,43 @@ async function runShellCommand(cmd) {
       if (error) reject(error);
     });
   })
+}
+async function rconCommand(message, command, serverName) {
+  //TODO: continue on sending and recieving rcon commands
+  if (!command.startsWith('/')) command = `/${command}` //add a '/' if not present
+  let server;
+  Object.keys(servers).forEach(s => {
+    if (servers[s].name == serverName)
+      server = servers[s];
+  });
+  if (server == null) return ['', `error: no server corresponding to ${serverName}`]
+  let port = parseInt(rconport) + parseInt(server.rconPortOffset); // the port to connect to, ports are one after another
+  try {
+    const rcon = new Rcon.Rcon({
+      host: "127.0.0.1",
+      port: `${port}`,
+      password: `${rconpw}`
+    });
+    // rcon.on("connect", () => { console.log(`connected ${serverName}`)}); //why spam console
+    rcon.on("error", (e) => {console.log(`error ${serverName}: ${e}`)});
+    // rcon.on("authenticated", () => console.log(`authenticated ${serverName}`)); //why spam console
+    // rcon.on("end", () => console.log(`end ${serverName}`)); //why spam console
+    
+    await rcon.connect(); // wait for connecting before continuing
+    let res = await rcon.send(command);
+    let responseType
+    if (typeof(res) == 'string' && res.length)
+      responseType = ''
+    else 
+      responseType = 'error';
+    rcon.end();
+    return([res, responseType]);
+  } catch (err) {
+    if (err.stack.startsWith(`Error: connect ECONNREFUSED`)) {
+      console.log(`Connection Error --- Details --- \nNAME: ${err.name} \nDESC: ${err.description} \nStack: ${err.stack}`)
+    } else {
+      console.log(`Connection Error --- Details --- \nNAME: ${err.name} \nDESC: ${err.description} \nStack: ${err.stack}`)
+    }
+    return(['', 'error'])
+  }
 }
