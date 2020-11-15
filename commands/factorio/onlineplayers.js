@@ -5,10 +5,10 @@ const serverJson = require('../../servers.json')
 module.exports = {
     config: {
         name: 'onlineplayers',
-        aliases: ['fstatss', 'statss'],
-        usage: '<server name> <"server"/"death"> [player]',
+        aliases: [],
+        usage: '',
         category: 'factorio',
-        description: 'View some statistics of the server',
+        description: 'View online players across all servers',
         accessableby: 'Members'
     },
     run: async (client, message, args) => {

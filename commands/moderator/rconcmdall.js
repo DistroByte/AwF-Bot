@@ -5,9 +5,9 @@ module.exports = {
     config: {
         name: 'rconcmdall',
         aliases: ['rconcommandall', 'sendcmdall', 'fcommandall'],
-        usage: '<server name> <factorio rcon command>',
+        usage: '<factorio rcon command>',
         category: 'moderator',
-        description: 'Sends a command to a single Factorio server',
+        description: 'Sends a command to all Factorio servers',
         accessableby: 'Moderators'
     },
     run: async (client, message, args) => {
