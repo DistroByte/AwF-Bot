@@ -4,9 +4,9 @@ end
 
 local function on_pre_player_died(event)
 	if event.cause and event.cause.type == "character" then --PvP death
-		print("JLOGGER: DIED: PLAYER: " .. game.get_player(event.player_index).name .. " " .. game.get_player(event.cause.player.index).name or "no-cause")
+		print("JLOGGER: DIED: PLAYER: " .. game.get_player(event.player_index).name .. " " .. (game.get_player(event.cause.player.index).name or "no-cause"))
 	elseif (event.cause) then
-		print ("JLOGGER: DIED: " .. game.get_player(event.player_index).name .. " " .. event.cause.name or "no-cause")
+		print ("JLOGGER: DIED: " .. game.get_player(event.player_index).name .. " " .. (event.cause.name or "no-cause"))
 	else
 		print ("JLOGGER: DIED: " .. game.get_player(event.player_index).name .. " " .. "no-cause") --e.g. poison damage
 	end
@@ -18,11 +18,11 @@ end
 
 local function on_research_finished(event)
 	local research_name = get_infinite_research_name(event.research.name)
-	print ("JLOGGER: RESEARCH FINISHED: " .. research_name .. " " .. event.research.level or "no-level")
+	print ("JLOGGER: RESEARCH FINISHED: " .. research_name .. " " .. (event.research.level or "no-level"))
 end
 
 local function on_trigger_fired_artillery(event)
-	print ("JLOGGER: ARTILLERY: " .. event.entity.name .. event.source.name or "no source")
+	print ("JLOGGER: ARTILLERY: " .. event.entity.name .. (event.source.name or "no source"))
 end
 
 local function on_built_entity(event)
@@ -67,13 +67,15 @@ end
 local function logStats()
 	for _, p in pairs(game.players)
 	do
-		if global[p.index] == nil then
+		if (global[p.index] == nil) then
 				-- format of array: {entities placed, ticks played}
 				global[p.index] = {0, p.online_time}
 				print ("JLOGGER: STATS: " .. p.name .. " " .. 0 .. " " .. p.online_time)
 		else
 			local playerStats = global[p.index]
-			print ("JLOGGER: STATS: " .. p.name .. " " .. playerStats[1] .. " " .. (p.online_time - playerStats[2]))
+			if (playerStats[1] ~= 0 or (p.online_time - playerStats[2]) ~= 0) then
+				print ("JLOGGER: STATS: " .. p.name .. " " .. playerStats[1] .. " " .. (p.online_time - playerStats[2]))
+			end
 			playerStats[2] = p.online_time --set it back to the time played (currently)
 			playerStats[1] = 0 --reset the number of built entities
 			global[p.index] = playerStats

@@ -2,7 +2,7 @@ const fs = require('fs');
 const child = require('child_process');
 const { absPath } = require('../../botconfig.json');
 const { MessageEmbed } = require('discord.js');
-const { bubbleSort, modifiedSort, getServerList, runShellCommand } = require('../../functions')
+const { bubbleSort, getServerList, runShellCommand } = require('../../functions')
 
 
 module.exports = {
@@ -36,6 +36,7 @@ module.exports = {
                 });
                 return message.channel.send(choiceEmbed);
             } else {
+                console.log(`${absPath}/${args[0]}/factorio-init/factorio start`)
                 runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio start`)
                     .catch(e => { return message.channel.send(`Error starting: \`${e}\``) })
 

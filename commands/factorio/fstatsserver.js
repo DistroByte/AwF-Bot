@@ -1,5 +1,5 @@
 const Discord = require('discord.js')
-const { searchOneDB, bubbleSort, getServerList } = require('../../functions')
+const { searchOneDB } = require('../../functions')
 
 module.exports = {
     config: {

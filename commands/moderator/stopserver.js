@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { absPath } = require('../../botconfig.json');
 const { MessageEmbed } = require('discord.js');
-const { bubbleSort, modifiedSort, getServerList, runShellCommand } = require('../../functions')
+const { bubbleSort, getServerList, runShellCommand } = require('../../functions')
 
 module.exports = {
     config: {
@@ -36,7 +36,6 @@ module.exports = {
             } else {
                 runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio stop`)
                     .catch(e => { return message.channel.send(`Error stopping: \`${e}\``) })
-                    .then((out) => { return message.channel.send(`Server stopped: \`${out}\``) })
                 
                 setTimeout(() => {
                     runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio status`)
