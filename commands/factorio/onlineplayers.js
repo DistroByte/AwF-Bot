@@ -24,8 +24,8 @@ module.exports = {
             )
         let servers = []
         Object.keys(serverJson).forEach(element => {
-            // if (servers[element].serverFolderName != '') //if server isn't hidden
-            servers.push([serverJson[element].name, serverJson[element].discordChannelName]);
+            if (servers[element].serverFolderName != '') //if server isn't hidden
+                servers.push([serverJson[element].name, serverJson[element].discordChannelName]);
         })
         servers.forEach((server) => {
             rconCommand(message, '/p o', server[0])
