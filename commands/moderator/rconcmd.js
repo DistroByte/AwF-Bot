@@ -4,10 +4,10 @@ const serverJson = require('../../servers.json')
 module.exports = {
     config: {
         name: 'rconcmd',
-        aliases: ['rconcommand'],
+        aliases: ['rconcommand', 'sendcmd', 'fcommand'],
         usage: '<server name> <factorio rcon command>',
         category: 'moderator',
-        description: 'sends the command to the factorio rcon',
+        description: 'Sends a command to a single Factorio server',
         accessableby: 'Moderators'
     },
     run: async (client, message, args) => {
