@@ -16,7 +16,8 @@
 		"lodash": "^4.17.20",
 		"mongodb": "^3.6.2",
 		"node-fetch": "^2.6.1",
-		"npm": "^6.14.8",
+		"npm": "^7.0.11",
+		"rcon-client": "^4.2.3",
 		"tail": "^2.0.3",
 		"why-is-node-running": "^2.2.0"
 	}
