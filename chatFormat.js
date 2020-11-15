@@ -11,7 +11,6 @@ module.exports = function chatFormat(line, channel, client) {
     const player = line[0];
     const doneBy = line[4];
     const reason = line.slice(6)
-    console.log(reason);
     moderators.send(`Player \`${player}\` has been KICKED by \`${doneBy}\` for reason \`${reason}\``);
     return client.channels.cache.get(channel).send(`Player \`${player}\` has been KICKED by \`${doneBy}\` for reason \`${reason}\``);
   }
@@ -50,7 +49,8 @@ module.exports = function chatFormat(line, channel, client) {
   }
   
   if (line.includes("Error")) {
-    client.channels.cache.get('697146357819113553').send(`Error in ${client.channels.cache.get(channel).name}: ${line}`)
+    if (client.channels.cache.get(channel).name !== 'dev-dump')
+      client.channels.cache.get('697146357819113553').send(`Error in ${client.channels.cache.get(channel).name}: ${line}`)
   }
 
   if (line.includes('?griefer')) {
