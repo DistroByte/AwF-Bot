@@ -410,6 +410,6 @@ async function rconCommand(message, command, serverName) {
     } else {
       console.log(`Connection Error --- Details --- \nNAME: ${err.name} \nDESC: ${err.description} \nStack: ${err.stack}`)
     }
-    return(['', 'error'])
+    return([err, 'error'])
   }
 }

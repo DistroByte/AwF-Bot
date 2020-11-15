@@ -24,7 +24,7 @@ module.exports = {
             )
         let servers = []
         Object.keys(serverJson).forEach(element => {
-            if (servers[element].serverFolderName != '') //if server isn't hidden
+            if (serverJson[element].serverFolderName != '') //if server isn't hidden
                 servers.push([serverJson[element].name, serverJson[element].discordChannelName]);
         })
         servers.forEach((server) => {
@@ -33,7 +33,7 @@ module.exports = {
                     if (!res[1].startsWith('error')) {
                         onlinePlayers.addField(server[1], res[0], inline = true)
                     } else {
-                        onlinePlayers.addField(server[1], error, inline = true)
+                        onlinePlayers.addField(server[1], 'Error getting players online. Server may be offline', inline = true)
                     }
                     if (onlinePlayers.fields.size == serverJson.size)
                         return message.channel.send(onlinePlayers);
