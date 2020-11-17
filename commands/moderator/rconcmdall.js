@@ -21,7 +21,7 @@ module.exports = {
             })
             const command = args.join(' ')
             servers.forEach(async (server) => {
-                let res = await rconCommand(message, command, server);
+                let res = await rconCommand(command, server);
                 if (res[1] == 'error') return message.channel.send(`${server}: Error. Command may have worked, but didn't give a response: ${res[0]}`)
                 return message.channel.send(`${server}: Command worked. Output: \n \`${res[0]}\``)
             });

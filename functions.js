@@ -376,7 +376,7 @@ async function runShellCommand(cmd) {
     });
   })
 }
-async function rconCommand(message, command, serverName) {
+async function rconCommand(command, serverName) {
   //TODO: continue on sending and recieving rcon commands
   if (!command.startsWith('/')) command = `/${command}` //add a '/' if not present
   let server;
