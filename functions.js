@@ -252,6 +252,7 @@ async function parseJammyLogger(line, channel) { //channel is an object
       line[0] = line[0].slice('PLAYER: '.length);
       line[1] = `Player ${line[1]}`;
     }
+    if (line[0] == "PLAYER:") line.shift()
     addDeath(channel.name, line[0], line[1]);
     channel.send(`Player \`${line[0]}\` died due to \`${line[1]}\``);
     let user = await searchOneDB("otherData", "linkedPlayers", { factorioName: line[0] });

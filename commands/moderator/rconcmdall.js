@@ -19,12 +19,11 @@ module.exports = {
                 if (serverJson[element].serverFolderName != '') //if server isn't hidden
                     servers.push(serverJson[element].name);
             })
-            console.log(servers)
             const command = args.join(' ')
             servers.forEach(async (server) => {
                 let res = await rconCommand(message, command, server);
-                if (res[1] == 'error') return message.channel.send(`error ${res[0]}`)
-                return message.channel.send(`Command worked. Output: \n \`${res[0]}\``)
+                if (res[1] == 'error') return message.channel.send(`${server}: Error. Command may have worked, but didn't give a response: ${res[0]}`)
+                return message.channel.send(`${server}: Command worked. Output: \n \`${res[0]}\``)
             });
         }
     }
