@@ -4,16 +4,16 @@ module.exports = (client) => {
   );
 
   let activities = [
-    `${client.guilds.cache.size} servers!`,
-    `${client.channels.cache.size} channels!`,
-    `${client.users.cache.size} users!`,
-  ],
+      `${client.guilds.cache.size} servers!`,
+      `${client.channels.cache.size} channels!`,
+      `${client.users.cache.size} users!`,
+    ],
     i = 0;
   setInterval(
     () =>
       client.user.setActivity(
         `${client.prefix}help | ${activities[i++ % activities.length]}`,
-        { type: 'WATCHING' }
+        { type: "WATCHING" }
       ),
     15000
   );

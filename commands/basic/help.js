@@ -1,25 +1,25 @@
-const { MessageEmbed } = require('discord.js');
-const { prefix } = require('../../botconfig.json');
-const { readdirSync } = require('fs');
-const { stripIndents } = require('common-tags');
+const { MessageEmbed } = require("discord.js");
+const { prefix } = require("../../botconfig.json");
+const { readdirSync } = require("fs");
+const { stripIndents } = require("common-tags");
 
 module.exports = {
   config: {
-    name: 'help',
-    aliases: ['h', 'halp', 'commands'],
-    usage: '(command)',
-    category: 'basic',
-    description: 'Displays all available commands',
-    accessableby: 'Members',
+    name: "help",
+    aliases: ["h", "halp", "commands"],
+    usage: "(command)",
+    category: "basic",
+    description: "Displays all available commands",
+    accessableby: "Members",
   },
   run: async (client, message, args) => {
     const embed = new MessageEmbed()
-      .setColor('GREEN')
+      .setColor("GREEN")
       .setAuthor(`${message.guild.me.displayName} Help`, message.guild.iconURL)
       .setThumbnail(client.user.displayAvatarURL());
 
     if (!args[0]) {
-      const categories = readdirSync('./commands/');
+      const categories = readdirSync("./commands/");
 
       embed.setDescription(
         `These are the avaliable commands for ${message.guild.me.displayName}\nThe bot prefix is: **${prefix}**`
@@ -30,15 +30,17 @@ module.exports = {
       );
 
       categories.forEach((category) => {
-        const dir = client.commands.filter((c) => c.config.category === category);
+        const dir = client.commands.filter(
+          (c) => c.config.category === category
+        );
         const capitalise =
           category.slice(0, 1).toUpperCase() + category.slice(1);
         try {
           embed.addField(
             `${capitalise} [${dir.size}]:`,
-            dir.map((c) => `\`${c.config.name}\``).join(' ')
+            dir.map((c) => `\`${c.config.name}\``).join(" ")
           );
-        } catch (e) { }
+        } catch (e) {}
       });
 
       return message.channel.send(embed);
@@ -49,7 +51,7 @@ module.exports = {
       if (!command)
         return message.channel.send(
           embed
-            .setTitle('Invalid Command.')
+            .setTitle("Invalid Command.")
             .setDescription(
               `Do \`${prefix}help\` for the list of the commands.`
             )
@@ -58,20 +60,20 @@ module.exports = {
 
       embed.setDescription(stripIndents`The bot's prefix is: \`${prefix}\`\n
             **Command:** ${
-        command.name.slice(0, 1).toUpperCase() + command.name.slice(1)
-        }
+              command.name.slice(0, 1).toUpperCase() + command.name.slice(1)
+            }
             **Description:** ${
-        command.description || 'No Description provided.'
-        }
+              command.description || "No Description provided."
+            }
             **Usage:** ${
-        command.usage
-          ? `\`${prefix}${command.name} ${command.usage}\``
-          : `\`${prefix}${command.name}\``
-        }
-            **Accessible by:** ${command.accessableby || 'Members'}
+              command.usage
+                ? `\`${prefix}${command.name} ${command.usage}\``
+                : `\`${prefix}${command.name}\``
+            }
+            **Accessible by:** ${command.accessableby || "Members"}
             **Aliases:** ${
-        command.aliases ? command.aliases.join(', ') : 'None'
-        }`);
+              command.aliases ? command.aliases.join(", ") : "None"
+            }`);
       embed.setFooter(
         `© ${message.guild.me.displayName} | Developed by DistroByte`,
         client.user.displayAvatarURL()
