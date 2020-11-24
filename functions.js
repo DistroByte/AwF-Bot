@@ -329,7 +329,7 @@ async function linkFactorioDiscordUser(
   let sendToUser = await server.members.fetch({ query: discordName, limit: 1 });
   sendToUser = sendToUser.first();
   let sentMsg = await sendToUser.send(
-    `You have chosen to link your Discord account, \`${discordName}\` with your Factorio account on AwF, \`${factorioName}\`. The request will timeout after 120s. React with 🛑 to re-link your account. If complications arise, please contact devs/admins (relinking is when switching Factorio username, for switching Discord account contact admins/devs. Changing your Discord username **IS NOT** changing an account, whilst changing your Factorio username **is**)`
+    `You have chosen to link your Discord account, \`${discordName}\` with your Factorio account on AwF, \`${factorioName}\`. The request will timeout after 5 minutes of sending. React with 🛑 to re-link your account. If complications arise, please contact devs/admins (relinking is when switching Factorio username, for switching Discord account contact admins/devs. Changing your Discord username **IS NOT** changing an account, whilst changing your Factorio username **is**)`
   );
   sentMsg.react("✅");
   sentMsg.react("❌");
