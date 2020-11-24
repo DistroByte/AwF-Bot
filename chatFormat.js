@@ -113,7 +113,7 @@ module.exports = function chatFormat(line, channel, client, serverConsoleName) {
           tmp[1].slice("!linkme ".length)
         );
         functions.rconCommand(
-          `/w ${tmp[0]} Please check your Discord DMs. Enable them from the AwF server for this linking if you have it disabled`,
+          `/w ${tmp[0]} Please check your Discord DMs. Enable them from the AwF server for this linking if you have it disabled. Also join the awf.yt Discord server so the bot can find you`,
           serverConsoleName
         );
       }
