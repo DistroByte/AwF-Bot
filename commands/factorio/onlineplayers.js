@@ -5,7 +5,7 @@ const serverJson = require('../../servers.json')
 module.exports = {
     config: {
         name: 'onlineplayers',
-        aliases: [],
+        aliases: ['op', 'playersonline', 'po'],
         usage: '',
         category: 'factorio',
         description: 'View online players across all servers',
@@ -30,7 +30,7 @@ module.exports = {
 
         let promiseArray = servers.map((server) => {
             return new Promise((resolve) => {
-                rconCommand(message, '/p o', server[0])
+                rconCommand('/p o', server[0])
                     .then((res) => {
                         if (!res[1].startsWith('error')) {
                             resolve(onlinePlayers.addField(server[1], res[0], inline = true));
@@ -39,7 +39,7 @@ module.exports = {
                         }
                     })
                     .catch((e) => {
-                        resolve(onlinePlayers.addField(server[1], e, inline = true))
+                        resolve(onlinePlayers.addField(server[1], 'Error getting players online', inline = true))
                     })
             })
         })

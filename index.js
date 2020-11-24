@@ -20,7 +20,7 @@ client.login(token);
 
 serverTails.forEach(element => {
   element[0].on('line', function (line) {
-    chatFormat(line, element[1].discordChannelID, client);
+    chatFormat(line, element[1].discordChannelID, client, element[1].name);
     console.log(`[${element[1].name}] ${line}`);
   });
 })

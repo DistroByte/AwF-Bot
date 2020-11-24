@@ -189,7 +189,6 @@ async function addDeath(server, player, reason) {
     var out = await findOneAndReplaceDB(server, "deaths", res, replaceWith);
     return;
   }
-  //TODO: add when the player already exists
   return 0;
 }
 async function addRocket(server) {
@@ -300,7 +299,8 @@ async function linkFactorioDiscordUser(discordClient, factorioName, discordName)
   const filter = (reaction, user) => {
     return user.id === sendToUser.id;
   };
-  sentMsg.awaitReactions(filter, { max: 1, time: 120000, errors: ['time'] })
+  // 5*60*1000 to get five minutes to milliseconds
+  sentMsg.awaitReactions(filter, { max: 1, time: 5*60*1000, errors: ['time'] })
     .then(async(messageReaction) => {
       let reaction = messageReaction.first();
       if (reaction.emoji.name === '❌') return sendToUser.send('Linking cancelled');

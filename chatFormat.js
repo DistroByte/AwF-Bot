@@ -2,7 +2,7 @@ const functions = require('./functions');
 const { filterBan } = require("./filterBan");
 const servers = require("./servers.json")
 
-module.exports = function chatFormat(line, channel, client) {
+module.exports = function chatFormat(line, channel, client, serverConsoleName) {
   const helpdesk = client.channels.cache.get('590241134740111387');
   const moderators = client.channels.cache.get('697146357819113553');
 
@@ -71,29 +71,31 @@ module.exports = function chatFormat(line, channel, client) {
       if (line.includes('!linkme')) {
         let tmp = line.split(": ");
         functions.linkFactorioDiscordUser(client, tmp[0], tmp[1].slice('!linkme '.length));
+        functions.rconCommand(`/w ${tmp[0]} Please check your Discord DMs. Enable them from the AwF server for this linking if you have it disabled`, serverConsoleName);
       }
       if (line != '') //see the last regex in formatChatData, tests if the line is only whitespaces and things such as [gps]
         return client.channels.cache.get(channel).send(`<Game Chat> ${line}`);
       else
         return
-    } else { //join
-      if (line.includes('[JOIN]')) {
-        // check if a player is linked to factorio. if not, tell them to get linked
-        const username = functions.formatChatData(line).slice(2).split(' ')[0];
-        functions.searchOneDB("otherData", "linkedPlayers", { factorioName: username})
-          .then(out => {
-            if (out == null) {
-              Object.keys(servers).forEach(server => {
-                if (servers[server].discordChannelID == client.channels.cache.get(channel).id) {
-                  functions.rconCommand(`/w ${username} Welcome to AwF. You can join the Discord server on awf.yt and link yourself to Discord with \`!linkme <discordUsername>\`\n`, servers[server].name);
-                }
-              });
-            }
-          })
-          .catch(err => console.log(err))
-      }
-      return client.channels.cache.get(channel).send(`**${functions.formatChatData(line)}**`);
     }
+    //join
+    if (line.includes('[JOIN]')) {
+      // check if a player is linked to factorio. if not, tell them to get linked
+      const username = functions.formatChatData(line).slice(2).split(' ')[0];
+      functions.searchOneDB("otherData", "linkedPlayers", { factorioName: username})
+        .then(out => {
+          if (out == null) {
+            Object.keys(servers).forEach(server => {
+              if (servers[server].discordChannelID == client.channels.cache.get(channel).id) {
+                functions.rconCommand(`/w ${username} Welcome to AwF. You can join the Discord server on awf.yt and link yourself to Discord with \`!linkme <discordUsername>\`\n`, servers[server].name);
+                console.log(servers[server]);
+              }
+            });
+          }
+        })
+        .catch(err => console.log(err))
+    }
+    return client.channels.cache.get(channel).send(`**${functions.formatChatData(line)}**`);
   }
   else if (line.includes('JLOGGER:')) {
     line = line.slice((line.indexOf('JLOGGER:') + 'JLOGGER:'.length + 1))
