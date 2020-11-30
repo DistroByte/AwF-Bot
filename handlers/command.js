@@ -14,10 +14,5 @@ module.exports = (client) => {
         );
     }
   };
-  [
-    "basic",
-    "owner",
-    "factorio",
-    "moderator",
-  ].forEach((x) => load(x));
+  ["basic", "owner", "factorio", "moderator"].forEach((x) => load(x));
 };
