@@ -11,7 +11,7 @@ module.exports = function chatFormat(line, channel, client, serverConsoleName) {
     line = line.split(" ");
     const player = line[0];
     const doneBy = line[4];
-    const reason = line.slice(6);
+    const reason = line.slice(6).join(" ");
     moderators.send(
       `Player \`${player}\` has been KICKED by \`${doneBy}\` for reason \`${reason}\``
     );
@@ -105,18 +105,6 @@ module.exports = function chatFormat(line, channel, client, serverConsoleName) {
   ) {
     if (line.includes("[CHAT]")) {
       line = functions.formatChatData(line);
-      if (line.includes("!linkme")) {
-        let tmp = line.split(": ");
-        functions.linkFactorioDiscordUser(
-          client,
-          tmp[0],
-          tmp[1].slice("!linkme ".length)
-        );
-        functions.rconCommand(
-          `/w ${tmp[0]} Please check your Discord DMs. Enable them from the AwF server for this linking if you have it disabled. Also join the awf.yt Discord server so the bot can find you`,
-          serverConsoleName
-        );
-      }
       if (line != "")
         //see the last regex in formatChatData, tests if the line is only whitespaces and things such as [gps]
         return client.channels.cache.get(channel).send(`<Game Chat> ${line}`);

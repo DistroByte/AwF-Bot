@@ -6,6 +6,7 @@ const servers = require("./servers.json"); // tails, fifo, discord IDs etc.
 const { exec } = require("child_process");
 const { uri, rconport, rconpw } = require("./botconfig.json");
 const Rcon = require("rcon-client");
+const { MessageEmbed } = require("discord.js");
 
 let serverFifos = [];
 Object.keys(servers).forEach((element) => {
@@ -165,6 +166,9 @@ module.exports = {
   changePoints,
   runShellCommand,
   rconCommand,
+  rconCommandAll,
+  discordLog,
+  awfLogging,
 };
 
 async function searchOneDB(dat, coll, params) {
@@ -442,7 +446,6 @@ async function runShellCommand(cmd) {
   });
 }
 async function rconCommand(command, serverName) {
-  //TODO: continue on sending and recieving rcon commands
   if (!command.startsWith("/")) command = `/${command}`; //add a '/' if not present
   let server;
   Object.keys(servers).forEach((s) => {
@@ -482,5 +485,55 @@ async function rconCommand(command, serverName) {
       );
     }
     return [err, "error"];
+  }
+}
+async function rconCommandAll(command) {
+  if (!command.startsWith("/")) command = `/${command}`; //add a '/' if not present
+  let serverNames = [];
+  Object.keys(servers).forEach((s) => {
+    serverNames.push(servers[s]);
+  });
+  let promiseArray = serverNames.map((server) => {
+    return new Promise((resolve) => {
+      rconCommand("/p o", server.name)
+        .then((res) => {
+          if (!res[1].startsWith("error")) {
+            resolve([res, server.name]);
+          } else {
+            resolve([res, server.name]);
+          }
+        })
+        .catch((e) => {
+          reject([e, server.name]);
+        });
+    });
+  });
+  return await Promise.all(promiseArray);
+}
+async function discordLog(
+  line,
+  discordChannelID,
+  discordClient,
+  discordChannelName
+) {
+  const objLine = JSON.parse(line);
+  console.log(objLine);
+  objLine.fields[0].value.replace("${serverName}", discordChannelName);
+  let embed = new MessageEmbed(objLine);
+  discordClient.channels.cache.get(discordChannelID).send(embed);
+  // client.channels.cache.get("697146357819113553").send(embed); // moderators channel
+}
+async function awfLogging(
+  logObject,
+  discordChannelID,
+  discordClient,
+  discordChannelName
+) {
+  if (logObject.type == "link") {
+    linkFactorioDiscordUser(
+      discordClient,
+      logObject.playerName,
+      logObject.discordName
+    );
   }
 }

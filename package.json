@@ -1,24 +1,24 @@
 {
-	"name": "SnugBot",
-	"version": "1.0.0",
-	"description": "",
-	"main": "index.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
-	"dependencies": {
-		"common-tags": "^1.8.0",
-		"discord.js": "^12.4.1",
-		"fifo-js": "^2.1.0",
-		"lodash": "^4.17.20",
-		"mongodb": "^3.6.2",
-		"node-fetch": "^2.6.1",
-		"npm": "^7.0.11",
-		"rcon-client": "^4.2.3",
-		"tail": "^2.0.3",
-		"why-is-node-running": "^2.2.0"
-	}
+  "name": "SnugBot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "common-tags": "^1.8.0",
+    "discord.js": "^12.4.1",
+    "fifo-js": "^2.1.0",
+    "lodash": "^4.17.20",
+    "mongodb": "^3.6.2",
+    "node-fetch": "^2.6.1",
+    "npm": "^7.0.11",
+    "rcon-client": "^4.2.3",
+    "tail": "^2.0.3",
+    "why-is-node-running": "^2.2.0"
+  }
 }
