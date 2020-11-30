@@ -11,7 +11,7 @@ module.exports = function chatFormat(line, channel, client, serverConsoleName) {
     line = line.split(" ");
     const player = line[0];
     const doneBy = line[4];
-    const reason = line.slice(6);
+    const reason = line.slice(6).join(" ");
     moderators.send(
       `Player \`${player}\` has been KICKED by \`${doneBy}\` for reason \`${reason}\``
     );

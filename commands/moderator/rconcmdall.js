@@ -1,4 +1,5 @@
-const { rconCommand } = require("../../functions");
+const { MessageEmbed } = require("discord.js");
+const { rconCommandAll } = require("../../functions");
 const serverJson = require("../../servers.json");
 
 module.exports = {
@@ -18,23 +19,27 @@ module.exports = {
       authRoles.some((r) => r.name === "Moderator") ||
       authRoles.some((r) => r.name === "dev")
     ) {
-      let servers = [];
-      Object.keys(serverJson).forEach((element) => {
-        if (serverJson[element].serverFolderName != "")
-          //if server isn't hidden
-          servers.push(serverJson[element].name);
-      });
       const command = args.join(" ");
-      servers.forEach(async (server) => {
-        let res = await rconCommand(command, server);
-        if (res[1] == "error")
-          return message.channel.send(
-            `${server}: Error. Command may have worked, but didn't give a response: ${res[0]}`
-          );
-        return message.channel.send(
-          `${server}: Command worked. Output: \n \`${res[0]}\``
+      const res = await rconCommandAll(command);
+      let outEmbed = new MessageEmbed()
+        .setTitle(`RCON Output`)
+        .setDescription(`Output of RCON command to all servers`)
+        .setColor("GREEN")
+        .setAuthor(
+          `${message.guild.me.displayName} Help`,
+          message.guild.iconURL
+        )
+        .setThumbnail(client.user.displayAvatarURL())
+        .setFooter(
+          `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
+          client.user.displayAvatarURL()
         );
+      res.forEach((out) => {
+        if (out[0][1].startsWith("error"))
+          outEmbed.addField(`Server ${out[1]}`, out[0][1]);
+        else outEmbed.addField(`Server ${out[1]}`, out[0][0]);
       });
+      return message.channel.send(outEmbed);
     }
   },
 };
