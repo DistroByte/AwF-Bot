@@ -42,7 +42,7 @@ serverTails.forEach((element) => {
 discordLoggingTails.forEach((element) => {
   element[0].on("line", function (line) {
     discordLog(
-      line,
+      JSON.parse(line),
       element[1].discordChannelID,
       client,
       element[1].discordChannelName

@@ -171,23 +171,23 @@ module.exports = {
   awfLogging,
 };
 
-async function searchOneDB(dat, coll, params) {
+async function searchOneDB(dat, coll, toSearch) {
   await dBclientConnectionPromise; //just wait so the database is connected
   // Returns an object of the thing found or null if not found
   const collection = client.db(dat).collection(coll);
-  return collection.findOne(params);
+  return collection.findOne(toSearch);
 }
-async function insertOneDB(dat, coll, params) {
+async function insertOneDB(dat, coll, toInsert) {
   await dBclientConnectionPromise; //just wait so the database is connected
   // To check if written in correctly, use: ret.result.ok (1 if correctly, 0 if written falsely)
   const collection = client.db(dat).collection(coll);
-  return collection.insertOne(params);
+  return collection.insertOne(toInsert);
 }
-async function findOneAndReplaceDB(dat, coll, param1, param2) {
+async function findOneAndReplaceDB(dat, coll, toFind, toReplace) {
   await dBclientConnectionPromise; //just wait so the database is connected
   // To check if written in correctly, use: ret.result.ok (1 if correctly, 0 if written falsely)
   const collection = client.db(dat).collection(coll);
-  return collection.findOneAndReplace(param1, param2);
+  return collection.findOneAndReplace(toFind, toReplace);
 }
 async function deleteOneDB(dat, coll, params, filter) {
   // deletes the data object {params} from the database dat collection coll
@@ -322,112 +322,6 @@ async function parseJammyLogger(line, channel) {
     changePoints(user, built, time);
   }
 }
-async function linkFactorioDiscordUser(
-  discordClient,
-  factorioName,
-  discordName
-) {
-  //links the Factorio and Discord usernames, can be used for verification later
-  //discordName is the name and tag of the user, e.g. SomeRandomPerson#0000
-  let server = await discordClient.guilds.cache.get("548410604679856151");
-  let sendToUser = await server.members.fetch({ query: discordName, limit: 1 });
-  sendToUser = sendToUser.first();
-  let sentMsg = await sendToUser.send(
-    `You have chosen to link your Discord account, \`${discordName}\` with your Factorio account on AwF, \`${factorioName}\`. The request will timeout after 5 minutes of sending. React with 🛑 to re-link your account. If complications arise, please contact devs/admins (relinking is when switching Factorio username, for switching Discord account contact admins/devs. Changing your Discord username **IS NOT** changing an account, whilst changing your Factorio username **is**)`
-  );
-  sentMsg.react("✅");
-  sentMsg.react("❌");
-  sentMsg.react("🛑");
-  const filter = (reaction, user) => {
-    return user.id === sendToUser.id;
-  };
-  // 5*60*1000 to get five minutes to milliseconds
-  sentMsg
-    .awaitReactions(filter, { max: 1, time: 5 * 60 * 1000, errors: ["time"] })
-    .then(async (messageReaction) => {
-      let reaction = messageReaction.first();
-      if (reaction.emoji.name === "❌")
-        return sendToUser.send("Linking cancelled");
-      let dat = { factorioName: factorioName, discordID: sendToUser.id };
-      let found = await searchOneDB("otherData", "linkedPlayers", {
-        discordID: sendToUser.id,
-      });
-      if (found !== null && reaction.emoji.name === "🛑") {
-        // re-link user
-        let res = await findOneAndReplaceDB(
-          "otherData",
-          "linkedPlayers",
-          found,
-          dat
-        );
-        if (res.ok != 1)
-          return sendToUser.send(
-            "Please contact devs/admins for re-linking, process failed"
-          );
-        //redo statistics
-        let prevStats = await searchOneDB("otherData", "globPlayerStats", {
-          discordID: found.discordID,
-        });
-        let newStats = lodash.cloneDeep(prevStats);
-        newStats.factorioName = factorioName;
-        res = await findOneAndReplaceDB(
-          "otherData",
-          "globPlayerStats",
-          prevStats,
-          newStats
-        );
-        if (res.ok != 1)
-          return sendToUser.send(
-            "Please contact devs/admins for re-linking, process failed"
-          );
-        return sendToUser.send("Re-linked succesfully!");
-      } else if (found !== null && reaction.emoji.name === "✅")
-        // cancel
-        return sendToUser.send("Already linked");
-      else if (found === null) {
-        let res = await insertOneDB("otherData", "linkedPlayers", dat);
-        if (res.result.ok == 0)
-          return sendToUser.send("Failed linking. Contact devs/admins");
-        else return sendToUser.send("Linked successfully");
-      }
-    })
-    .catch((out) => {
-      if (out.size == 0)
-        return sendToUser.send(`Didn't react in time. Please try again.`);
-    });
-}
-async function changePoints(user, built, time, death = 0) {
-  let res = await searchOneDB("otherData", "globPlayerStats", {
-    discordID: user.discordID,
-  });
-  if (res == null) {
-    pushData = {
-      discordID: user.discordID,
-      timePlayed: 0,
-      time: 0, // points for time played
-      built: 0,
-      deaths: 0,
-      points: 0,
-    };
-    await insertOneDB("otherData", "globPlayerStats", pushData);
-    res = pushData;
-  } else {
-    let replaceWith = lodash.cloneDeep(res);
-    if (replaceWith.time) replaceWith.time += time;
-    else replaceWith.time = time;
-    if (replaceWith.built) replaceWith.built += built;
-    else replaceWith.built = built;
-    if (death != 0) {
-      if (replaceWith.deaths) replaceWith.deaths += death;
-      else replaceWith.deaths = death;
-      replaceWith.points -= 100 * death; //-100pts for death
-    }
-    if (replaceWith.points == null) replaceWith.points = 0;
-    replaceWith.points += built;
-    replaceWith.points += (time / 60) * 50; //50 pts/h
-    await findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
-  }
-}
 function getServerList() {
   let serverNames = [];
   Object.keys(servers).forEach((element) => {
@@ -510,14 +404,136 @@ async function rconCommandAll(command) {
   });
   return await Promise.all(promiseArray);
 }
+async function giveFactorioRole(username, roleName) {
+  let res = await searchOneDB("otherData", "playerRoles", {
+    factorioName: username,
+  });
+  if (res == null) {
+    let push = {
+      factorioName: username,
+      roles: [roleName],
+    };
+    return await insertOneDB("otherData", "playerRoles", push);
+  } else {
+    let toPush = lodash.cloneDeep(res);
+    toPush.roles.push(roleName);
+    return await findOneAndReplaceDB("otherData", "playerRoles", res, toPush);
+  }
+}
+async function linkFactorioDiscordUser(
+  discordClient,
+  factorioName,
+  discordName
+) {
+  //links the Factorio and Discord usernames, can be used for verification later
+  //discordName is the name and tag of the user, e.g. SomeRandomPerson#0000
+  let server = await discordClient.guilds.cache.get("548410604679856151");
+  let sendToUser = await server.members.fetch({ query: discordName, limit: 1 });
+  sendToUser = sendToUser.first();
+  let sentMsg = await sendToUser.send(
+    `You have chosen to link your Discord account, \`${discordName}\` with your Factorio account on AwF, \`${factorioName}\`. The request will timeout after 5 minutes of sending. React with 🛑 to re-link your account. If complications arise, please contact devs/admins (relinking is when switching Factorio username, for switching Discord account contact admins/devs. Changing your Discord username **IS NOT** changing an account, whilst changing your Factorio username **is**)`
+  );
+  sentMsg.react("✅");
+  sentMsg.react("❌");
+  sentMsg.react("🛑");
+  const filter = (reaction, user) => {
+    return user.id === sendToUser.id;
+  };
+  // 5*60*1000 to get five minutes to milliseconds
+  sentMsg
+    .awaitReactions(filter, { max: 1, time: 5 * 60 * 1000, errors: ["time"] })
+    .then(async (messageReaction) => {
+      let reaction = messageReaction.first();
+      if (reaction.emoji.name === "❌")
+        return sendToUser.send("Linking cancelled");
+      let dat = { factorioName: factorioName, discordID: sendToUser.id };
+      let found = await searchOneDB("otherData", "linkedPlayers", {
+        discordID: sendToUser.id,
+      });
+      if (found !== null && reaction.emoji.name === "🛑") {
+        // re-link user
+        let res = await findOneAndReplaceDB(
+          "otherData",
+          "linkedPlayers",
+          found,
+          dat
+        );
+        if (res.ok != 1)
+          return sendToUser.send(
+            "Please contact devs/admins for re-linking, process failed"
+          );
+        //redo statistics
+        let prevStats = await searchOneDB("otherData", "globPlayerStats", {
+          discordID: found.discordID,
+        });
+        let newStats = lodash.cloneDeep(prevStats);
+        newStats.factorioName = factorioName;
+        res = await findOneAndReplaceDB(
+          "otherData",
+          "globPlayerStats",
+          prevStats,
+          newStats
+        );
+        if (res.ok != 1)
+          return sendToUser.send(
+            "Please contact devs/admins for re-linking, process failed"
+          );
+        sendToUser.send("Re-linked succesfully!");
+        giveFactorioRole(factorioName, "Member");
+      } else if (found !== null && reaction.emoji.name === "❌")
+        // cancel
+        return sendToUser.send("Already linked");
+      else if (found === null) {
+        let res = await insertOneDB("otherData", "linkedPlayers", dat);
+        if (res.result.ok == 0)
+          sendToUser.send("Failed linking. Contact devs/admins");
+        else sendToUser.send("Linked successfully");
+        giveFactorioRole(factorioName, "Member");
+      }
+    })
+    .catch((out) => {
+      if (out.size == 0)
+        return sendToUser.send(`Didn't react in time. Please try again.`);
+    });
+}
+async function changePoints(user, built, time, death = 0) {
+  let res = await searchOneDB("otherData", "globPlayerStats", {
+    discordID: user.discordID,
+  });
+  if (res == null) {
+    pushData = {
+      discordID: user.discordID,
+      timePlayed: 0,
+      time: 0, // points for time played
+      built: 0,
+      deaths: 0,
+      points: 0,
+    };
+    await insertOneDB("otherData", "globPlayerStats", pushData);
+    res = pushData;
+  } else {
+    let replaceWith = lodash.cloneDeep(res);
+    if (replaceWith.time) replaceWith.time += time;
+    else replaceWith.time = time;
+    if (replaceWith.built) replaceWith.built += built;
+    else replaceWith.built = built;
+    if (death != 0) {
+      if (replaceWith.deaths) replaceWith.deaths += death;
+      else replaceWith.deaths = death;
+      replaceWith.points -= 100 * death; //-100pts for death
+    }
+    if (replaceWith.points == null) replaceWith.points = 0;
+    replaceWith.points += built;
+    replaceWith.points += (time / 60) * 50; //50 pts/h
+    await findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
+  }
+}
 async function discordLog(
-  line,
+  objLine,
   discordChannelID,
   discordClient,
   discordChannelName
 ) {
-  const objLine = JSON.parse(line);
-  console.log(objLine);
   objLine.fields[0].value.replace("${serverName}", discordChannelName);
   let embed = new MessageEmbed(objLine);
   discordClient.channels.cache.get(discordChannelID).send(embed);
