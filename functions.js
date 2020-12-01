@@ -200,7 +200,6 @@ async function deleteOneDB(dat, coll, params, filter) {
 }
 async function addDeath(server, player, reason) {
   var res = await searchOneDB(server, "deaths", { player: `${player}` });
-  //TODO: somehow find out how the object could be retrieved+written into
   if (res == null) {
     // if the player wasn't found in the server's database
     var writeObj = {
@@ -552,4 +551,17 @@ async function awfLogging(
       logObject.discordName
     );
   }
+}
+async function discordLog(
+  line,
+  discordChannelID,
+  discordClient,
+  discordChannelName
+) {
+  const objLine = JSON.parse(line);
+  console.log(objLine);
+  objLine.fields[0].value.replace("${serverName}", discordChannelName);
+  let embed = new MessageEmbed(objLine);
+  discordClient.channels.cache.get(discordChannelID).send(embed);
+  // client.channels.cache.get("697146357819113553").send(embed); // moderators channel
 }
