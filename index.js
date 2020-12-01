@@ -3,11 +3,7 @@ var Tail = require("tail").Tail;
 const chatFormat = require("./chatFormat");
 const { token, prefix } = require("./botconfig.json");
 const servers = require("./servers.json"); // tails, fifo, discord IDs etc.
-<<<<<<< HEAD
 const { discordLog, awfLogging } = require("./functions");
-=======
-const { discordLog } = require("./functions");
->>>>>>> e93f64f7fb9a56c315e2a2e5d39d9eddcf875b45
 
 let serverTails = [];
 let discordLoggingTails = [];
