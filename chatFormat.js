@@ -88,6 +88,19 @@ module.exports = function chatFormat(line, channel, client, serverConsoleName) {
       channel,
       client
     );
+    functions.onJoin(
+      line.slice(line.indexOf("]") + 2, line.indexOf("joined the game") - 1),
+      channel,
+      client
+    );
+  }
+  if (line.includes("[LEAVE]")) {
+    // testing only
+    functions.onJoin(
+      line.slice(line.indexOf("]") + 2, line.indexOf("left the game") - 1),
+      channel,
+      client
+    );
   }
   if (line.includes("<server>")) return;
   if (line.includes("; Factorio")) {
@@ -104,7 +117,7 @@ module.exports = function chatFormat(line, channel, client, serverConsoleName) {
     line.includes("[CHAT]")
   ) {
     if (line.includes("[CHAT]")) {
-      line = functions.formatChatData(line);
+      line = functions.formatChatData(line, true);
       if (line != "")
         //see the last regex in formatChatData, tests if the line is only whitespaces and things such as [gps]
         return client.channels.cache.get(channel).send(`<Game Chat> ${line}`);

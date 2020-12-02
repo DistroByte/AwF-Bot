@@ -28,51 +28,6 @@ module.exports = {
     data.trim();
     return data.slice(data.indexOf("0.000") + 6, 25);
   },
-  formatChatData: function (data) {
-    if (data.includes("[CHAT]") || data.includes("(shout)")) {
-      data = data.slice(data.indexOf("]") + 2); //removing the [CHAT] from sending to Discord
-      if (data.includes("[")) {
-        if (data.replace(/(.*:)\s*\[.*=.*\]\s*/g, "") == "") {
-          return ""; // if it is only the [] and whitespaces, nothing else
-        }
-        // These all are for Factorio rich text magic, in order of https://wiki.factorio.com/Rich_text
-        // for now, the discord will show [image], [item], [gps] but that can be removed completely by just
-        // replacing the second phrase in the .replace with an empty string, i.e. ''
-        if (data.includes("[img="))
-          return data.replace(/\[img=.*\]/g, "[image]");
-        if (data.includes("[item="))
-          return data.replace(/\[item=.*\]/g, "[item]");
-        if (data.includes("[entity="))
-          return data.replace(/\[entity=.*\]/g, "[entity]");
-        if (data.includes("[technology="))
-          return data.replace(/\[technology=.*\]/g, "[research]");
-        if (data.includes("[recipe="))
-          return data.replace(/\[recipe=.*\]/g, "[recipe]");
-        if (data.includes("[item-group="))
-          return data.replace(/\[item-group=.*\]/g, "[item group]");
-        if (data.includes("[fluid="))
-          return data.replace(/\[fluid=.*\]/g, "[fluid]");
-        if (data.includes("[tile="))
-          return data.replace(/\[tile=.*\]/g, "[tile]");
-        if (data.includes("[virtual-signal="))
-          return data.replace(/\[virutal-signal=.*\]/g, "[signal]");
-        if (data.includes("[achievement="))
-          return data.replace(/\[achievement=.*\]/g, "[achievement]");
-        if (data.includes("[gps=")) return data.replace(/\[gps=.*\]/g, "[gps]");
-        if (data.includes("[special-item="))
-          return data.replace(/\[special-item=.*\]/g, "[bp/upgrade/decon]");
-        if (data.includes("[armor="))
-          return data.replace(/\[armor=.*\]/g, "[armor]");
-        if (data.includes("[train="))
-          return data.replace(/\[train=.*\]/g, "[train]");
-        if (data.includes("[train-stop="))
-          return data.replace(/\[train-stop.*\]/g, "[train stop]");
-      }
-      return data;
-    } else {
-      return `**${data.slice(data.indexOf("]") + 2)}**`;
-    }
-  },
   formatSaveData: function (data) {
     return data.slice(data.indexOf("_autosave") + 1, data.indexOf("(") - 1);
   },
@@ -156,6 +111,8 @@ module.exports = {
       });
     });
   },
+  getServerFromChannelInput,
+  formatChatData,
   searchOneDB,
   insertOneDB,
   findOneAndReplaceDB,
@@ -169,8 +126,77 @@ module.exports = {
   rconCommandAll,
   discordLog,
   awfLogging,
+  onJoin,
 };
 
+function formatChatData(data, keepData) {
+  if (data.includes("[CHAT]") || data.includes("(shout)")) {
+    data = data.slice(data.indexOf("]") + 2); //removing the [CHAT] from sending to Discord
+    if (data.includes("[")) {
+      if (data.replace(/(.*:)\s*\[.*=.*\]\s*/g, "") == "") {
+        return ""; // if it is only the [] and whitespaces, nothing else
+      }
+      // These all are for Factorio rich text magic, in order of https://wiki.factorio.com/Rich_text
+      // for now, the discord will show [image], [item], [gps] but that can be removed completely by just
+      // replacing the second phrase in the .replace with an empty string, i.e. ''
+      if (data.includes("[img="))
+        return data.replace(/\[img=.*\]/g, keepData ? "[image]" : "");
+      if (data.includes("[item="))
+        return data.replace(/\[item=.*\]/g, keepData ? "[item]" : "");
+      if (data.includes("[entity="))
+        return data.replace(/\[entity=.*\]/g, keepData ? "[entity]" : "");
+      if (data.includes("[technology="))
+        return data.replace(/\[technology=.*\]/g, keepData ? "[research]" : "");
+      if (data.includes("[recipe="))
+        return data.replace(/\[recipe=.*\]/g, keepData ? "[recipe]" : "");
+      if (data.includes("[item-group="))
+        return data.replace(
+          /\[item-group=.*\]/g,
+          keepData ? "[item group]" : ""
+        );
+      if (data.includes("[fluid="))
+        return data.replace(/\[fluid=.*\]/g, keepData ? "[fluid]" : "");
+      if (data.includes("[tile="))
+        return data.replace(/\[tile=.*\]/g, keepData ? "[tile]" : "");
+      if (data.includes("[virtual-signal="))
+        return data.replace(
+          /\[virutal-signal=.*\]/g,
+          keepData ? "[signal]" : ""
+        );
+      if (data.includes("[achievement="))
+        return data.replace(
+          /\[achievement=.*\]/g,
+          keepData ? "[achievement]" : ""
+        );
+      if (data.includes("[gps="))
+        return data.replace(/\[gps=.*\]/g, keepData ? "[gps]" : "");
+      if (data.includes("[special-item="))
+        return data.replace(
+          /\[special-item=.*\]/g,
+          keepData ? "[bp/upgrade/decon]" : ""
+        );
+      if (data.includes("[armor="))
+        return data.replace(/\[armor=.*\]/g, keepData ? "[armor]" : "");
+      if (data.includes("[train="))
+        return data.replace(/\[train=.*\]/g, keepData ? "[train]" : "");
+      if (data.includes("[train-stop="))
+        return data.replace(
+          /\[train-stop.*\]/g,
+          keepData ? "[train stop]" : ""
+        );
+    }
+    return data;
+  } else {
+    return `**${data.slice(data.indexOf("]") + 2)}**`;
+  }
+}
+function getServerFromChannelInput(channelInput) {
+  return Object.keys(servers).map((element) => {
+    if (servers[element].discordChannelID === channelInput) {
+      return servers[element];
+    }
+  });
+}
 async function searchOneDB(dat, coll, toSearch) {
   await dBclientConnectionPromise; //just wait so the database is connected
   // Returns an object of the thing found or null if not found
@@ -355,7 +381,7 @@ async function rconCommand(command, serverName) {
     });
     // rcon.on("connect", () => { console.log(`connected ${serverName}`)}); //why spam console
     rcon.on("error", (e) => {
-      console.log(`error ${serverName}: ${e}`);
+      console.log(`rcon error ${serverName}: ${e}`);
     });
     // rcon.on("authenticated", () => console.log(`authenticated ${serverName}`)); //why spam console
     // rcon.on("end", () => console.log(`end ${serverName}`)); //why spam console
@@ -418,6 +444,11 @@ async function giveFactorioRole(username, roleName) {
     toPush.roles.push(roleName);
     return await findOneAndReplaceDB("otherData", "playerRoles", res, toPush);
   }
+}
+async function getFactorioRoles(factorioName) {
+  return await searchOneDB("otherData", "playerRoles", {
+    factorioName: factorioName,
+  });
 }
 async function linkFactorioDiscordUser(
   discordClient,
@@ -564,4 +595,33 @@ async function discordLog(
   let embed = new MessageEmbed(objLine);
   discordClient.channels.cache.get(discordChannelID).send(embed);
   // client.channels.cache.get("697146357819113553").send(embed); // moderators channel
+}
+async function givePlayerRoles(factorioName, roles, serverName) {
+  // TODO: use /interface return Roles.player_has_roles(playername) to check if a player has a role from the array. If not, assign it
+  // something wrong with this, fix it
+  let response = await rconCommand(
+    `/interface local names = {} for i, role in ipairs(Roles.get_player_roles("${factorioName}")) do names[i] = role.name end return names`,
+    serverName
+  );
+  if (response[1] == "error") return;
+  response = response[0].slice(0, response[0].indexOf("\n"));
+  response = response.slice(
+    response.indexOf("{") + 2,
+    response.indexOf("}") - 1
+  );
+  response = response.replace(/"/g, "");
+  currentRoles = response.split(",  ");
+  roles.forEach(async (giveRole) => {
+    if (!currentRoles.includes(giveRole)) {
+      rconCommand(`/assign-role ${factorioName} ${giveRole}`, serverName);
+    }
+  });
+}
+async function onJoin(playerName, discordChannel, discordClient) {
+  const froles = (await getFactorioRoles(playerName)).roles;
+  const joinedServer = getServerFromChannelInput(discordChannel)[0];
+  if (froles == null) return;
+  else {
+    givePlayerRoles(playerName, froles, joinedServer.name);
+  }
 }

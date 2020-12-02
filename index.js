@@ -23,15 +23,6 @@ Object.keys(servers).forEach((element) => {
   ]);
   serverTails.push([new Tail(servers[element].serverOut), servers[element]]);
 });
-let discordLoggingTails = [];
-Object.keys(servers).forEach((element) => {
-  discordLoggingTails.push([
-    new Tail(
-      `../servers/${servers[element].serverFolderName}/script-output/ext/discord.out`
-    ),
-    servers[element],
-  ]);
-});
 
 const client = new Client();
 
