@@ -72,7 +72,8 @@ datastoreTails.forEach((element) => {
       line,
       element[1].discordChannelID,
       client,
-      element[1].discordChannelName
+      element[1].discordChannelName,
+      element[1]
     );
   });
 });

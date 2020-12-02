@@ -192,9 +192,10 @@ function formatChatData(data, keepData) {
     return `**${data.slice(data.indexOf("]") + 2)}**`;
   }
 }
-function getServerFromChannelInput(channelInput) {
+function getServerFromChannelInput(channelID) {
+  // gets a server object from channel ID
   return Object.keys(servers).map((element) => {
-    if (servers[element].discordChannelID === channelInput) {
+    if (servers[element].discordChannelID === channelID) {
       return servers[element];
     }
   });
@@ -431,6 +432,30 @@ async function rconCommandAll(command) {
   });
   return await Promise.all(promiseArray);
 }
+async function rconCommandAllExclude(command, exclude) {
+  // exclude is an ARRAY of server names which to exclude
+  if (!command.startsWith("/")) command = `/${command}`; //add a '/' if not present
+  let serverNames = [];
+  Object.keys(servers).forEach((s) => {
+    if (!exclude.includes(servers[s].name)) serverNames.push(servers[s]);
+  });
+  let promiseArray = serverNames.map((server) => {
+    return new Promise((resolve) => {
+      rconCommand("/p o", server.name)
+        .then((res) => {
+          if (!res[1].startsWith("error")) {
+            resolve([res, server.name]);
+          } else {
+            resolve([res, server.name]);
+          }
+        })
+        .catch((e) => {
+          reject([e, server.name]);
+        });
+    });
+  });
+  return await Promise.all(promiseArray);
+}
 async function giveFactorioRole(username, roleName) {
   let res = await searchOneDB("otherData", "playerRoles", {
     factorioName: username,
@@ -561,11 +586,12 @@ async function changePoints(user, built, time, death = 0) {
   }
 }
 async function discordLog(
-  objLine,
+  line,
   discordChannelID,
   discordClient,
   discordChannelName
 ) {
+  let objLine = JSON.parse(line);
   objLine.fields[0].value.replace("${serverName}", discordChannelName);
   let embed = new MessageEmbed(objLine);
   discordClient.channels.cache.get(discordChannelID).send(embed);
@@ -614,7 +640,8 @@ async function datastoreInput(
   line,
   discordChannelID,
   discordClient,
-  discordChannelName
+  discordChannelName,
+  serverObject
 ) {
   let args = line.split(" ");
   const requestType = args.shift();
@@ -643,10 +670,11 @@ async function datastoreInput(
       `/interface Datastore.ingest('message', '${collectionName}', '${playerName}', '${args}')`
     );
   } else if (requestType == "propagate") {
-    // send to all servers and send to database
-    rconCommandAll(
+    // send to all servers except the server the request is coming from and send to database
+    rconCommandAllExclude(
       // args is now the rest of the stuff
-      `/interface Datastore.ingest('propagate', '${collectionName}', '${playerName}', '${args}')`
+      `/interface Datastore.ingest('propagate', '${collectionName}', '${playerName}', '${args}')`,
+      [`${serverObject.name}`]
     );
     let find = await searchOneDB("otherData", collectionName, {
       playername: playerName,
