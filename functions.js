@@ -7,6 +7,7 @@ const { exec } = require("child_process");
 const { uri, rconport, rconpw } = require("./botconfig.json");
 const Rcon = require("rcon-client");
 const { MessageEmbed } = require("discord.js");
+const { request } = require("http");
 
 let serverFifos = [];
 Object.keys(servers).forEach((element) => {
@@ -126,6 +127,7 @@ module.exports = {
   rconCommandAll,
   discordLog,
   awfLogging,
+  datastoreInput,
   onJoin,
 };
 
@@ -570,17 +572,28 @@ async function discordLog(
   // client.channels.cache.get("697146357819113553").send(embed); // moderators channel
 }
 async function awfLogging(
-  logObject,
+  line,
   discordChannelID,
   discordClient,
   discordChannelName
 ) {
+  let logObject = JSON.parse(line);
   if (logObject.type == "link") {
     linkFactorioDiscordUser(
       discordClient,
       logObject.playerName,
       logObject.discordName
     );
+  } else if (logObject.type == "join") {
+    discordClient.channels.cache
+      .get(discordChannelID)
+      .send(`**Player \`${logObject.playerName}\` has joined the game**`);
+  } else if (logObject.type == "leave") {
+    discordClient.channels.cache
+      .get(discordChannelID)
+      .send(
+        `**Player \`${logObject.playerName}\` has left the game due to reason \`${logObject.reason}\`**`
+      );
   }
 }
 async function discordLog(
@@ -589,12 +602,91 @@ async function discordLog(
   discordClient,
   discordChannelName
 ) {
-  const objLine = JSON.parse(line);
-  console.log(objLine);
-  objLine.fields[0].value.replace("${serverName}", discordChannelName);
+  let objLine = JSON.parse(line);
+  objLine.fields[0].value = objLine.fields[0].value.replace(
+    "${serverName}",
+    discordClient.channels.cache.get(discordChannelID)
+  );
   let embed = new MessageEmbed(objLine);
-  discordClient.channels.cache.get(discordChannelID).send(embed);
-  // client.channels.cache.get("697146357819113553").send(embed); // moderators channel
+  client.channels.cache.get("697146357819113553").send(embed); // moderators channel
+}
+async function datastoreInput(
+  line,
+  discordChannelID,
+  discordClient,
+  discordChannelName
+) {
+  let args = line.split(" ");
+  const requestType = args.shift();
+  const collectionName = args.shift();
+  const playerName = args.shift();
+  line = line.slice(
+    // +3 for spaces
+    requestType.length + collectionName.length + playerName.length + 3
+  );
+  if (requestType == "request") {
+    // request from database and send back to server
+    let find = await searchOneDB("otherData", collectionName, {
+      playername: playerName,
+    });
+    let send;
+    if (find == null) send = "";
+    else send = JSON.stringify(find.data);
+    rconCommand(
+      `/interface Datastore.ingest('request', '${collectionName}', '${playerName}', '${send}')`,
+      getServerFromChannelInput(discordChannelID)[0].name
+    );
+  } else if (requestType == "message") {
+    // send to all servers without saving
+    rconCommandAll(
+      // args is now the rest of the stuff
+      `/interface Datastore.ingest('message', '${collectionName}', '${playerName}', '${args}')`
+    );
+  } else if (requestType == "propagate") {
+    // send to all servers and send to database
+    rconCommandAll(
+      // args is now the rest of the stuff
+      `/interface Datastore.ingest('propagate', '${collectionName}', '${playerName}', '${args}')`
+    );
+    let find = await searchOneDB("otherData", collectionName, {
+      playername: playerName,
+    });
+    if (find == null) {
+      let send = {
+        playername: playerName,
+        data: JSON.parse(args),
+      };
+      insertOneDB("otherData", collectionName, send);
+    } else {
+      let send = lodash.cloneDeep(find);
+      send.data = JSON.parse(args);
+
+      findOneAndReplaceDB("otherData", collectionName, find, send);
+    }
+  } else if (requestType == "save") {
+    // save to database
+    let find = await searchOneDB("otherData", collectionName, {
+      playername: playerName,
+    });
+    if (find == null) {
+      let send = {
+        playername: playerName,
+        data: JSON.parse(line),
+      };
+      insertOneDB("otherData", collectionName, send);
+    } else {
+      let send = lodash.cloneDeep(find);
+      send.data = JSON.parse(line);
+      findOneAndReplaceDB("otherData", collectionName, find, send);
+    }
+  } else if (requestType == "remove") {
+    // remove from database
+    let toDelete = {
+      playername: playerName,
+      data: JSON.parse(args),
+    };
+    deleteOneDB("otherData", collectionName, toDelete);
+  }
 }
 async function givePlayerRoles(factorioName, roles, serverName) {
   // TODO: use /interface return Roles.player_has_roles(playername) to check if a player has a role from the array. If not, assign it

@@ -3,11 +3,12 @@ var Tail = require("tail").Tail;
 const chatFormat = require("./chatFormat");
 const { token, prefix } = require("./botconfig.json");
 const servers = require("./servers.json"); // tails, fifo, discord IDs etc.
-const { discordLog, awfLogging } = require("./functions");
+const { discordLog, awfLogging, datastoreInput } = require("./functions");
 
 let serverTails = [];
 let discordLoggingTails = [];
 let awfLoggingTails = [];
+let datastoreTails = [];
 Object.keys(servers).forEach((element) => {
   awfLoggingTails.push([
     new Tail(
@@ -22,6 +23,12 @@ Object.keys(servers).forEach((element) => {
     servers[element],
   ]);
   serverTails.push([new Tail(servers[element].serverOut), servers[element]]);
+  datastoreTails.push([
+    new Tail(
+      `../servers/${servers[element].serverFolderName}/script-output/ext/datastore.out`
+    ),
+    servers[element],
+  ]);
 });
 
 const client = new Client();
@@ -42,7 +49,7 @@ serverTails.forEach((element) => {
 discordLoggingTails.forEach((element) => {
   element[0].on("line", function (line) {
     discordLog(
-      JSON.parse(line),
+      line,
       element[1].discordChannelID,
       client,
       element[1].discordChannelName
@@ -52,7 +59,17 @@ discordLoggingTails.forEach((element) => {
 awfLoggingTails.forEach((element) => {
   element[0].on("line", function (line) {
     awfLogging(
-      JSON.parse(line),
+      line,
+      element[1].discordChannelID,
+      client,
+      element[1].discordChannelName
+    );
+  });
+});
+datastoreTails.forEach((element) => {
+  element[0].on("line", function (line) {
+    datastoreInput(
+      line,
       element[1].discordChannelID,
       client,
       element[1].discordChannelName

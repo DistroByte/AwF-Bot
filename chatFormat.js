@@ -94,14 +94,6 @@ module.exports = function chatFormat(line, channel, client, serverConsoleName) {
       client
     );
   }
-  if (line.includes("[LEAVE]")) {
-    // testing only
-    functions.onJoin(
-      line.slice(line.indexOf("]") + 2, line.indexOf("left the game") - 1),
-      channel,
-      client
-    );
-  }
   if (line.includes("<server>")) return;
   if (line.includes("; Factorio")) {
     return client.channels.cache
@@ -147,9 +139,6 @@ module.exports = function chatFormat(line, channel, client, serverConsoleName) {
         })
         .catch((err) => console.log(err));
     }
-    return client.channels.cache
-      .get(channel)
-      .send(`**${functions.formatChatData(line)}**`);
   } else if (line.includes("JLOGGER:")) {
     line = line.slice(line.indexOf("JLOGGER:") + "JLOGGER:".length + 1);
     functions.parseJammyLogger(line, client.channels.cache.get(channel));
