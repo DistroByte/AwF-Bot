@@ -227,146 +227,6 @@ async function deleteOneDB(dat, coll, params, filter) {
   const collection = client.db(dat).collection(coll);
   return collection.deleteOne(params);
 }
-async function addDeath(server, player, reason) {
-  var res = await searchOneDB(server, "deaths", { player: `${player}` });
-  if (res == null) {
-    // if the player wasn't found in the server's database
-    var writeObj = {
-      player: `${player}`,
-      deaths: {
-        [reason]: 1,
-      },
-    };
-    var out = await insertOneDB(server, "deaths", writeObj);
-    if (out.result.ok !== 1) console.log("error adding to database");
-    return;
-  } else {
-    var replaceWith = lodash.cloneDeep(res); // duplicate the object
-    if (replaceWith.deaths[reason]) replaceWith.deaths[reason]++;
-    else replaceWith.deaths[reason] = 1;
-    var out = await findOneAndReplaceDB(server, "deaths", res, replaceWith);
-    return;
-  }
-  return 0;
-}
-async function addRocket(server) {
-  var res = await searchOneDB(server, "stats", {
-    rocketLaunches: { $exists: true },
-  });
-  if (res == null) {
-    // if the server wasn't found in the server's database
-    var writeObj = {
-      rocketLaunches: 1,
-    };
-    var out = await insertOneDB(server, "stats", writeObj);
-    if (out.result.ok !== 1) console.log("error adding to database");
-    return 1;
-  } else {
-    var replaceWith = await lodash.cloneDeep(res); // duplicate the object
-    if (replaceWith.rocketLaunches) replaceWith.rocketLaunches++;
-    else replaceWith.rocketLaunches = 1;
-    var out = await findOneAndReplaceDB(server, "stats", res, replaceWith);
-    if (typeof out == "object") {
-      if (out.ok !== 1) console.log("error adding to database");
-    } else {
-      console.log(out);
-    }
-    return replaceWith.rocketLaunches;
-  }
-}
-async function addResearch(server, research, level) {
-  var res = await searchOneDB(server, "stats", { research: "researchData" });
-  if (res == null) {
-    // if the server's research wasn't found in the server's database (first research)
-    var writeObj = {
-      research: "researchData",
-      completedResearch: {
-        [research]: level,
-      },
-    };
-    var out = await insertOneDB(server, "stats", writeObj);
-    if (out.result.ok !== 1) console.log("error adding to database");
-    return;
-  } else {
-    var replaceWith = lodash.cloneDeep(res); // duplicate the object
-    if (res.completedResearch[research] <= 1)
-      replaceWith.completedResearch[research]++;
-    else replaceWith.completedResearch[research] = level;
-    var out = await findOneAndReplaceDB(server, "stats", res, replaceWith);
-    if (typeof out == "object") {
-      if (out.ok !== 1) console.log("error adding to database");
-    } else {
-      console.log(out);
-    }
-  }
-  return;
-}
-async function parseJammyLogger(line, channel) {
-  //channel is an object
-  //this long asf function parses JammyLogger lines in the console and handles basic statistics
-  if (line.includes("DIED: ")) {
-    line = line.slice("DIED: ".length);
-    line = line.split(" "); //split at separation between username and death reson
-    if (line[0].includes("PLAYER: ")) {
-      line[0] = line[0].slice("PLAYER: ".length);
-      line[1] = `Player ${line[1]}`;
-    }
-    if (line[0] == "PLAYER:") line.shift();
-    addDeath(channel.name, line[0], line[1]);
-    channel.send(`Player \`${line[0]}\` died due to \`${line[1]}\``);
-    let user = await searchOneDB("otherData", "linkedPlayers", {
-      factorioName: line[0],
-    });
-    if (user == null) return; //non-linked user
-    changePoints(user, 0, 0, 1); //0 built, 0 time but 1 death
-  } else if (line.includes("ROCKET: ")) {
-    addRocket(channel.name)
-      .then((count) => {
-        if (count == 1)
-          channel.send("Hooray! This server's first rocket has been sent!");
-        if (count % 100 == 0) channel.send(`${count} rockets have been sent!`);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  } else if (line.includes("RESEARCH FINISHED: ")) {
-    line = line.slice("RESEARCH FINISHED: ".length);
-    line = line.split(" ");
-    addResearch(channel.name, line[0], line[1]);
-    channel.send(
-      `Research \`${line[0]}\` on level \`${line[1]}\` was completed!`
-    );
-  } else if (line.includes("STATS: ")) {
-    line = line.slice("STATS: ".length);
-    line = line.split(" ");
-    let username = line[0]; // username from line
-    let built = parseInt(line[1]); // first part of the line
-    let time = parseInt(line[2]); // second part of the line
-    time = time / (60 * 60); // get time into minutes
-    let user = await searchOneDB("otherData", "linkedPlayers", {
-      factorioName: username,
-    });
-    if (user == null) return; //non-linked user
-    changePoints(user, built, time);
-  }
-}
-function getServerList() {
-  let serverNames = [];
-  Object.keys(servers).forEach((element) => {
-    if (servers[element].serverFolderName !== "")
-      serverNames.push(servers[element].serverFolderName);
-  });
-  return serverNames;
-}
-async function runShellCommand(cmd) {
-  return new Promise((resolve, reject) => {
-    exec(cmd, function (error, stdout, stderr) {
-      if (stdout) resolve(stdout);
-      if (stderr) reject(stderr);
-      if (error) reject(error);
-    });
-  });
-}
 async function rconCommand(command, serverName) {
   if (!command.startsWith("/")) command = `/${command}`; //add a '/' if not present
   let server;
@@ -457,6 +317,8 @@ async function rconCommandAllExclude(command, exclude) {
   return await Promise.all(promiseArray);
 }
 async function giveFactorioRole(username, roleName) {
+  // DO NOT USE THIS FUNCTION TO ASSIGN ROLES
+  // adds a factorio role to the database
   let res = await searchOneDB("otherData", "playerRoles", {
     factorioName: username,
   });
@@ -477,22 +339,196 @@ async function getFactorioRoles(factorioName) {
     factorioName: factorioName,
   });
 }
+async function givePlayerRoles(factorioName, role, serverName) {
+  // This function itself
+  // roles is a name of a role
+  let response = await rconCommand(
+    `/interface local names = {} for i, role in ipairs(Roles.get_player_roles("${factorioName}")) do names[i] = role.name end return names`,
+    serverName
+  );
+  if (response[1] == "error")
+    return console.log(`Error contacting server ${serverName} using RCON`);
+  response = response[0].slice(0, response[0].indexOf("\n"));
+  response = response.slice(
+    response.indexOf("{") + 2,
+    response.indexOf("}") - 1
+  );
+  response = response.replace(/"/g, "");
+  currentRoles = response.split(",  ");
+  if (!currentRoles.includes(role)) {
+    rconCommand(`/assign-role ${factorioName} ${role}`, serverName);
+    giveFactorioRole(factorioName, role);
+  }
+}
+async function addDeath(server, player, reason) {
+  var res = await searchOneDB(server, "deaths", { player: `${player}` });
+  if (res == null) {
+    // if the player wasn't found in the server's database
+    var writeObj = {
+      player: `${player}`,
+      deaths: {
+        [reason]: 1,
+      },
+    };
+    var out = await insertOneDB(server, "deaths", writeObj);
+    if (out.result.ok !== 1) console.log("error adding to database");
+    return;
+  } else {
+    var replaceWith = lodash.cloneDeep(res); // duplicate the object
+    if (replaceWith.deaths[reason]) replaceWith.deaths[reason]++;
+    else replaceWith.deaths[reason] = 1;
+    var out = await findOneAndReplaceDB(server, "deaths", res, replaceWith);
+    return;
+  }
+  return 0;
+}
+async function addRocket(server) {
+  var res = await searchOneDB(server, "stats", {
+    rocketLaunches: { $exists: true },
+  });
+  if (res == null) {
+    // if the server wasn't found in the server's database
+    var writeObj = {
+      rocketLaunches: 1,
+    };
+    var out = await insertOneDB(server, "stats", writeObj);
+    if (out.result.ok !== 1) console.log("error adding to database");
+    return 1;
+  } else {
+    var replaceWith = await lodash.cloneDeep(res); // duplicate the object
+    if (replaceWith.rocketLaunches) replaceWith.rocketLaunches++;
+    else replaceWith.rocketLaunches = 1;
+    var out = await findOneAndReplaceDB(server, "stats", res, replaceWith);
+    if (typeof out == "object") {
+      if (out.ok !== 1) console.log("error adding to database");
+    } else {
+      console.log(out);
+    }
+    return replaceWith.rocketLaunches;
+  }
+}
+async function addResearch(server, research, level) {
+  var res = await searchOneDB(server, "stats", { research: "researchData" });
+  if (res == null) {
+    // if the server's research wasn't found in the server's database (first research)
+    var writeObj = {
+      research: "researchData",
+      completedResearch: {
+        [research]: level,
+      },
+    };
+    var out = await insertOneDB(server, "stats", writeObj);
+    if (out.result.ok !== 1) console.log("error adding to database");
+    return;
+  } else {
+    var replaceWith = lodash.cloneDeep(res); // duplicate the object
+    if (res.completedResearch[research] <= 1)
+      replaceWith.completedResearch[research]++;
+    else replaceWith.completedResearch[research] = level;
+    var out = await findOneAndReplaceDB(server, "stats", res, replaceWith);
+    if (typeof out == "object") {
+      if (out.ok !== 1) console.log("error adding to database");
+    } else {
+      console.log(out);
+    }
+  }
+  return;
+}
+async function parseJammyLogger(line, channel) {
+  //channel is a Discord channel object
+  //this long asf function parses JammyLogger lines in the console and handles basic statistics
+  if (line.includes("DIED: ")) {
+    line = line.slice("DIED: ".length);
+    line = line.split(" "); //split at separation between username and death reson
+    if (line[0].includes("PLAYER: ")) {
+      line[0] = line[0].slice("PLAYER: ".length);
+      line[1] = `Player ${line[1]}`;
+    }
+    if (line[0] == "PLAYER:") line.shift();
+    addDeath(channel.name, line[0], line[1]);
+    channel.send(`Player \`${line[0]}\` died due to \`${line[1]}\``);
+    let user = await searchOneDB("otherData", "linkedPlayers", {
+      factorioName: line[0],
+    });
+    if (user == null) return; //non-linked user
+    changePoints(user, 0, 0, 1); //0 built, 0 time but 1 death
+  } else if (line.includes("ROCKET: ")) {
+    addRocket(channel.name)
+      .then((count) => {
+        if (count == 1)
+          channel.send("Hooray! This server's first rocket has been sent!");
+        if (count % 100 == 0) channel.send(`${count} rockets have been sent!`);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  } else if (line.includes("RESEARCH FINISHED: ")) {
+    line = line.slice("RESEARCH FINISHED: ".length);
+    line = line.split(" ");
+    addResearch(channel.name, line[0], line[1]);
+    channel.send(
+      `Research \`${line[0]}\` on level \`${line[1]}\` was completed!`
+    );
+  } else if (line.includes("STATS: ")) {
+    line = line.slice("STATS: ".length);
+    line = line.split(" ");
+    let username = line[0]; // username from line
+    let built = parseInt(line[1]); // first part of the line
+    let time = parseInt(line[2]); // second part of the line
+    time = time / (60 * 60); // get time into minutes
+    let user = await searchOneDB("otherData", "linkedPlayers", {
+      factorioName: username,
+    });
+    if (user == null) return; //non-linked user
+    let resp = await changePoints(user, built, time);
+    if (resp[0].time > 60 * 10) {
+      // give Veteran role if player has more than 10h played across all servers
+      let roles = await getFactorioRoles(user.factorioName);
+      if (roles != null) {
+        roles = roles.roles;
+        if (!roles.includes("Veteran")) {
+          let factorioServer = getServerFromChannelInput(channel.id)[0];
+          givePlayerRoles(user.factorioName, "Veteran", factorioServer.name);
+        }
+      }
+    }
+  }
+}
+function getServerList() {
+  let serverNames = [];
+  Object.keys(servers).forEach((element) => {
+    if (servers[element].serverFolderName !== "")
+      serverNames.push(servers[element].serverFolderName);
+  });
+  return serverNames;
+}
+async function runShellCommand(cmd) {
+  return new Promise((resolve, reject) => {
+    exec(cmd, function (error, stdout, stderr) {
+      if (stdout) resolve(stdout);
+      if (stderr) reject(stderr);
+      if (error) reject(error);
+    });
+  });
+}
 async function linkFactorioDiscordUser(
   discordClient,
   factorioName,
-  discordName
+  discordName,
+  discordChannelID
 ) {
   //links the Factorio and Discord usernames, can be used for verification later
   //discordName is the name and tag of the user, e.g. SomeRandomPerson#0000
+  let factorioServer = getServerFromChannelInput(discordChannelID)[0];
   let server = await discordClient.guilds.cache.get("548410604679856151");
   let sendToUser = await server.members.fetch({ query: discordName, limit: 1 });
   sendToUser = sendToUser.first();
   let sentMsg = await sendToUser.send(
-    `You have chosen to link your Discord account, \`${discordName}\` with your Factorio account on AwF, \`${factorioName}\`. The request will timeout after 5 minutes of sending. React with 🛑 to re-link your account. If complications arise, please contact devs/admins (relinking is when switching Factorio username, for switching Discord account contact admins/devs. Changing your Discord username **IS NOT** changing an account, whilst changing your Factorio username **is**)`
+    `You have chosen to link your Discord account, \`${discordName}\` with your Factorio account on AwF, \`${factorioName}\`. The request will timeout after 5 minutes of sending. React with :hammer: to re-link your account. If complications arise, please contact devs/admins (relinking is when switching Factorio username, for switching Discord account contact admins/devs. Changing your Discord username **IS NOT** changing an account, whilst changing your Factorio username **is**)`
   );
   sentMsg.react("✅");
+  sentMsg.react("🔨");
   sentMsg.react("❌");
-  sentMsg.react("🛑");
   const filter = (reaction, user) => {
     return user.id === sendToUser.id;
   };
@@ -507,7 +543,7 @@ async function linkFactorioDiscordUser(
       let found = await searchOneDB("otherData", "linkedPlayers", {
         discordID: sendToUser.id,
       });
-      if (found !== null && reaction.emoji.name === "🛑") {
+      if (found !== null && reaction.emoji.name === "🔨") {
         // re-link user
         let res = await findOneAndReplaceDB(
           "otherData",
@@ -536,25 +572,26 @@ async function linkFactorioDiscordUser(
             "Please contact devs/admins for re-linking, process failed"
           );
         sendToUser.send("Re-linked succesfully!");
-        giveFactorioRole(factorioName, "Member");
+        givePlayerRoles(factorioName, "Member", factorioServer.name); // give the Member role to new players
       } else if (found !== null && reaction.emoji.name === "❌")
-        // cancel
+        // cancel, found a user and they
         return sendToUser.send("Already linked");
-      else if (found === null) {
+      else if (found === null && reaction.emoji.name === "✅") {
         let res = await insertOneDB("otherData", "linkedPlayers", dat);
         if (res.result.ok == 0)
           sendToUser.send("Failed linking. Contact devs/admins");
         else sendToUser.send("Linked successfully");
-        giveFactorioRole(factorioName, "Member");
+        givePlayerRoles(factorioName, "Member", factorioServer.name); // give the Member role to new players
       }
     })
     .catch((out) => {
       if (out.size == 0)
         return sendToUser.send(`Didn't react in time. Please try again.`);
+      else return sendToUser.send("Error. Please contact admin/dev");
     });
 }
 async function changePoints(user, built, time, death = 0) {
-  let res = await searchOneDB("otherData", "globPlayerStats", {
+  var res = await searchOneDB("otherData", "globPlayerStats", {
     discordID: user.discordID,
   });
   if (res == null) {
@@ -566,7 +603,6 @@ async function changePoints(user, built, time, death = 0) {
       deaths: 0,
       points: 0,
     };
-    await insertOneDB("otherData", "globPlayerStats", pushData);
     res = pushData;
   } else {
     let replaceWith = lodash.cloneDeep(res);
@@ -583,6 +619,7 @@ async function changePoints(user, built, time, death = 0) {
     replaceWith.points += built;
     replaceWith.points += (time / 60) * 50; //50 pts/h
     await findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
+    return [replaceWith, user];
   }
 }
 async function discordLog(
@@ -608,7 +645,8 @@ async function awfLogging(
     linkFactorioDiscordUser(
       discordClient,
       logObject.playerName,
-      logObject.discordName
+      logObject.discordName,
+      discordChannelID
     );
   } else if (logObject.type == "join") {
     discordClient.channels.cache
@@ -634,7 +672,7 @@ async function discordLog(
     discordClient.channels.cache.get(discordChannelID)
   );
   let embed = new MessageEmbed(objLine);
-  client.channels.cache.get("697146357819113553").send(embed); // moderators channel
+  discordClient.channels.cache.get("697146357819113553").send(embed); // moderators channel
 }
 async function datastoreInput(
   line,
@@ -716,32 +754,11 @@ async function datastoreInput(
     deleteOneDB("otherData", collectionName, toDelete);
   }
 }
-async function givePlayerRoles(factorioName, roles, serverName) {
-  // TODO: use /interface return Roles.player_has_roles(playername) to check if a player has a role from the array. If not, assign it
-  // something wrong with this, fix it
-  let response = await rconCommand(
-    `/interface local names = {} for i, role in ipairs(Roles.get_player_roles("${factorioName}")) do names[i] = role.name end return names`,
-    serverName
-  );
-  if (response[1] == "error") return;
-  response = response[0].slice(0, response[0].indexOf("\n"));
-  response = response.slice(
-    response.indexOf("{") + 2,
-    response.indexOf("}") - 1
-  );
-  response = response.replace(/"/g, "");
-  currentRoles = response.split(",  ");
-  roles.forEach(async (giveRole) => {
-    if (!currentRoles.includes(giveRole)) {
-      rconCommand(`/assign-role ${factorioName} ${giveRole}`, serverName);
-    }
-  });
-}
 async function onJoin(playerName, discordChannel, discordClient) {
-  const froles = (await getFactorioRoles(playerName)).roles;
+  const froles = await getFactorioRoles(playerName);
   const joinedServer = getServerFromChannelInput(discordChannel)[0];
   if (froles == null) return;
   else {
-    givePlayerRoles(playerName, froles, joinedServer.name);
+    givePlayerRoles(playerName, froles.roles, joinedServer.name);
   }
 }
