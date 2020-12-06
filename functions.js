@@ -197,7 +197,6 @@ function getServerFromChannelInput(channelID) {
   let serverKeys = Object.keys(servers);
   for (let i = 0; i < serverKeys.length; i++) {
     if (servers[serverKeys[i]].discordChannelID == channelID) {
-      console.log(servers[serverKeys[i]]);
       return servers[serverKeys[i]];
     }
   }
@@ -321,6 +320,7 @@ async function rconCommandAllExclude(command, exclude) {
 async function giveFactorioRole(username, roleName) {
   // DO NOT USE THIS FUNCTION TO ASSIGN ROLES
   // adds a factorio role to the database
+  // give it a SINGLE ROLE NAME, not the existing roles
   let res = await searchOneDB("otherData", "playerRoles", {
     factorioName: username,
   });
@@ -344,6 +344,7 @@ async function getFactorioRoles(factorioName) {
 async function givePlayerRoles(factorioName, role, serverName) {
   // This function itself
   // roles is a name of a role
+  // this function itself doesnt touch the database
   let response = await rconCommand(
     `/interface local names = {} for i, role in ipairs(Roles.get_player_roles("${factorioName}")) do names[i] = role.name end return names`,
     serverName
@@ -624,18 +625,6 @@ async function changePoints(user, built, time, death = 0) {
     return [replaceWith, user];
   }
 }
-async function discordLog(
-  line,
-  discordChannelID,
-  discordClient,
-  discordChannelName
-) {
-  let objLine = JSON.parse(line);
-  objLine.fields[0].value.replace("${serverName}", discordChannelName);
-  let embed = new MessageEmbed(objLine);
-  discordClient.channels.cache.get(discordChannelID).send(embed);
-  // client.channels.cache.get("697146357819113553").send(embed); // moderators channel
-}
 async function awfLogging(
   line,
   discordChannelID,
@@ -687,7 +676,7 @@ async function datastoreInput(
   const requestType = args.shift();
   const collectionName = args.shift();
   const playerName = args.shift();
-  const factorioServer = getServerFromChannelInput(discordChannelID).name;
+  const factorioServer = getServerFromChannelInput(discordChannelID);
   line = line.slice(
     // +3 for spaces
     requestType.length + collectionName.length + playerName.length + 3
@@ -762,6 +751,8 @@ async function onJoin(playerName, discordChannel, discordClient) {
   const joinedServer = getServerFromChannelInput(discordChannel);
   if (froles == null) return;
   else {
-    givePlayerRoles(playerName, froles.roles, joinedServer.name);
+    froles.roles.forEach((role) => {
+      givePlayerRoles(playerName, role, joinedServer.name);
+    });
   }
 }
