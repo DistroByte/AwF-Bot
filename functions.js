@@ -194,11 +194,13 @@ function formatChatData(data, keepData) {
 }
 function getServerFromChannelInput(channelID) {
   // gets a server object from channel ID
-  return Object.keys(servers).map((element) => {
-    if (servers[element].discordChannelID === channelID) {
-      return servers[element];
+  let serverKeys = Object.keys(servers);
+  for (let i = 0; i < serverKeys.length; i++) {
+    if (servers[serverKeys[i]].discordChannelID == channelID) {
+      console.log(servers[serverKeys[i]]);
+      return servers[serverKeys[i]];
     }
-  });
+  }
 }
 async function searchOneDB(dat, coll, toSearch) {
   await dBclientConnectionPromise; //just wait so the database is connected
@@ -487,7 +489,7 @@ async function parseJammyLogger(line, channel) {
       if (roles != null) {
         roles = roles.roles;
         if (!roles.includes("Veteran")) {
-          let factorioServer = getServerFromChannelInput(channel.id)[0];
+          let factorioServer = getServerFromChannelInput(channel.id);
           givePlayerRoles(user.factorioName, "Veteran", factorioServer.name);
         }
       }
@@ -519,7 +521,7 @@ async function linkFactorioDiscordUser(
 ) {
   //links the Factorio and Discord usernames, can be used for verification later
   //discordName is the name and tag of the user, e.g. SomeRandomPerson#0000
-  let factorioServer = getServerFromChannelInput(discordChannelID)[0];
+  let factorioServer = getServerFromChannelInput(discordChannelID);
   let server = await discordClient.guilds.cache.get("548410604679856151");
   let sendToUser = await server.members.fetch({ query: discordName, limit: 1 });
   sendToUser = sendToUser.first();
@@ -685,6 +687,7 @@ async function datastoreInput(
   const requestType = args.shift();
   const collectionName = args.shift();
   const playerName = args.shift();
+  const factorioServer = getServerFromChannelInput(discordChannelID).name;
   line = line.slice(
     // +3 for spaces
     requestType.length + collectionName.length + playerName.length + 3
@@ -699,7 +702,7 @@ async function datastoreInput(
     else send = JSON.stringify(find.data);
     rconCommand(
       `/interface Datastore.ingest('request', '${collectionName}', '${playerName}', '${send}')`,
-      getServerFromChannelInput(discordChannelID)[0].name
+      factorioServer.name
     );
   } else if (requestType == "message") {
     // send to all servers without saving
@@ -756,7 +759,7 @@ async function datastoreInput(
 }
 async function onJoin(playerName, discordChannel, discordClient) {
   const froles = await getFactorioRoles(playerName);
-  const joinedServer = getServerFromChannelInput(discordChannel)[0];
+  const joinedServer = getServerFromChannelInput(discordChannel);
   if (froles == null) return;
   else {
     givePlayerRoles(playerName, froles.roles, joinedServer.name);
