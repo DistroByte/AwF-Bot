@@ -2,7 +2,6 @@
 /botconfig.json
 /ecosystem.config.js
 /node_modules
-test.js
 log-all
 .DS_Store
 servers.json
