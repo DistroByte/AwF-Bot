@@ -17,7 +17,7 @@ module.exports = async (client, message) => {
     );
   if (message.content.includes("lenny"))
     return message.channel.send(`( ͡° ͜ʖ ͡°)`);
-  if (message.content.includes("slap") && message.mentions) {
+  if (message.content.startsWith("slap")) {
     message.delete();
     return message.channel.send(
       `${
