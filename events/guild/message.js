@@ -11,13 +11,13 @@ module.exports = async (client, message) => {
     return message.channel.send(":wave:");
   if (message.content.includes("Jammy work"))
     return message.channel.send("you coded me this way, your issue");
-  if (message.content.includes("soon"))
+  if (message.content.toLowerCase().includes("soon"))
     message.react(
       message.guild.emojis.cache.find((emoji) => emoji.name === "soontm")
     );
-  if (message.content.includes("lenny"))
+  if (message.content.toLowerCase().includes("lenny"))
     return message.channel.send(`( ͡° ͜ʖ ͡°)`);
-  if (message.content.startsWith("slap")) {
+  if (message.content.toLowerCase().startsWith("slap")) {
     message.delete();
     return message.channel.send(
       `${
