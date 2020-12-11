@@ -70,7 +70,7 @@ module.exports = function chatFormat(line, channel, client, serverConsoleName) {
   if (line.includes("Error")) {
     if (client.channels.cache.get(channel).name !== "dev-dump")
       client.channels.cache
-        .get("697146357819113553")
+        .get("786603909489491988")
         .send(`Error in ${client.channels.cache.get(channel).name}: ${line}`);
   }
 
