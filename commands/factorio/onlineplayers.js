@@ -38,14 +38,13 @@ module.exports = {
           .then((res) => {
             if (!res[1].startsWith("error")) {
               resolve(
-                onlinePlayers.addField(server[1], res[0], (inline = true))
+                onlinePlayers.addField(server[1], res[0])
               );
             } else {
               resolve(
                 onlinePlayers.addField(
                   server[1],
-                  "Error getting players online. Server may be offline",
-                  (inline = true)
+                  "Error getting players online. Server may be offline"
                 )
               );
             }
