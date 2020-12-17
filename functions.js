@@ -412,6 +412,7 @@ async function addRocket(server) {
 }
 async function addResearch(server, research, level) {
   var res = await searchOneDB(server, "stats", { research: "researchData" });
+  if (level < 1) level = 1;
   if (res == null) {
     // if the server's research wasn't found in the server's database (first research)
     var writeObj = {
