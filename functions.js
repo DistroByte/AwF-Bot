@@ -25,97 +25,13 @@ const client = new MongoClient(uri, {
 const dBclientConnectionPromise = client.connect();
 
 module.exports = {
-  formatVersion: function (data) {
-    data.trim();
-    return data.slice(data.indexOf("Factorio"), data.indexOf("(b")).trim();
-  },
-  formatDate: function (data) {
-    data.trim();
-    return data.slice(data.indexOf("0.000") + 6, 25);
-  },
-  formatSaveData: function (data) {
-    return data.slice(data.indexOf("_autosave") + 1, data.indexOf("(") - 1);
-  },
-  sendToAll: function (message, sendWithUsername) {
-    // The $message given to this function is an object of discord.js - it has the author username, message content, mentions etc.
-    // The $sendWithUsername given to the function is a boolean value (fixed from being a 0 or 1). If sendWithUsername is true, it will send the message with the username
-    // sends a message to all servers at once
-    if (sendWithUsername) {
-      // $sendWithUsername is true, therefore the message is sent with the username
-      serverFifos.forEach((fifo) => {
-        fifo[0].write(
-          `${message.author.username}: ${message.content}`,
-          () => {}
-        );
-      });
-    } else {
-      // sends just the message, no username, nothing because $sendWithUsername is false
-      let toSend = message.content || message;
-      serverFifos.forEach((fifo) => {
-        fifo[0].write(`${toSend}`, () => {});
-      });
-    }
-  },
-  sendToServer: function (message, sendWithUsername) {
-    // The $message given to this function is an object of discord.js - it has the author username, message content, mentions etc.
-    // The $sendWithUsername given to the function is a boolean value (fixed from being a 0 or 1). If sendWithUsername is true, it will send the message with the username
-    // sends a message to only one server with or without the username
-
-    if (sendWithUsername == true) {
-      //sends the message with the username and colon, as $sendWithUsername is true
-      serverFifos.forEach((factorioServer) => {
-        if (message.channel.id === factorioServer[1].discordChannelID) {
-          factorioServer[0].write(
-            `${message.author.username}: ${message.content}`,
-            () => {}
-          );
-        }
-      });
-    } else {
-      //sends just the message, no username, nothing as $sendWithUsername is false
-      serverFifos.forEach((factorioServer) => {
-        if (message.channel.id === factorioServer[1].discordChannelID) {
-          factorioServer[0].write(`${message.content}`, () => {});
-        }
-      });
-    }
-  },
-  bubbleSort: function (arr) {
-    var len = arr.length;
-
-    for (var i = 0; i < len; i++) {
-      for (var j = 0; j < len - i - 1; j++) {
-        if (arr[j] > arr[j + 1]) {
-          // swap
-          var temp = arr[j];
-          arr[j] = arr[j + 1];
-          arr[j + 1] = temp;
-        }
-      }
-    }
-    return arr;
-  },
-  sortModifiedDate: async function (dir) {
-    return new Promise((resolve, reject) => {
-      fs.readdir(dir, function (err, files) {
-        if (err) reject(err);
-        files = files
-          .map(function (fileName) {
-            return {
-              name: fileName,
-              time: fs.statSync(dir + "/" + fileName).mtime.getTime(),
-            };
-          })
-          .sort(function (a, b) {
-            return b.time - a.time;
-          })
-          .map(function (v) {
-            return v.name;
-          });
-        resolve(files);
-      });
-    });
-  },
+  formatVersion,
+  formatDate,
+  formatSaveData,
+  sendToAll,
+  sendToServer,
+  bubbleSort,
+  sortModifiedDate,
   getServerFromChannelInput,
   formatChatData,
   searchOneDB,
@@ -134,7 +50,151 @@ module.exports = {
   datastoreInput,
   onJoin,
 };
+/**
+ * @async
+ * @description Gets files from a folder and sorts them by date last modified
+ * @param {string} dir - Directory to get files from
+ * @returns {string=} Array of strings of filenames in order of last modified
+ * @example
+ * // get the files from ./commands/basic
+ * sortModifiedDate("./commands/basic")
+ * // returns:
+ * [
+  'sortdate.js',
+  'ping.js',
+  'faq.js',
+  'help.js',
+  'stats.js',
+  'uptime.js',
+  'xkcd.js'
+]
+ */
+async function sortModifiedDate(dir) {
+  return new Promise((resolve, reject) => {
+    fs.readdir(dir, function (err, files) {
+      if (err) reject(err);
+      files = files
+        .map(function (fileName) {
+          return {
+            name: fileName,
+            time: fs.statSync(dir + "/" + fileName).mtime.getTime(),
+          };
+        })
+        .sort(function (a, b) {
+          return b.time - a.time;
+        })
+        .map(function (v) {
+          return v.name;
+        });
+      resolve(files);
+    });
+  });
+}
 
+/**
+ * @description BubbleSort function by string length
+ * @param {string=} arr - Array of strings to sort
+ * @returns {string} Array of strings sorted by length
+ */
+function bubbleSort(arr) {
+  var len = arr.length;
+
+  for (var i = 0; i < len; i++) {
+    for (var j = 0; j < len - i - 1; j++) {
+      if (arr[j] > arr[j + 1]) {
+        // swap
+        var temp = arr[j];
+        arr[j] = arr[j + 1];
+        arr[j + 1] = temp;
+      }
+    }
+  }
+  return arr;
+}
+
+/**
+ * @description Sends a message to only one server
+ * @param {Object} message - Discord message object to send to Factorio server. Used for which server to send to by getting the server by channel ID
+ * @param {bool} sendWithUsername - Whether to send with username or not
+ */
+function sendToServer(message, sendWithUsername) {
+  if (sendWithUsername == true) {
+    //sends the message with the username and colon, as $sendWithUsername is true
+    serverFifos.forEach((factorioServer) => {
+      if (message.channel.id === factorioServer[1].discordChannelID) {
+        factorioServer[0].write(
+          `${message.author.username}: ${message.content}`,
+          () => {}
+        );
+      }
+    });
+  } else {
+    //sends just the message, no username, nothing as $sendWithUsername is false
+    serverFifos.forEach((factorioServer) => {
+      if (message.channel.id === factorioServer[1].discordChannelID) {
+        factorioServer[0].write(`${message.content}`, () => {});
+      }
+    });
+  }
+}
+
+/**
+ * @description Send a message to all servers (announcement or something)
+ * @param {Object} message - Message to send, format of DiscordMessage
+ * @param {bool} sendWithUsername - Whether to send message with username or not
+ */
+function sendToAll(message, sendWithUsername) {
+  // The $message given to this function is an object of discord.js - it has the author username, message content, mentions etc.
+  // The $sendWithUsername given to the function is a boolean value (fixed from being a 0 or 1). If sendWithUsername is true, it will send the message with the username
+  // sends a message to all servers at once
+  if (sendWithUsername) {
+    // $sendWithUsername is true, therefore the message is sent with the username
+    serverFifos.forEach((fifo) => {
+      fifo[0].write(`${message.author.username}: ${message.content}`, () => {});
+    });
+  } else {
+    // sends just the message, no username, nothing because $sendWithUsername is false
+    let toSend = message.content || message;
+    serverFifos.forEach((fifo) => {
+      fifo[0].write(`${toSend}`, () => {});
+    });
+  }
+}
+
+/**
+ * @description Get the name of the save currently saving into
+ * @param {string} data - Line of data to format
+ * @returns {string} Name of the save
+ * @example
+ * // returns "_autosave34"
+ * formatSaveData("[REGULAR] 41300.079 Info AppManager.cpp:306: Saving to _autosave34 (blocking).")
+ */
+function formatSaveData(data) {
+  return data.slice(data.indexOf("_autosave") + 1, data.indexOf("(") - 1);
+}
+
+/**
+ * @description Format the date when the server started
+ * @param {string} data - Line of server.out output
+ * @returns {string} Time
+ */
+function formatDate(data) {
+  data.trim();
+  return data.slice(data.indexOf("0.000") + 6, 25);
+}
+
+/**
+ * @description Get the version of Factorio the server is running
+ * @param {string} data - Line of data from server.out
+ * @returns {string} Version the server is running
+ * @example
+ * // returns 1.1.6
+ * formatVersion("    0.000 2020-12-20 01:30:07; Factorio 1.1.6 (build 57355, linux64, headless)")
+ */
+function formatVersion(data) {
+  data.trim();
+  return data.slice(data.indexOf("Factorio"), data.indexOf("(b")).trim();
+}
 /**
  * @description Formats chat data from Factorio to send to Discord or other uses. Gets rid of usernames, [CHAT] etc. from raw logs to make nice stuff
  * @function formatChatData
