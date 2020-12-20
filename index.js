@@ -48,22 +48,12 @@ serverTails.forEach((element) => {
 });
 discordLoggingTails.forEach((element) => {
   element[0].on("line", function (line) {
-    discordLog(
-      line,
-      element[1].discordChannelID,
-      client,
-      element[1].discordChannelName
-    );
+    discordLog(line, element[1].discordChannelID, client);
   });
 });
 awfLoggingTails.forEach((element) => {
   element[0].on("line", function (line) {
-    awfLogging(
-      line,
-      element[1].discordChannelID,
-      client,
-      element[1].discordChannelName
-    );
+    awfLogging(line, element[1].discordChannelID, client);
   });
 });
 datastoreTails.forEach((element) => {

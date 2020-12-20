@@ -819,6 +819,12 @@ async function linkFactorioDiscordUser(
  * @param {Number} death - number of deaths
  * @see {@link searchOneDB} to see how searching database is done
  * @see {@link findOneAndReplaceDB} to how replacing in database is done
+ * @returns {Array<Object>} an array of the object the data was replaced with, object of the user inputted
+ * @example
+ * // ex1: oof2win2 built 68 entities and played 93 minutes
+ * changePoints({factorioName: "oofw2win2", discordID: "69420"}, 68, 93, 0)
+ * // ex2: oof2win2 died once
+ * changePoints({factorioName: "oofw2win2", discordID: "69420"}, 0, 0, 1)
  */
 async function changePoints(user, built, time, death = 0) {
   var res = await searchOneDB("otherData", "globPlayerStats", {
@@ -853,13 +859,25 @@ async function changePoints(user, built, time, death = 0) {
   }
 }
 
-async function awfLogging(
-  line,
-  discordChannelID,
-  discordClient,
-  discordChannelName
-) {
+/**
+ * @async
+ * @description Parse logging of lines from script-output/ext/awflogging.out into various things, for now joining, leaving and linking
+ * @param {string} line - String to be parsed
+ * @param {string} discordChannelID - Channel ID of the Discord server corresponding to the Factorio server the line has been sent from
+ * @param {Object} discordClient - Discord client object
+ * @example
+ * // log oof2win2 joining dev-dump
+ * awfLogging(`{"type":"join","playerName":"oof2win2"}`, "723280139982471247", discordClient)
+ */
+async function awfLogging(line, discordChannelID, discordClient) {
   let logObject = JSON.parse(line);
+  /* 
+  example objects of input:
+  {"type":"join","playerName":"oof2win2"} 
+  {"type":"leave","playerName":"oof2win2","reason":"banned"}
+  {"type":"link","playerName":"oof2win2","discordName":"oof2win2"}
+  */
+
   if (logObject.type == "link") {
     linkFactorioDiscordUser(
       discordClient,
@@ -879,12 +897,20 @@ async function awfLogging(
       );
   }
 }
-async function discordLog(
-  line,
-  discordChannelID,
-  discordClient,
-  discordChannelName
-) {
+/**
+ * @async
+ * @description Log specific things (bans, kicks, jails etc.) to Discord
+ * @param {string} line - Message embed to send to the channel - input is literraly an already done Discord MessageEmbed
+ * @param {string} discordChannelID - Channel ID of the Discord server corresponding to the Factorio server the line has been sent from
+ * @param {Object} discordClient - Discord client object
+ * @see Factorio Scenario ({@link https://github.com/oof2win2/AwF-Scenario GitHub repo})
+ * @example
+ * // oof2win2 used /c
+ * discordLog("{"title":"C","description":"/c was used","color":"0x808080","fields":[{"name":"Server Details","value":"Server: ${serverName} Time: 1 days 0 hours 18 minutes\nTotal: 7 Online: 1 Admins: 1"},{"name":"By","value":"oof2win2","inline":true},{"name":"Details","value":"game.reload_script()","inline":true}]}", "723280139982471247", discordClient)
+ */
+async function discordLog(line, discordChannelID, discordClient) {
+  // example input
+  // {"title":"C","description":"/c was used","color":"0x808080","fields":[{"name":"Server Details","value":"Server: ${serverName} Time: 1 days 0 hours 18 minutes\nTotal: 7 Online: 1 Admins: 1"},{"name":"By","value":"oof2win2","inline":true},{"name":"Details","value":"game.reload_script()","inline":true}]}
   let objLine = JSON.parse(line);
   objLine.fields[0].value = objLine.fields[0].value.replace(
     "${serverName}",
@@ -893,6 +919,22 @@ async function discordLog(
   let embed = new MessageEmbed(objLine);
   discordClient.channels.cache.get("697146357819113553").send(embed); // moderators channel
 }
+/**
+ * @async
+ * @description Input to the datastore (parsing from script-output/ext/datastore.out). Searches/adds data in database otherData, it's up to the server to handle the collection name
+ * @param {string} line - Line from datastore.out to parse
+ * @param {string} discordChannelID - ID of the Discord channel corresponding to the server
+ * @param {Object} discordClient - Discord client object
+ * @param {string} discordChannelName - Name of the Discord channel corresponding to the Factorio server
+ * @param {Object} serverObject - Object of the server from servers.json
+ * @see Factorio Scenario ({@link https://github.com/oof2win2/AwF-Scenario GitHub repo})
+ * @example
+ * // This line from datastore.out is requesting the playerData of player oof2win2, so we give the function
+ * // the ID of the channel, Discord client, channel name and Discord object.
+ * // In different types ("request" can be other things, see scenario), this function can work with the database
+ * // in different ways
+ * datastoreInput("request PlayerData oof2win2", "723280139982471247", discordClient, "dev-dump", serverObject)
+ */
 async function datastoreInput(
   line,
   discordChannelID,
@@ -974,9 +1016,20 @@ async function datastoreInput(
     deleteOneDB("otherData", collectionName, toDelete);
   }
 }
-async function onJoin(playerName, discordChannel, discordClient) {
+/**
+ * @async
+ * @description What is done when a player joins a server
+ * @param {string} playerName - Name of the player joined
+ * @param {string} discordChannel - ID of the Discord channel corresponding to the Factorio server
+ * @param {Object} discordClient - Discord client object
+ * @see Factorio Scenario ({@link https://github.com/oof2win2/AwF-Scenario GitHub repo})
+ * @example
+ * // oof2win2 joined dev-dump, which has channel ID of 723280139982471247
+ * onJoin("oof2win2", "723280139982471247", discordClient)
+ */
+async function onJoin(playerName, discordChannelID, discordClient) {
   const froles = await getFactorioRoles(playerName);
-  const joinedServer = getServerFromChannelInput(discordChannel);
+  const joinedServer = getServerFromChannelInput(discordChannelID);
   if (froles == null) return;
   else {
     froles.roles.forEach((role) => {

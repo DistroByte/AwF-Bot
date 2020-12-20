@@ -619,6 +619,705 @@ addRocket("awf-regular")</code></pre>
     
 
     
+    <h4 class="name" id="awfLogging"><span class="type-signature">(async) </span>awfLogging<span class="signature">(line, discordChannelID, discordClient)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Parse logging of lines from script-output/ext/awflogging.out into various things, for now joining, leaving and linking
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>line</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">String to be parsed</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>discordChannelID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Channel ID of the Discord server corresponding to the Factorio server the line has been sent from</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>discordClient</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Discord client object</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line872">line 872</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// log oof2win2 joining dev-dump
+awfLogging(`{"type":"join","playerName":"oof2win2"}`, "723280139982471247", discordClient)</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="changePoints"><span class="type-signature">(async) </span>changePoints<span class="signature">(user, built, time, death)</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Changes the amount of points the player has in the database
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>user</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Object of the user, same as linked user: {discordID: "discord id", factorioName: "factorio name"}</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>built</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Number of entities built to add to statistics</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>time</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Number of minutes the user has played</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>death</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    0
+                
+                </td>
+            
+
+            <td class="description last">number of deaths</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line829">line 829</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="global.html#searchOneDB">searchOneDB</a> to see how searching database is done</li>
+        
+            <li><a href="global.html#findOneAndReplaceDB">findOneAndReplaceDB</a> to how replacing in database is done</li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    an array of the object the data was replaced with, object of the user inputted
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;Object></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// ex1: oof2win2 built 68 entities and played 93 minutes
+changePoints({factorioName: "oofw2win2", discordID: "69420"}, 68, 93, 0)
+// ex2: oof2win2 died once
+changePoints({factorioName: "oofw2win2", discordID: "69420"}, 0, 0, 1)</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="datastoreInput"><span class="type-signature">(async) </span>datastoreInput<span class="signature">(line, discordChannelID, discordClient, discordChannelName, serverObject)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Input to the datastore (parsing from script-output/ext/datastore.out). Searches/adds data in database otherData, it's up to the server to handle the collection name
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>line</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Line from datastore.out to parse</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>discordChannelID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">ID of the Discord channel corresponding to the server</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>discordClient</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Discord client object</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>discordChannelName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Name of the Discord channel corresponding to the Factorio server</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverObject</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Object of the server from servers.json</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line938">line 938</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li>Factorio Scenario (<a href="https://github.com/oof2win2/AwF-Scenario">GitHub repo</a>)</li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// This line from datastore.out is requesting the playerData of player oof2win2, so we give the function
+// the ID of the channel, Discord client, channel name and Discord object.
+// In different types ("request" can be other things, see scenario), this function can work with the database
+// in different ways
+datastoreInput("request PlayerData oof2win2", "723280139982471247", discordClient, "dev-dump", serverObject)</code></pre>
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="deleteOneDB"><span class="type-signature">(async) </span>deleteOneDB<span class="signature">(databaseName, collectionName, params)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
@@ -830,6 +1529,202 @@ addRocket("awf-regular")</code></pre>
     
     <pre class="prettyprint"><code>// deletes the object {playerName: "oof2win2", playtime: 6000} from otherData's collection linkedPlayers
 deleteOneDB("otherData", "linkedPlayers", {playerName: "oof2win2", playtime: 6000})</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="discordLog"><span class="type-signature">(async) </span>discordLog<span class="signature">(line, discordChannelID, discordClient)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Log specific things (bans, kicks, jails etc.) to Discord
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>line</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Message embed to send to the channel - input is literraly an already done Discord MessageEmbed</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>discordChannelID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Channel ID of the Discord server corresponding to the Factorio server the line has been sent from</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>discordClient</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Discord client object</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line911">line 911</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li>Factorio Scenario (<a href="https://github.com/oof2win2/AwF-Scenario">GitHub repo</a>)</li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// oof2win2 used /c
+discordLog("{"title":"C","description":"/c was used","color":"0x808080","fields":[{"name":"Server Details","value":"Server: ${serverName} Time: 1 days 0 hours 18 minutes\nTotal: 7 Online: 1 Admins: 1"},{"name":"By","value":"oof2win2","inline":true},{"name":"Details","value":"game.reload_script()","inline":true}]}", "723280139982471247", discordClient)</code></pre>
 
 
 
@@ -2331,6 +3226,408 @@ await insertOneDB("otherData", "linkedPlayers", {factorioName: "oof2win2", disco
     
 
     
+    <h4 class="name" id="linkFactorioDiscordUser"><span class="type-signature">(async) </span>linkFactorioDiscordUser<span class="signature">(discordClient, factorioName, discordName, discordChannelID)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Links a Factorio and Discord user, goes through the process of linking them. After linking, assigns the Member role to the player where the player issued the command to link themselves
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>discordClient</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Discord client object</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>factorioName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Factorio name of the user</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>discordName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Discord name of the user</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>discordChannelID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Discord Channel ID, used to add roles</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line734">line 734</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="onJoin"><span class="type-signature">(async) </span>onJoin<span class="signature">(playerName, discordChannel, discordClient)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    What is done when a player joins a server
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>playerName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Name of the player joined</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>discordChannel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">ID of the Discord channel corresponding to the Factorio server</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>discordClient</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Discord client object</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line1030">line 1030</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li>Factorio Scenario (<a href="https://github.com/oof2win2/AwF-Scenario">GitHub repo</a>)</li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// oof2win2 joined dev-dump, which has channel ID of 723280139982471247
+onJoin("oof2win2", "723280139982471247", discordClient)</code></pre>
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="parseJammyLogger"><span class="type-signature">(async) </span>parseJammyLogger<span class="signature">(line, channel)</span><span class="type-signature"></span></h4>
     
 
@@ -2471,7 +3768,7 @@ await insertOneDB("otherData", "linkedPlayers", {factorioName: "oof2win2", disco
         
             <li><a href="global.html#addResearch">addResearch</a> for adding research</li>
         
-            <li>changePoints for changing points</li>
+            <li><a href="global.html#changePoints">changePoints</a> for changing points</li>
         </ul>
     </dd>
     
@@ -3133,7 +4430,7 @@ await rconCommandAllExclude("/time", ["TEST"])</code></pre>
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Command to execute in shell</td>
         </tr>
 
     
@@ -3466,13 +4763,13 @@ await searchOneDB("otherData", "linkedPlayers", {factorioName: "oof2win2"})</cod
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addDeath">addDeath</a></li><li><a href="global.html#addResearch">addResearch</a></li><li><a href="global.html#addRocket">addRocket</a></li><li><a href="global.html#deleteOneDB">deleteOneDB</a></li><li><a href="global.html#findOneAndReplaceDB">findOneAndReplaceDB</a></li><li><a href="global.html#formatChatData">formatChatData</a></li><li><a href="global.html#getFactorioRoles">getFactorioRoles</a></li><li><a href="global.html#getServerFromChannelInput">getServerFromChannelInput</a></li><li><a href="global.html#getServerList">getServerList</a></li><li><a href="global.html#giveFactorioRole">giveFactorioRole</a></li><li><a href="global.html#givePlayerRoles">givePlayerRoles</a></li><li><a href="global.html#insertOneDB">insertOneDB</a></li><li><a href="global.html#parseJammyLogger">parseJammyLogger</a></li><li><a href="global.html#rconCommand">rconCommand</a></li><li><a href="global.html#rconCommandAll">rconCommandAll</a></li><li><a href="global.html#rconCommandAllExclude">rconCommandAllExclude</a></li><li><a href="global.html#runShellCommand">runShellCommand</a></li><li><a href="global.html#searchOneDB">searchOneDB</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addDeath">addDeath</a></li><li><a href="global.html#addResearch">addResearch</a></li><li><a href="global.html#addRocket">addRocket</a></li><li><a href="global.html#awfLogging">awfLogging</a></li><li><a href="global.html#changePoints">changePoints</a></li><li><a href="global.html#datastoreInput">datastoreInput</a></li><li><a href="global.html#deleteOneDB">deleteOneDB</a></li><li><a href="global.html#discordLog">discordLog</a></li><li><a href="global.html#findOneAndReplaceDB">findOneAndReplaceDB</a></li><li><a href="global.html#formatChatData">formatChatData</a></li><li><a href="global.html#getFactorioRoles">getFactorioRoles</a></li><li><a href="global.html#getServerFromChannelInput">getServerFromChannelInput</a></li><li><a href="global.html#getServerList">getServerList</a></li><li><a href="global.html#giveFactorioRole">giveFactorioRole</a></li><li><a href="global.html#givePlayerRoles">givePlayerRoles</a></li><li><a href="global.html#insertOneDB">insertOneDB</a></li><li><a href="global.html#linkFactorioDiscordUser">linkFactorioDiscordUser</a></li><li><a href="global.html#onJoin">onJoin</a></li><li><a href="global.html#parseJammyLogger">parseJammyLogger</a></li><li><a href="global.html#rconCommand">rconCommand</a></li><li><a href="global.html#rconCommandAll">rconCommandAll</a></li><li><a href="global.html#rconCommandAllExclude">rconCommandAllExclude</a></li><li><a href="global.html#runShellCommand">runShellCommand</a></li><li><a href="global.html#searchOneDB">searchOneDB</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Thu Dec 17 2020 21:59:20 GMT+0100 (Central European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Sun Dec 20 2020 01:46:56 GMT+0100 (Central European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
