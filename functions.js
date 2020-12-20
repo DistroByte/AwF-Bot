@@ -38,11 +38,13 @@ module.exports = {
     // sends a message to all servers at once
     serverFifos.forEach((fifo) => {
       if (sendWithUsername) {
+        //sends the message with the username and colon, as $sendWithUsername is true
         fifo[0].write(
           `${message.author.username}: ${message.content}`,
           () => {}
         );
       } else {
+        //sends just the message, no username, nothing as $sendWithUsername is false
         fifo[0].write(`${message.content}`, () => {});
       }
     });
@@ -55,11 +57,13 @@ module.exports = {
     serverFifos.forEach((factorioServer) => {
       if (message.channel.id === factorioServer[1].discordChannelID) {
         if (sendWithUsername) {
+          //sends the message with the username and colon, as $sendWithUsername is true
           factorioServer[0].write(
             `${message.author.username}: ${message.content}`,
             () => {}
           );
         } else {
+          //sends just the message, no username, nothing as $sendWithUsername is false
           factorioServer[0].write(`${message.content}`, () => {});
         }
       }
