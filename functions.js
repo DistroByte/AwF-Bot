@@ -36,45 +36,34 @@ module.exports = {
     // The $message given to this function is an object of discord.js - it has the author username, message content, mentions etc.
     // The $sendWithUsername given to the function is a boolean value (fixed from being a 0 or 1). If sendWithUsername is true, it will send the message with the username
     // sends a message to all servers at once
-    if (sendWithUsername) {
-      // $sendWithUsername is true, therefore the message is sent with the username
-      serverFifos.forEach((fifo) => {
+    serverFifos.forEach((fifo) => {
+      if (sendWithUsername) {
         fifo[0].write(
           `${message.author.username}: ${message.content}`,
           () => {}
         );
-      });
-    } else {
-      // sends just the message, no username, nothing because $sendWithUsername is false
-      let toSend = message.content || message;
-      serverFifos.forEach((fifo) => {
-        fifo[0].write(`${toSend}`, () => {});
-      });
-    }
+      } else {
+        fifo[0].write(`${message.content}`, () => {});
+      }
+    });
   },
   sendToServer: function (message, sendWithUsername) {
     // The $message given to this function is an object of discord.js - it has the author username, message content, mentions etc.
     // The $sendWithUsername given to the function is a boolean value (fixed from being a 0 or 1). If sendWithUsername is true, it will send the message with the username
     // sends a message to only one server with or without the username
 
-    if (sendWithUsername == true) {
-      //sends the message with the username and colon, as $sendWithUsername is true
-      serverFifos.forEach((factorioServer) => {
-        if (message.channel.id === factorioServer[1].discordChannelID) {
+    serverFifos.forEach((factorioServer) => {
+      if (message.channel.id === factorioServer[1].discordChannelID) {
+        if (sendWithUsername) {
           factorioServer[0].write(
             `${message.author.username}: ${message.content}`,
             () => {}
           );
-        }
-      });
-    } else {
-      //sends just the message, no username, nothing as $sendWithUsername is false
-      serverFifos.forEach((factorioServer) => {
-        if (message.channel.id === factorioServer[1].discordChannelID) {
+        } else {
           factorioServer[0].write(`${message.content}`, () => {});
         }
-      });
-    }
+      }
+    });
   },
   bubbleSort: function (arr) {
     var len = arr.length;
