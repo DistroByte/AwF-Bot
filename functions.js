@@ -412,6 +412,7 @@ async function addRocket(server) {
 }
 async function addResearch(server, research, level) {
   var res = await searchOneDB(server, "stats", { research: "researchData" });
+  if (level < 1) level = 1;
   if (res == null) {
     // if the server's research wasn't found in the server's database (first research)
     var writeObj = {
@@ -484,8 +485,8 @@ async function parseJammyLogger(line, channel) {
     });
     if (user == null) return; //non-linked user
     let resp = await changePoints(user, built, time);
-    if (resp[0].time > 60 * 10) {
-      // give Veteran role if player has more than 10h played across all servers
+    if (resp[0].time > 60) {
+      // give Veteran role if player has more than 1h (60m) played across all servers
       let roles = await getFactorioRoles(user.factorioName);
       if (roles != null) {
         roles = roles.roles;
