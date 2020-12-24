@@ -1,3 +1,6 @@
+/**
+ * @file Ban people who are on the full banlist from all servers
+ */
 const banList = require("./banlist-full.json");
 const { sendToAll } = require("./functions");
 

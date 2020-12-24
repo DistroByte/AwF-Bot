@@ -1,3 +1,6 @@
+/**
+ * @file Parse Factorio chat into different things
+ */
 const functions = require("./functions");
 const { filterBan } = require("./filterBan");
 const servers = require("./servers.json");
