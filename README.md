@@ -20,7 +20,7 @@ To include it in an existing **VANILLA** save:
 
 Another option is to load `oof2win2's` mod that does this all without the hassle. It however **doesn't allow for achievements to work**, as the game stores modded and vanilla achievements separately, modded ones don't go to Steam.
 
-If you would preffer the integration with permissions for different types of user levels, please use the [AwF-Scenario](https://github.com/oof2win2/AwF-Scenario)
+If you would prefer the integration with permissions for different types of user levels, please use the [AwF-Scenario](https://github.com/oof2win2/AwF-Scenario)
 
 ## Commands
 
