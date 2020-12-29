@@ -1,3 +1,6 @@
+/**
+ * @file Parse Factorio chat into different things
+ */
 const functions = require("./functions");
 const { filterBan } = require("./filterBan");
 const servers = require("./servers.json");
@@ -132,7 +135,6 @@ module.exports = function chatFormat(line, channel, client, serverConsoleName) {
                   `/w ${username} Welcome to AwF. You can join the Discord server on awf.yt and link yourself to Discord with \`!linkme <discordUsername>\`\n`,
                   servers[server].name
                 );
-                console.log(servers[server]);
               }
             });
           }

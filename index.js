@@ -1,3 +1,6 @@
+/**
+ * @file Index file, opening file for the bot. The bot logs in here, loads the commands, events and Factorio handlers.
+ */
 const { Client, Collection } = require("discord.js");
 var Tail = require("tail").Tail;
 const chatFormat = require("./chatFormat");
@@ -48,22 +51,12 @@ serverTails.forEach((element) => {
 });
 discordLoggingTails.forEach((element) => {
   element[0].on("line", function (line) {
-    discordLog(
-      line,
-      element[1].discordChannelID,
-      client,
-      element[1].discordChannelName
-    );
+    discordLog(line, element[1].discordChannelID, client);
   });
 });
 awfLoggingTails.forEach((element) => {
   element[0].on("line", function (line) {
-    awfLogging(
-      line,
-      element[1].discordChannelID,
-      client,
-      element[1].discordChannelName
-    );
+    awfLogging(line, element[1].discordChannelID, client);
   });
 });
 datastoreTails.forEach((element) => {

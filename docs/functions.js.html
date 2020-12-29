@@ -1,4 +1,32 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: functions.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: functions.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
  * @file A collection of useful functions that are used across many other files
  */
 
@@ -99,8 +127,8 @@ async function sortModifiedDate(dir) {
 function bubbleSort(arr) {
   var len = arr.length;
 
-  for (var i = 0; i < len; i++) {
-    for (var j = 0; j < len - i - 1; j++) {
+  for (var i = 0; i &lt; len; i++) {
+    for (var j = 0; j &lt; len - i - 1; j++) {
       if (arr[j] > arr[j + 1]) {
         // swap
         var temp = arr[j];
@@ -286,7 +314,7 @@ function formatChatData(data, keepData) {
 function getServerFromChannelInput(channelID) {
   // gets a server object from channel ID
   let serverKeys = Object.keys(servers);
-  for (let i = 0; i < serverKeys.length; i++) {
+  for (let i = 0; i &lt; serverKeys.length; i++) {
     if (servers[serverKeys[i]].discordChannelID == channelID) {
       return servers[serverKeys[i]];
     }
@@ -413,7 +441,7 @@ async function rconCommand(command, serverName) {
     await rcon.connect(); // wait for connecting before continuing
     let res = await rcon.send(command);
     let responseType;
-    if (typeof res == "string" && res.length) responseType = "";
+    if (typeof res == "string" &amp;&amp; res.length) responseType = "";
     else responseType = "error";
     rcon.end();
     return [res, responseType];
@@ -434,7 +462,7 @@ async function rconCommand(command, serverName) {
  * @async
  * @description Like the function rconCommand but sends the RCON command to all servers
  * @param {string} command - Command to send to server (auto prefixed with '/')
- * @returns {Array<Array, string>} Returns an array of command outputs (arrays) and errors (strings), with the command outputs being same as rconCommand: either ["2 days, 28 minutes and 1 second", ""] or ["", "error: stuff"] if an error occurs. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
+ * @returns {Array&lt;Array, string>} Returns an array of command outputs (arrays) and errors (strings), with the command outputs being same as rconCommand: either ["2 days, 28 minutes and 1 second", ""] or ["", "error: stuff"] if an error occurs. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
  * @see {@link rconCommand} to see how the RCON commands work
  * @example
  * // sends /time to all servers
@@ -470,7 +498,7 @@ async function rconCommandAll(command) {
  * @description Sends an RCON command to all servers except the ones excluded
  * @param {string} command - Command to send to servers
  * @param {string[]} exclude - Servers to exclude, e.g. ["TEST", "CORE", "AWF-REG"]
- * @returns {Array<Array, string>} Returns an array of command outputs (arrays) and errors (strings), with the command outputs being same as rconCommand: either ["2 days, 28 minutes and 1 second", ""] or ["", "error: stuff"] if an error occurs. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
+ * @returns {Array&lt;Array, string>} Returns an array of command outputs (arrays) and errors (strings), with the command outputs being same as rconCommand: either ["2 days, 28 minutes and 1 second", ""] or ["", "error: stuff"] if an error occurs. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
  * @see {@link rconCommand} to see how the RCON commands work
  * @example
  * // sends /time to all servers except dev server
@@ -653,7 +681,7 @@ async function addRocket(server) {
  */
 async function addResearch(server, research, level) {
   var res = await searchOneDB(server, "stats", { research: "researchData" });
-  if (level < 1) level = 1;
+  if (level &lt; 1) level = 1;
   if (res == null) {
     // if the server's research wasn't found in the server's database (first research)
     var writeObj = {
@@ -667,7 +695,7 @@ async function addResearch(server, research, level) {
     return;
   } else {
     var replaceWith = lodash.cloneDeep(res); // duplicate the object
-    if (res.completedResearch[research] <= 1)
+    if (res.completedResearch[research] &lt;= 1)
       replaceWith.completedResearch[research]++;
     else replaceWith.completedResearch[research] = level;
     var out = await findOneAndReplaceDB(server, "stats", res, replaceWith);
@@ -756,7 +784,7 @@ async function parseJammyLogger(line, channel) {
 }
 /**
  * @description Gets the list of servers
- * @returns {Array<string>} Array of strings (server folder names)
+ * @returns {Array&lt;string>} Array of strings (server folder names)
  */
 function getServerList() {
   // TODO: maybe change this to push the whole server objects, might be more useful. also create a dedicated one for filtered servers
@@ -769,9 +797,9 @@ function getServerList() {
 }
 /**
  * @async
- * @description Runs a shell command under the user the bot is running under, e.g. factorio. commands can be linked with standard linkers, ; and &&. Rejects when stderr or error
+ * @description Runs a shell command under the user the bot is running under, e.g. factorio. commands can be linked with standard linkers, ; and &amp;&amp;. Rejects when stderr or error
  * @param {string} cmd - Command to execute in shell
- * @returns {Promise<(Error|string|Buffer)>}
+ * @returns {Promise&lt;(Error|string|Buffer)>}
  * @see {@link https://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback Child Process} Node docs
  */
 async function runShellCommand(cmd) {
@@ -823,7 +851,7 @@ async function linkFactorioDiscordUser(
       let found = await searchOneDB("otherData", "linkedPlayers", {
         discordID: sendToUser.id,
       });
-      if (found !== null && reaction.emoji.name === "🔨") {
+      if (found !== null &amp;&amp; reaction.emoji.name === "🔨") {
         // re-link user
         let res = await findOneAndReplaceDB(
           "otherData",
@@ -853,10 +881,10 @@ async function linkFactorioDiscordUser(
           );
         sendToUser.send("Re-linked succesfully!");
         givePlayerRoles(factorioName, "Member", factorioServer.name); // give the Member role to new players
-      } else if (found !== null && reaction.emoji.name === "❌")
+      } else if (found !== null &amp;&amp; reaction.emoji.name === "❌")
         // cancel, found a user and they
         return sendToUser.send("Already linked");
-      else if (found === null && reaction.emoji.name === "✅") {
+      else if (found === null &amp;&amp; reaction.emoji.name === "✅") {
         let res = await insertOneDB("otherData", "linkedPlayers", dat);
         if (res.result.ok == 0)
           sendToUser.send("Failed linking. Contact devs/admins");
@@ -879,7 +907,7 @@ async function linkFactorioDiscordUser(
  * @param {Number} death - number of deaths
  * @see {@link searchOneDB} to see how searching database is done
  * @see {@link findOneAndReplaceDB} to how replacing in database is done
- * @returns {Array<Object>} an array of the object the data was replaced with, object of the user inputted
+ * @returns {Array&lt;Object>} an array of the object the data was replaced with, object of the user inputted
  * @example
  * // ex1: oof2win2 built 68 entities and played 93 minutes
  * changePoints({factorioName: "oofw2win2", discordID: "69420"}, 68, 93, 0)
@@ -1097,3 +1125,26 @@ async function onJoin(playerName, discordChannelID, discordClient) {
     });
   }
 }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addDeath">addDeath</a></li><li><a href="global.html#addResearch">addResearch</a></li><li><a href="global.html#addRocket">addRocket</a></li><li><a href="global.html#awfLogging">awfLogging</a></li><li><a href="global.html#bubbleSort">bubbleSort</a></li><li><a href="global.html#changePoints">changePoints</a></li><li><a href="global.html#datastoreInput">datastoreInput</a></li><li><a href="global.html#deleteOneDB">deleteOneDB</a></li><li><a href="global.html#discordLog">discordLog</a></li><li><a href="global.html#findOneAndReplaceDB">findOneAndReplaceDB</a></li><li><a href="global.html#formatChatData">formatChatData</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatSaveData">formatSaveData</a></li><li><a href="global.html#formatVersion">formatVersion</a></li><li><a href="global.html#getFactorioRoles">getFactorioRoles</a></li><li><a href="global.html#getServerFromChannelInput">getServerFromChannelInput</a></li><li><a href="global.html#getServerList">getServerList</a></li><li><a href="global.html#giveFactorioRole">giveFactorioRole</a></li><li><a href="global.html#givePlayerRoles">givePlayerRoles</a></li><li><a href="global.html#insertOneDB">insertOneDB</a></li><li><a href="global.html#linkFactorioDiscordUser">linkFactorioDiscordUser</a></li><li><a href="global.html#onJoin">onJoin</a></li><li><a href="global.html#parseJammyLogger">parseJammyLogger</a></li><li><a href="global.html#rconCommand">rconCommand</a></li><li><a href="global.html#rconCommandAll">rconCommandAll</a></li><li><a href="global.html#rconCommandAllExclude">rconCommandAllExclude</a></li><li><a href="global.html#runShellCommand">runShellCommand</a></li><li><a href="global.html#searchOneDB">searchOneDB</a></li><li><a href="global.html#sendToAll">sendToAll</a></li><li><a href="global.html#sendToServer">sendToServer</a></li><li><a href="global.html#sortModifiedDate">sortModifiedDate</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Thu Dec 24 2020 11:21:04 GMT+0100 (Central European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

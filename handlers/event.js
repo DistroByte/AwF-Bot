@@ -1,3 +1,6 @@
+/**
+ * @file Discord bot event handlers. To add new events, add into the events folder according to the event
+ */
 const { readdirSync } = require("fs");
 
 module.exports = (client) => {
