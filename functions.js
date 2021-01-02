@@ -306,7 +306,7 @@ function getServerFromChannelInput(channelID) {
  * // returns the object with a property factorioName with the value "oof2win2"
  * await searchOneDB("otherData", "linkedPlayers", {factorioName: "oof2win2"})
  */
-async function searchOneDB(dat, coll, toSearch) {
+async function searchOneDB(databaseName, collectionName, toSearch) {
   await dBclientConnectionPromise; //just wait so the database is connected
   // Returns an object of the thing found or null if not found
   const collection = client.db(databaseName).collection(collectionName);
@@ -344,12 +344,7 @@ async function insertOneDB(databaseName, collectionName, toInsert) {
  * // Will replace oof2win2's playtime from 1 to 900
  * findOneAndReplaceDB("otherData", "stats", {playerName: "oof2win2", playtime: 1}, {playerName: "oof2win2", playtime: 900})
  */
-async function findOneAndReplaceDB(
-  databaseName,
-  collectionName,
-  toFind,
-  toReplace
-) {
+async function findOneAndReplaceDB(databaseName, collectionName, toFind, toReplace) {
   await dBclientConnectionPromise; //just wait so the database is connected
   // To check if written in correctly, use: ret.result.ok (1 if correctly, 0 if written falsely)
   const collection = client.db(databaseName).collection(collectionName);
