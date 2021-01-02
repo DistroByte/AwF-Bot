@@ -74,8 +74,6 @@ module.exports = {
         `\`${maxLevelResearch[0]}\` at level \`${maxLevelResearch[1]}\``
       );
       let factorioServerObject = getServerFromChannelInput(message.mentions.channels.first().id);
-      console.log(message.channel.id);
-      console.log(factorioServerObject);
       let evolutionString = await rconCommand(`/evolution`, factorioServerObject.name);
       let timePlayed = await rconCommand(`/time`, factorioServerObject.name);
       statsEmbed.addField("Evolution", evolutionString);
