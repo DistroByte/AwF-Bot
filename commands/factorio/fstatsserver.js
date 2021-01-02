@@ -1,21 +1,30 @@
 const Discord = require("discord.js");
-const { searchOneDB } = require("../../functions");
+const { searchOneDB, rconCommand, getServerFromChannelInput } = require("../../functions");
 
 module.exports = {
   config: {
     name: "fstatsserver",
     aliases: ["fstatss", "statss"],
-    usage: '<server name> <"server"/"death"> [player]',
+    usage: '<server name> ["death" <playerName>]',
     category: "factorio",
     description: "View some statistics of the server",
     accessableby: "Members",
   },
   run: async (client, message, args) => {
-    if (args[0]) {
-      var server;
-      if (message.mentions.channels.first())
-        server = message.mentions.channels.first().name;
-      else server = args[0];
+    async function getPlayer(server, message, alternative) {
+      const alternativeDB = async(server, alternative) => {
+        return searchOneDB(server, "deaths", { player: alternative });
+      }
+      if (message.mentions.users.first()) {
+        let linkedPlayer = await searchOneDB("otherData", "linkedPlayers", { discordID: message.mentions.users.first().id });
+        // if the player is linked, it is possible to get their factorio name
+        if (linkedPlayer !== null)
+          return await searchOneDB(server, "deaths", { player: linkedPlayer.factorioName });
+        else
+          return null;
+      } else {
+        return await alternativeDB(server, alternative);
+      }
     }
     if (!args[0]) {
       // no argument at all
@@ -25,6 +34,8 @@ module.exports = {
     }
     if (!args[1]) {
       // if the server name is provided but no 2nd argument, searches for generic server data
+      if (!message.mentions.channels.first().id) return message.channel.send("Please mention a channel!");
+      let server = message.mentions.channels.first() ? message.mentions.channels.first().name : args[0];
       let statsEmbed = new Discord.MessageEmbed()
         .setTitle(`Server Statistics of \`${server}\``)
         .setDescription(
@@ -62,16 +73,21 @@ module.exports = {
         "Highest level research",
         `\`${maxLevelResearch[0]}\` at level \`${maxLevelResearch[1]}\``
       );
+      let factorioServerObject = getServerFromChannelInput(message.mentions.channels.first().id);
+      console.log(message.channel.id);
+      console.log(factorioServerObject);
+      let evolutionString = await rconCommand(`/evolution`, factorioServerObject.name);
+      let timePlayed = await rconCommand(`/time`, factorioServerObject.name);
+      statsEmbed.addField("Evolution", evolutionString);
+      statsEmbed.addField("Time played", timePlayed);
       return message.channel.send(statsEmbed);
+    }
+    if (!args[2]) {
+      return message.channel.send("Currently, only 2 arguments do nothing. Please supply more according to command help");
     }
     if (!args[3]) {
       // if supplied with both the username of player & deaths
-      if (args[1] != "deaths")
-        return message.channel.send("invalid parameter. please see help");
-      if (!args[2])
-        return message.channel.send(
-          "Please supply with player name to view deaths!"
-        );
+      let server = message.mentions.channels.first() ? message.mentions.channels.first().name : args[0];
       let statsEmbed = new Discord.MessageEmbed()
         .setTitle(`Death Statistics of \`${args[2]}\` on server \`${server}\``)
         .setDescription(
@@ -87,12 +103,10 @@ module.exports = {
           `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
           client.user.displayAvatarURL()
         );
-      let player = await searchOneDB(server, "deaths", {
-        player: `${args[2]}`,
-      });
+      let player = await getPlayer(server, message, args[2])
       if (player == null)
         return message.channel.send(
-          `Player \`${args[2]}\` not found on server \`${server}\``
+          `Player ${args[2]} not found on server \`${server}\``
         );
       let maxDeaths = ["str", 0];
       Object.keys(player.deaths).forEach(function (key) {
