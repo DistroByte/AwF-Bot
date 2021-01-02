@@ -3,6 +3,7 @@ const {
   getServerList,
   bubbleSort,
   runShellCommand,
+  getServerFromChannelInput,
 } = require("../../functions");
 const { absPath } = require("../../botconfig.json");
 
@@ -17,7 +18,6 @@ module.exports = {
   },
   run: async (client, message, args) => {
     if (!args[0]) {
-      // no argument at all
       let choiceEmbed = new Discord.MessageEmbed()
         .setTitle("Server Availability Choices")
         .setDescription("Choices of a server to status")
@@ -39,15 +39,25 @@ module.exports = {
       return message.channel.send(choiceEmbed);
     }
     if (!args[1]) {
-      runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio status`)
-        .catch((e) => {
-          return message.channel.send(`Error statusing: \`${e}\``);
-        })
-        .then((out) => {
-          return message.channel.send(
-            `Status of server \`${args[0]}\`: \`${out}\``
-          );
-        });
+      if (message.mentions.channels.first()) {
+        let server = getServerFromChannelInput(message.mentions.channels.first().id);
+        runShellCommand(`${absPath}/${server.serverFolderName}/factorio-init/factorio status`)
+          .catch((e) => {
+            return message.channel.send(`Error statusing: \`${e}\``);
+          })
+          .then((out) => {
+            return message.channel.send(`Status of server <#${server.discordChannelID}>: \`${out}\``);
+          })
+      }
+      else {
+        runShellCommand(`${absPath}/${args[0]}/factorio-init/factorio status`)
+          .catch((e) => {
+            return message.channel.send(`Error statusing: \`${e}\``);
+          })
+          .then((out) => {
+            return message.channel.send(`Status of server \`${args[0]}\`: \`${out}\``);
+          });
+      }
     }
   },
 };
