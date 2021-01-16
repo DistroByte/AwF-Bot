@@ -8,10 +8,13 @@ const MongoClient = require("mongodb").MongoClient;
 const lodash = require("lodash");
 const servers = require("./servers.json"); // tails, fifo, discord IDs etc.
 const { exec } = require("child_process");
-const { uri, rconport, rconpw } = require("./botconfig.json");
+const { uri, rconport, rconpw, PastebinApiToken } = require("./botconfig.json");
 const Rcon = require("rcon-client");
 const { MessageEmbed } = require("discord.js");
 const { request } = require("http");
+const PastebinAPI = require('pastebin-js');
+
+let pastebin = new PastebinAPI(`${PastebinApiToken}`)
 
 let serverFifos = [];
 Object.keys(servers).forEach((element) => {
@@ -50,6 +53,7 @@ module.exports = {
   awfLogging,
   datastoreInput,
   onJoin,
+  sendToPastebin,
 };
 /**
  * @async
@@ -1105,5 +1109,22 @@ async function onJoin(playerName, discordChannelID, discordClient) {
     froles.roles.forEach((role) => {
       givePlayerRoles(playerName, role, joinedServer.name);
     });
+  }
+}
+
+/**
+ * @async
+ * @description Uploads a long string to Hastebin
+ * @param {string} toUpload - String to upload. Can also be a file path
+ * @param {bool} mode - Whether string is a file or not
+ * @returns {string} Link of Pastebin paste
+ */
+async function sendToPastebin(paste, mode=false, pasteName=undefined) {
+  if (mode) {
+    let pasteRes = await pastebin.createPaste(paste, pasteName)
+    return pasteRes;
+  } else {
+    let pasteRes = await pastebin.createPasteFromFile(paste, pasteName)
+    return pasteRes;
   }
 }
