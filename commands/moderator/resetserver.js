@@ -63,43 +63,42 @@ module.exports = {
         if (!message.mentions.channels.first())
             return message.channel.send("Please mention a channel  to wipe!");
 
-        // reactions disabled for testing
-        // let sentMsg = await message.channel.send(
-        //   `Please confirm wiping of server <#${
-        //     message.mentions.channels.first().id
-        //   }> within 10s`
-        // );
-        // sentMsg.react("✅");
-        // sentMsg.react("❌");
-        // const filter = (reaction, user) => {
-        //   return user.id === message.author.id;
-        // };
-        // try {
-        //   let messageReaction = await sentMsg
-        //     .awaitReactions(filter, {
-        //       max: 1,
-        //       time: 5000,
-        //       errors: ["time"],
-        //     })
-        //     .catch((err) => {
-        //       if (err.size == 0)
-        //         return message.channel.send("Didn't reply in time");
-        //       jammyOutChannel.send(`Error. ${err.name}\n\`\`\`\n${err}\n\`\`\``);
-        //       throw err;
-        //     });
-        //   let reaction = messageReaction.first();
-        //   if (reaction.emoji.name === "❌")
-        //     return message.channel.send("Wiping cancelled");
-        // } catch (err) {
-        //   if (err.size == 0)
-        //     return message.channel.send("Didn't react fast enough!");
-        //   else {
-        //     message.channel.send("Error getting message reaction")
-        //     jammyOutChannel.send(`Error. \`${err.description}\`\n\`\`\`${err}\`\`\``)
-        //     console.log(err);
-        //     throw err
-        //   }
-        // }
+        let sentMsg = await message.channel.send(
+          `Please confirm wiping of server <#${
+            message.mentions.channels.first().id
+          }> within 10s`
+        );
+        sentMsg.react("✅");
+        sentMsg.react("❌");
+        const filter = (reaction, user) => {
+          return user.id === message.author.id;
+        };
+        try {
+          let messageReaction = await sentMsg
+            .awaitReactions(filter, {
+              max: 1,
+              time: 5000,
+              errors: ["time"],
+            })
+            .catch((err) => {
+              if (err.size == 0)
+                return message.channel.send("Didn't reply in time");
+              jammyOutChannel.send(`Error. ${err.name}\n\`\`\`\n${err}\n\`\`\``);
+              throw err;
+            });
+          let reaction = messageReaction.first();
+          if (reaction.emoji.name === "❌")
+            return message.channel.send("Wiping cancelled");
+        } catch (err) {
+          if (err.size == 0)
+            return message.channel.send("Didn't react fast enough!");
+          else {
+            message.channel.send("Error getting message reaction")
+            jammyOutChannel.send(`Error. \`${err.description}\`\n\`\`\`${err}\`\`\``)
+            console.log(err);
+            throw err
+          }
+        }
 
         // temp file paths to delete later
         let tempFiles = [];
