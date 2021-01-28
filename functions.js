@@ -523,7 +523,7 @@ async function rconCommandAllExclude(command, exclude) {
  * @description This function adds the role given to the user in the database, so the user gets the role upon connecting
  * @param {string} username - The name of the player
  * @param {string} roleName - The name of the role you want to give to the player
- * @returns {Object} Output of inserting to database, therefore object with return values, confirmation etc.
+ * @returns {(Object|null)} Output of inserting to database, therefore object with return values, confirmation etc. Returns null if it is in the DB
  * @example
  * // adds "Member" to oof2win2's roles in the database, doesn't actually give the role in-game
  * giveFactorioRole("oof2win2", "Member")
@@ -543,8 +543,11 @@ async function giveFactorioRole(username, roleName) {
     return await insertOneDB("otherData", "playerRoles", push);
   } else {
     let toPush = lodash.cloneDeep(res);
-    toPush.roles.push(roleName);
-    return await findOneAndReplaceDB("otherData", "playerRoles", res, toPush);
+    if (!toPush.roles.includes(roleName)) {
+      console.log("Adding role to DB!")
+      toPush.roles.push(roleName);
+      return await findOneAndReplaceDB("otherData", "playerRoles", res, toPush);
+    }
   }
 }
 
@@ -591,18 +594,12 @@ async function givePlayerRoles(factorioName, role, serverName) {
   );
   response = response.replace(/"/g, "");
   let currentRoles = response.split(",  ");
-  console.log(currentRoles, role);
   if (!currentRoles.includes(role)) {
     // If the player doesn't have the role, give it to them
     rconCommand(`/assign-role ${factorioName} ${role}`, serverName);
   }
-  let dbRoles = await searchOneDB("otherData", "playerRoles", { factorioName: `${factorioName}` });
-  if (dbRoles) {
-    if (!dbRoles.includes(role)) {
-      // assign the role in the database if it is not there yet
-      giveFactorioRole(factorioName, role);
-    }
-  }
+  // assign the role in the database if it is not there yet
+  giveFactorioRole(factorioName, role);
 }
 /**
  * @async
@@ -1129,7 +1126,7 @@ async function onJoin(playerName, discordChannelID, discordClient) {
  * @param {bool} mode - Whether string is a file or not
  * @returns {string} Link of Pastebin paste
  */
-async function sendToPastebin(paste, mode=false, pasteName=undefined) {
+async function sendToPastebin(paste, mode = false, pasteName = undefined) {
   if (mode) {
     let pasteRes = await pastebin.createPaste(paste, pasteName)
     return pasteRes;
