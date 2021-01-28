@@ -12,7 +12,7 @@ const { uri, rconport, rconpw, PastebinApiToken } = require("./botconfig.json");
 const Rcon = require("rcon-client");
 const { MessageEmbed } = require("discord.js");
 const { request } = require("http");
-const PastebinAPI = require('pastebin-js');
+const PastebinAPI = require('pastebin-ts');
 
 let pastebin = new PastebinAPI(`${PastebinApiToken}`)
 
