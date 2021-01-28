@@ -78,6 +78,7 @@ async function sortModifiedDate(dir) {
   return new Promise((resolve, reject) => {
     fs.readdir(dir, function (err, files) {
       if (err) reject(err);
+      if (!files) return resolve([])
       files = files
         .map(function (fileName) {
           return {
