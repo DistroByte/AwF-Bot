@@ -56,9 +56,7 @@ module.exports = {
 
         let jammyOutChannel = await client.channels.fetch(clientErrChannelID);
 
-        let serverObject = getServerFromChannelInput(
-            message.mentions.channels.first().id
-        );
+        let serverObject = getServerFromChannelInput(message.mentions.channels.first().id);
 
         if (!message.mentions.channels.first())
             return message.channel.send("Please mention a channel to wipe!");
@@ -95,7 +93,7 @@ module.exports = {
           else {
             message.channel.send("Error getting message reaction")
             jammyOutChannel.send(`Error. \`${err.description}\`\n\`\`\`${err}\`\`\``)
-            console.log(err);
+            // console.log(err);
             throw err
           }
         }
@@ -143,9 +141,12 @@ module.exports = {
             );
 
             // remove the /opt/factorio/servers/<server>/saves directory (whole)
-            fs.rmdirSync(`${absPath}/${serverObject.serverFolderName}/saves/`, { force: true, recursive: true });
-            // create the directory back for the server to use
-            fs.mkdirSync(`${absPath}/${serverObject.serverFolderName}/saves/`);
+            if (!fs.existsSync(`${absPath}/${serverObject.serverFolderName}/saves/`))
+                fs.mkdirSync(`${absPath}/${serverObject.serverFolderName}/saves/`);
+            let saveFiles = fs.readdirSync(`${absPath}/${serverObject.serverFolderName}/saves/`);
+            saveFiles.forEach(file => {
+                fs.rmSync(`${absPath}/${serverObject.serverFolderName}/saves/${file}`, { force: true, recursive: true });
+            });
         } catch (error) {
             message.channel.send("Error moving latest save to archive")
             jammyOutChannel.send(`Error. ${error.name}\n\`\`\`\n${error}\n\`\`\``);
@@ -179,12 +180,11 @@ module.exports = {
         }
 
         // spawn a new child slave to run the server setup
-        console.log(commandArgs)
         let server = child_process.spawn('./bin/x64/factorio', commandArgs, { cwd: `${absPath}/${serverObject.serverFolderName}` });
         let outputData = [];
         const serverStartRegExp = new RegExp(/Info ServerMultiplayerManager.cpp:\d\d\d: Matching server connection resumed/);
         server.stdout.on("data", (data) => {
-            console.log(data.toString().slice(0, -1));
+            // console.log(data.toString().slice(0, -1));
             outputData.push(`${data.toString().slice(0, -1)}`);
             if (data.toString().slice(0, -1).match(serverStartRegExp)) {
                 server.kill();
@@ -192,7 +192,7 @@ module.exports = {
             }
         });
         server.stderr.on("data", (data) => {
-            console.log(data.toString().slice(0, -1));
+            // console.log(data.toString().slice(0, -1));
             outputData.push(`${data.toString().slice(0, -1)}\n`);
         });
         server.on("close", async (code) => {
@@ -223,7 +223,7 @@ module.exports = {
         setTimeout(() => {
             if (server.exitCode === null) {
                 server.kill();
-                console.log("Killed after 60s!");
+                // console.log("Killed after 60s!");
                 message.channel.send(`Server <#${serverObject.discordChannelID}> killed after 60s with force`);
                 jammyOutChannel.send(`Server <#${serverObject.discordChannelID}> killed after 60s with force`);
                 setTimeout(() => {
