@@ -565,7 +565,7 @@ async function getFactorioRoles(factorioName) {
 }
 /**
  * @async
- * @description Gives a plauer roles on a specific server, adds the role to the database if the role is not on the player yet
+ * @description Gives a player roles on a specific server, adds the role to the database if the role is not on the player yet
  * @param {string} factorioName - Name of the Factorio player to assign roles to
  * @param {string} role - Role name to assign on server
  * @param {string} serverName - Name of the server as in servers.json
@@ -582,17 +582,26 @@ async function givePlayerRoles(factorioName, role, serverName) {
   );
   if (response[1] == "error")
     return console.log(`Error contacting server ${serverName} using RCON`);
+  if (response[0].includes("Unknown command"))
+    return console.log(`Server ${serverName} doesn't have the scenario, therefore no role system`);
   response = response[0].slice(0, response[0].indexOf("\n"));
   response = response.slice(
     response.indexOf("{") + 2,
     response.indexOf("}") - 1
   );
   response = response.replace(/"/g, "");
-  currentRoles = response.split(",  ");
+  let currentRoles = response.split(",  ");
+  console.log(currentRoles, role);
   if (!currentRoles.includes(role)) {
-    // If the role is not in the database, add it
+    // If the player doesn't have the role, give it to them
     rconCommand(`/assign-role ${factorioName} ${role}`, serverName);
-    giveFactorioRole(factorioName, role);
+  }
+  let dbRoles = await searchOneDB("otherData", "playerRoles", { factorioName: `${factorioName}` });
+  if (dbRoles) {
+    if (!dbRoles.includes(role)) {
+      // assign the role in the database if it is not there yet
+      giveFactorioRole(factorioName, role);
+    }
   }
 }
 /**
@@ -1115,7 +1124,7 @@ async function onJoin(playerName, discordChannelID, discordClient) {
 
 /**
  * @async
- * @description Uploads a long string to Hastebin
+ * @description Uploads a long string to Pastebin
  * @param {string} toUpload - String to upload. Can also be a file path
  * @param {bool} mode - Whether string is a file or not
  * @returns {string} Link of Pastebin paste
