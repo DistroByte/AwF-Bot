@@ -61,7 +61,7 @@ module.exports = {
         );
 
         if (!message.mentions.channels.first())
-            return message.channel.send("Please mention a channel  to wipe!");
+            return message.channel.send("Please mention a channel to wipe!");
 
         let sentMsg = await message.channel.send(
           `Please confirm wiping of server <#${
@@ -77,7 +77,7 @@ module.exports = {
           let messageReaction = await sentMsg
             .awaitReactions(filter, {
               max: 1,
-              time: 5000,
+              time: 10000,
               errors: ["time"],
             })
             .catch((err) => {
