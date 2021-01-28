@@ -8,6 +8,13 @@ const { token, prefix } = require("./botconfig.json");
 const servers = require("./servers.json"); // tails, fifo, discord IDs etc.
 const { discordLog, awfLogging, datastoreInput } = require("./functions");
 
+// remove all files from ./temp/ dir to prevent random bs
+let tempFiles = fs.readdirSync('./temp/')
+tempFiles.forEach(file => {
+    fs.rmSync(`./temp/${file}`);
+    console.log(`File ./temp/${file} removed!`)
+})
+
 let serverTails = [];
 let discordLoggingTails = [];
 let awfLoggingTails = [];
