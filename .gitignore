@@ -7,3 +7,4 @@ log-all
 servers.json
 /commands/owner/updateip.js
 test.js
+temp/*
