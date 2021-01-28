@@ -8,10 +8,13 @@ const MongoClient = require("mongodb").MongoClient;
 const lodash = require("lodash");
 const servers = require("./servers.json"); // tails, fifo, discord IDs etc.
 const { exec } = require("child_process");
-const { uri, rconport, rconpw } = require("./botconfig.json");
+const { uri, rconport, rconpw, PastebinApiToken } = require("./botconfig.json");
 const Rcon = require("rcon-client");
 const { MessageEmbed } = require("discord.js");
 const { request } = require("http");
+const PastebinAPI = require('pastebin-ts');
+
+let pastebin = new PastebinAPI(`${PastebinApiToken}`)
 
 let serverFifos = [];
 Object.keys(servers).forEach((element) => {
@@ -38,6 +41,7 @@ module.exports = {
   insertOneDB,
   findOneAndReplaceDB,
   deleteOneDB,
+  deleteManyDB,
   parseJammyLogger,
   getServerList,
   linkFactorioDiscordUser,
@@ -49,6 +53,7 @@ module.exports = {
   awfLogging,
   datastoreInput,
   onJoin,
+  sendToPastebin,
 };
 /**
  * @async
@@ -370,6 +375,20 @@ async function deleteOneDB(databaseName, collectionName, params) {
   // To check if written in correctly, use: ret.acknowledged (1 if correctly, 0 if written falsely)
   const collection = client.db(databaseName).collection(collectionName);
   return collection.deleteOne(params);
+}
+/**
+ * @async
+ * @description Deletes many objects from the database's collection
+ * @param {string} databaseName - Name of the database to delete from
+ * @param {string} collectionName - Name of the collection to delete from
+ * @param {Object} filter - Filter object of what to delete/what to keep
+ * @returns {Promise<Object>}
+ * @see {@link http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#deleteMany MongoCollection#deleteMany}
+ */
+async function deleteManyDB(databaseName, collectionName, filter) {
+  await dBclientConnectionPromise; // wait so the database is connected before doing anything
+  const collection = client.db(databaseName).collection(collectionName);
+  return collection.deleteMany(filter);
 }
 /**
  * @async
@@ -1090,5 +1109,22 @@ async function onJoin(playerName, discordChannelID, discordClient) {
     froles.roles.forEach((role) => {
       givePlayerRoles(playerName, role, joinedServer.name);
     });
+  }
+}
+
+/**
+ * @async
+ * @description Uploads a long string to Hastebin
+ * @param {string} toUpload - String to upload. Can also be a file path
+ * @param {bool} mode - Whether string is a file or not
+ * @returns {string} Link of Pastebin paste
+ */
+async function sendToPastebin(paste, mode=false, pasteName=undefined) {
+  if (mode) {
+    let pasteRes = await pastebin.createPaste(paste, pasteName)
+    return pasteRes;
+  } else {
+    let pasteRes = await pastebin.createPasteFromFile(paste, pasteName)
+    return pasteRes;
   }
 }
