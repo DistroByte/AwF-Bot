@@ -63,8 +63,8 @@ class _ServerFifoManager {
         else
             toSend = `${message.content}`
         this.usedFifos.forEach((server) => {
-            if (server.discordChannelID === message.channel.id)
-                server.serverFifo.write(`${message.author.username}: ${message.content}`, () => {});
+            if (server.serverObject.discordChannelID === message.channel.id)
+                server.serverFifo.write(toSend, () => {});
         });
     }
     /**
@@ -79,7 +79,7 @@ class _ServerFifoManager {
         else
             toSend = `${message.content}`
         this.usedFifos.forEach((server) => {
-            server.serverFifo.write(`${message.author.username}: ${message.content}`, () => {});
+            server.serverFifo.write(toSend, () => {});
         });
     }
 }
