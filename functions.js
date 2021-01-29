@@ -1000,6 +1000,7 @@ async function discordLog(line, discordChannelID, discordClient) {
     discordClient.channels.cache.get(discordChannelID)
   );
   let embed = new MessageEmbed(objLine);
+  discordClient.channels.cache.get(discordChannelID).send(embed);
   return discordClient.channels.cache.get("697146357819113553").send(embed); // moderators channel
 }
 /**
