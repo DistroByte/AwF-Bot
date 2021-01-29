@@ -8,7 +8,7 @@ const MongoClient = require("mongodb").MongoClient;
 const lodash = require("lodash");
 const servers = require("./servers.json"); // tails, fifo, discord IDs etc.
 const { exec } = require("child_process");
-const { uri, rconport, rconpw, PastebinApiToken } = require("./botconfig.json");
+const { uri, rconport, rconpw, PastebinApiToken, testserverchannelid } = require("./botconfig.json");
 const Rcon = require("rcon-client");
 const { MessageEmbed } = require("discord.js");
 const { request } = require("http");
@@ -720,6 +720,7 @@ async function addResearch(server, research, level) {
 async function parseJammyLogger(line, channel) {
   //channel is a Discord channel object
   //this long asf function parses JammyLogger lines in the console and handles basic statistics
+  console.log(line);
   if (line.includes("DIED: ")) {
     line = line.slice("DIED: ".length);
     line = line.split(" "); //split at separation between username and death reson
@@ -994,13 +995,14 @@ async function awfLogging(line, discordChannelID, discordClient) {
 async function discordLog(line, discordChannelID, discordClient) {
   // example input
   // {"title":"C","description":"/c was used","color":"0x808080","fields":[{"name":"Server Details","value":"Server: ${serverName} Time: 1 days 0 hours 18 minutes\nTotal: 7 Online: 1 Admins: 1"},{"name":"By","value":"oof2win2","inline":true},{"name":"Details","value":"game.reload_script()","inline":true}]}
+  if (discordChannelID == testserverchannelid) return;
   let objLine = JSON.parse(line);
   objLine.fields[0].value = objLine.fields[0].value.replace(
     "${serverName}",
     discordClient.channels.cache.get(discordChannelID)
   );
   let embed = new MessageEmbed(objLine);
-  discordClient.channels.cache.get("697146357819113553").send(embed); // moderators channel
+  return discordClient.channels.cache.get("697146357819113553").send(embed); // moderators channel
 }
 /**
  * @async
