@@ -720,7 +720,6 @@ async function addResearch(server, research, level) {
 async function parseJammyLogger(line, channel) {
   //channel is a Discord channel object
   //this long asf function parses JammyLogger lines in the console and handles basic statistics
-  console.log(line);
   if (line.includes("DIED: ")) {
     line = line.slice("DIED: ".length);
     line = line.split(" "); //split at separation between username and death reson
@@ -924,23 +923,22 @@ async function changePoints(user, built, time, death = 0) {
       points: 0,
     };
     res = pushData;
-  } else {
-    let replaceWith = lodash.cloneDeep(res);
-    if (replaceWith.time) replaceWith.time += time;
-    else replaceWith.time = time;
-    if (replaceWith.built) replaceWith.built += built;
-    else replaceWith.built = built;
-    if (death != 0) {
-      if (replaceWith.deaths) replaceWith.deaths += death;
-      else replaceWith.deaths = death;
-      replaceWith.points -= 100 * death; //-100pts for death
-    }
-    if (replaceWith.points == null) replaceWith.points = 0;
-    replaceWith.points += built;
-    replaceWith.points += (time / 60) * 50; //50 pts/h
-    await findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
-    return [replaceWith, user];
   }
+  let replaceWith = lodash.cloneDeep(res);
+  if (replaceWith.time) replaceWith.time += time;
+  else replaceWith.time = time;
+  if (replaceWith.built) replaceWith.built += built;
+  else replaceWith.built = built;
+  if (death != 0) {
+    if (replaceWith.deaths) replaceWith.deaths += death;
+    else replaceWith.deaths = death;
+    replaceWith.points -= 100 * death; //-100pts for death
+  }
+  if (replaceWith.points == null) replaceWith.points = 0;
+  replaceWith.points += built;
+  replaceWith.points += (time / 60) * 50; //50 pts/h
+  await findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
+  return [replaceWith, user];
 }
 
 /**
