@@ -35,9 +35,15 @@ module.exports = {
           client.user.displayAvatarURL()
         );
       res.forEach((out) => {
-        if (out[0][1].startsWith("error"))
-          outEmbed.addField(`Server ${out[1]}`, out[0][1]);
-        else outEmbed.addField(`Server ${out[1]}`, out[0][0]);
+        try {
+          if (out[0][0].length > 1024) throw Error("Response too long!");
+          if (out[0][1].startsWith("error"))
+            outEmbed.addField(`Server ${out[1]}`, out[0][1]);
+          else outEmbed.addField(`Server ${out[1]}`, out[0][0]);
+        } catch (error) {
+          outEmbed.addField(`Server ${out[1]}`, error);
+          console.error(error);
+        }
       });
       return message.channel.send(outEmbed);
     }

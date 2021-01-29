@@ -8,7 +8,7 @@ const MongoClient = require("mongodb").MongoClient;
 const lodash = require("lodash");
 const servers = require("./servers.json"); // tails, fifo, discord IDs etc.
 const { exec } = require("child_process");
-const { uri, rconport, rconpw, PastebinApiToken } = require("./botconfig.json");
+const { uri, rconport, rconpw, PastebinApiToken, testserverchannelid } = require("./botconfig.json");
 const Rcon = require("rcon-client");
 const { MessageEmbed } = require("discord.js");
 const { request } = require("http");
@@ -78,6 +78,7 @@ async function sortModifiedDate(dir) {
   return new Promise((resolve, reject) => {
     fs.readdir(dir, function (err, files) {
       if (err) reject(err);
+      if (!files) return resolve([])
       files = files
         .map(function (fileName) {
           return {
@@ -118,7 +119,8 @@ function bubbleSort(arr) {
 }
 
 /**
- * @description Sends a message to only one server
+ * @description Sends a message to only one server. Use the new utils/fifo-manager class instead!
+ * @deprecated
  * @param {Object} message - Discord message object to send to Factorio server. Used for which server to send to by getting the server by channel ID
  * @param {bool} sendWithUsername - Whether to send with username or not
  */
@@ -144,7 +146,8 @@ function sendToServer(message, sendWithUsername) {
 }
 
 /**
- * @description Send a message to all servers (announcement or something)
+ * @description Send a message to all servers (announcement or something). Use the new utils/fifo-manager class instead!
+ * @deprecated
  * @param {Object} message - Message to send, format of DiscordMessage
  * @param {bool} sendWithUsername - Whether to send message with username or not
  */
@@ -464,7 +467,7 @@ async function rconCommandAll(command) {
   });
   let promiseArray = serverNames.map((server) => {
     return new Promise((resolve) => {
-      rconCommand("/p o", server.name)
+      rconCommand(command, server.name)
         .then((res) => {
           if (!res[1].startsWith("error")) {
             resolve([res, server.name]);
@@ -522,7 +525,7 @@ async function rconCommandAllExclude(command, exclude) {
  * @description This function adds the role given to the user in the database, so the user gets the role upon connecting
  * @param {string} username - The name of the player
  * @param {string} roleName - The name of the role you want to give to the player
- * @returns {Object} Output of inserting to database, therefore object with return values, confirmation etc.
+ * @returns {(Object|null)} Output of inserting to database, therefore object with return values, confirmation etc. Returns null if it is in the DB
  * @example
  * // adds "Member" to oof2win2's roles in the database, doesn't actually give the role in-game
  * giveFactorioRole("oof2win2", "Member")
@@ -542,8 +545,11 @@ async function giveFactorioRole(username, roleName) {
     return await insertOneDB("otherData", "playerRoles", push);
   } else {
     let toPush = lodash.cloneDeep(res);
-    toPush.roles.push(roleName);
-    return await findOneAndReplaceDB("otherData", "playerRoles", res, toPush);
+    if (!toPush.roles.includes(roleName)) {
+      console.log("Adding role to DB!")
+      toPush.roles.push(roleName);
+      return await findOneAndReplaceDB("otherData", "playerRoles", res, toPush);
+    }
   }
 }
 
@@ -564,7 +570,7 @@ async function getFactorioRoles(factorioName) {
 }
 /**
  * @async
- * @description Gives a plauer roles on a specific server, adds the role to the database if the role is not on the player yet
+ * @description Gives a player roles on a specific server, adds the role to the database if the role is not on the player yet
  * @param {string} factorioName - Name of the Factorio player to assign roles to
  * @param {string} role - Role name to assign on server
  * @param {string} serverName - Name of the server as in servers.json
@@ -581,18 +587,21 @@ async function givePlayerRoles(factorioName, role, serverName) {
   );
   if (response[1] == "error")
     return console.log(`Error contacting server ${serverName} using RCON`);
+  if (response[0].includes("Unknown command"))
+    return console.log(`Server ${serverName} doesn't have the scenario, therefore no role system`);
   response = response[0].slice(0, response[0].indexOf("\n"));
   response = response.slice(
     response.indexOf("{") + 2,
     response.indexOf("}") - 1
   );
   response = response.replace(/"/g, "");
-  currentRoles = response.split(",  ");
+  let currentRoles = response.split(",  ");
   if (!currentRoles.includes(role)) {
-    // If the role is not in the database, add it
+    // If the player doesn't have the role, give it to them
     rconCommand(`/assign-role ${factorioName} ${role}`, serverName);
-    giveFactorioRole(factorioName, role);
   }
+  // assign the role in the database if it is not there yet
+  giveFactorioRole(factorioName, role);
 }
 /**
  * @async
@@ -914,23 +923,22 @@ async function changePoints(user, built, time, death = 0) {
       points: 0,
     };
     res = pushData;
-  } else {
-    let replaceWith = lodash.cloneDeep(res);
-    if (replaceWith.time) replaceWith.time += time;
-    else replaceWith.time = time;
-    if (replaceWith.built) replaceWith.built += built;
-    else replaceWith.built = built;
-    if (death != 0) {
-      if (replaceWith.deaths) replaceWith.deaths += death;
-      else replaceWith.deaths = death;
-      replaceWith.points -= 100 * death; //-100pts for death
-    }
-    if (replaceWith.points == null) replaceWith.points = 0;
-    replaceWith.points += built;
-    replaceWith.points += (time / 60) * 50; //50 pts/h
-    await findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
-    return [replaceWith, user];
   }
+  let replaceWith = lodash.cloneDeep(res);
+  if (replaceWith.time) replaceWith.time += time;
+  else replaceWith.time = time;
+  if (replaceWith.built) replaceWith.built += built;
+  else replaceWith.built = built;
+  if (death != 0) {
+    if (replaceWith.deaths) replaceWith.deaths += death;
+    else replaceWith.deaths = death;
+    replaceWith.points -= 100 * death; //-100pts for death
+  }
+  if (replaceWith.points == null) replaceWith.points = 0;
+  replaceWith.points += built;
+  replaceWith.points += (time / 60) * 50; //50 pts/h
+  await findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
+  return [replaceWith, user];
 }
 
 /**
@@ -985,13 +993,15 @@ async function awfLogging(line, discordChannelID, discordClient) {
 async function discordLog(line, discordChannelID, discordClient) {
   // example input
   // {"title":"C","description":"/c was used","color":"0x808080","fields":[{"name":"Server Details","value":"Server: ${serverName} Time: 1 days 0 hours 18 minutes\nTotal: 7 Online: 1 Admins: 1"},{"name":"By","value":"oof2win2","inline":true},{"name":"Details","value":"game.reload_script()","inline":true}]}
+  if (discordChannelID == testserverchannelid) return;
   let objLine = JSON.parse(line);
   objLine.fields[0].value = objLine.fields[0].value.replace(
     "${serverName}",
     discordClient.channels.cache.get(discordChannelID)
   );
   let embed = new MessageEmbed(objLine);
-  discordClient.channels.cache.get("697146357819113553").send(embed); // moderators channel
+  discordClient.channels.cache.get(discordChannelID).send(embed);
+  return discordClient.channels.cache.get("697146357819113553").send(embed); // moderators channel
 }
 /**
  * @async
@@ -1114,12 +1124,12 @@ async function onJoin(playerName, discordChannelID, discordClient) {
 
 /**
  * @async
- * @description Uploads a long string to Hastebin
+ * @description Uploads a long string to Pastebin
  * @param {string} toUpload - String to upload. Can also be a file path
  * @param {bool} mode - Whether string is a file or not
  * @returns {string} Link of Pastebin paste
  */
-async function sendToPastebin(paste, mode=false, pasteName=undefined) {
+async function sendToPastebin(paste, mode = false, pasteName = undefined) {
   if (mode) {
     let pasteRes = await pastebin.createPaste(paste, pasteName)
     return pasteRes;

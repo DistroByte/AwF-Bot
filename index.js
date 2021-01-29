@@ -10,11 +10,16 @@ const { discordLog, awfLogging, datastoreInput } = require("./functions");
 const fs = require("fs");
 
 // remove all files from ./temp/ dir to prevent random bs
-let tempFiles = fs.readdirSync('./temp/')
-tempFiles.forEach(file => {
-    fs.rmSync(`./temp/${file}`);
-    console.log(`File ./temp/${file} removed!`)
-})
+try {
+  if (!fs.existsSync('./temp/')) fs.mkdirSync('./temp')
+  let tempFiles = fs.readdirSync('./temp/')
+  tempFiles.forEach(file => {
+      fs.rmSync(`./temp/${file}`);
+      console.log(`File ./temp/${file} removed!`)
+  });
+} catch (error) {
+  console.error(error);
+}
 
 let serverTails = [];
 let discordLoggingTails = [];
