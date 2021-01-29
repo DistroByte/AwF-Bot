@@ -37,17 +37,6 @@ module.exports = function chatFormat(line, channel, client, serverConsoleName) {
                 `Player \`${player}\` has been BANNED by \`${doneBy}\` for reason \`${reason}\``
             );
     }
-    if (line.includes("[MUTED] ")) {
-        line = line.slice(line.indexOf("[MUTED] ") + "[MUTED] ".length);
-        line = line.split(" ");
-        const player = line[0];
-        const doneBy = line[4];
-        if (client.channels.cache.get(channel).name !== "dev-dump")
-            moderators.send(`Player \`${player}\` has been MUTED by \`${doneBy}\``);
-        return client.channels.cache
-            .get(channel)
-            .send(`Player \`${player}\` has been MUTED by \`${doneBy}\``);
-    }
     if (line.includes("[UNBANNED] ")) {
         line = line.slice(line.indexOf("[UNBANNED] ") + "[UNBANNED] ".length);
         line = line.split(" ");
@@ -58,17 +47,6 @@ module.exports = function chatFormat(line, channel, client, serverConsoleName) {
         return client.channels.cache
             .get(channel)
             .send(`Player \`${player}\` has been UNBANNED by \`${doneBy}\``);
-    }
-    if (line.includes("[UNMUTED] ")) {
-        line = line.slice(line.indexOf("[UNMUTED] ") + "[UNMUTED] ".length);
-        line = line.split(" ");
-        const player = line[0];
-        const doneBy = line[4];
-        if (client.channels.cache.get(channel).name !== "dev-dump")
-            moderators.send(`Player \`${player}\` has been UNMUTED by \`${doneBy}\``);
-        return client.channels.cache
-            .get(channel)
-            .send(`Player \`${player}\` has been UNMUTED by \`${doneBy}\``);
     }
 
     if (line.includes("Error")) {
