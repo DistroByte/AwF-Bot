@@ -119,7 +119,8 @@ function bubbleSort(arr) {
 }
 
 /**
- * @description Sends a message to only one server
+ * @description Sends a message to only one server. Use the new utils/fifo-manager class instead!
+ * @deprecated
  * @param {Object} message - Discord message object to send to Factorio server. Used for which server to send to by getting the server by channel ID
  * @param {bool} sendWithUsername - Whether to send with username or not
  */
@@ -145,7 +146,8 @@ function sendToServer(message, sendWithUsername) {
 }
 
 /**
- * @description Send a message to all servers (announcement or something)
+ * @description Send a message to all servers (announcement or something). Use the new utils/fifo-manager class instead!
+ * @deprecated
  * @param {Object} message - Message to send, format of DiscordMessage
  * @param {bool} sendWithUsername - Whether to send message with username or not
  */

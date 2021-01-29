@@ -123,6 +123,8 @@ module.exports = {
 
         // save stuff
         saveStuff: try {
+            if (!fs.existsSync(`${absPath}/${serverObject.serverFolderName}/saves/`))
+                fs.mkdirSync(`${absPath}/${serverObject.serverFolderName}/saves/`);
             let saves = await sortModifiedDate(
                 `${absPath}/${serverObject.serverFolderName}/saves`
             );
@@ -154,7 +156,6 @@ module.exports = {
         }
 
         commandArgs = []
-        command = `cd ${absPath}/${serverObject.serverFolderName} && ${absPath}/${serverObject.serverFolderName}/bin/x64/factorio`
         if (args.includes("--scenario")) {
             // user wants to start with a scenario
             let index = args.indexOf("--scenario")
@@ -180,11 +181,12 @@ module.exports = {
         }
 
         // spawn a new child slave to run the server setup
-        let server = child_process.spawn('./bin/x64/factorio', commandArgs, { cwd: `${absPath}/${serverObject.serverFolderName}` });
+        // let server = child_process.spawn('./bin/x64/factorio', commandArgs, { cwd: `${absPath}/${serverObject.serverFolderName}` });
+        let server = child_process.spawn('./bin/x64/factorio', ['--start-server-load-scenario', 'AwF-Scenario'], { cwd: `${absPath}/${serverObject.serverFolderName}` });
         let outputData = [];
         const serverStartRegExp = new RegExp(/Info ServerMultiplayerManager.cpp:\d\d\d: Matching server connection resumed/);
         server.stdout.on("data", (data) => {
-            // console.log(data.toString().slice(0, -1));
+            console.log(data.toString().slice(0, -1));
             outputData.push(`${data.toString().slice(0, -1)}`);
             if (data.toString().slice(0, -1).match(serverStartRegExp)) {
                 server.kill();
@@ -192,7 +194,7 @@ module.exports = {
             }
         });
         server.stderr.on("data", (data) => {
-            // console.log(data.toString().slice(0, -1));
+            console.log(data.toString().slice(0, -1));
             outputData.push(`${data.toString().slice(0, -1)}\n`);
         });
         server.on("close", async (code) => {

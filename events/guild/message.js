@@ -1,5 +1,5 @@
 const { prefix } = require("../../botconfig.json");
-const { sendToServer } = require("../../functions");
+const { ServerFifoManager } = require("../../utils/fifo-manager");
 
 module.exports = async (client, message) => {
     let args = message.content.slice(prefix.length).trim().split(/ +/g);
@@ -48,5 +48,5 @@ module.exports = async (client, message) => {
             );
         });
     }
-    sendToServer(message, true); // send the message to corresponding server
+    ServerFifoManager.sendToServer(message, true); // send the message to corresponding server
 };
