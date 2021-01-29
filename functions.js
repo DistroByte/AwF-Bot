@@ -14,6 +14,8 @@ const { MessageEmbed } = require("discord.js");
 const { request } = require("http");
 const PastebinAPI = require('pastebin-ts');
 
+const { firstJoinMessage } = require("./config/messages.json")
+
 let pastebin = new PastebinAPI(`${PastebinApiToken}`)
 
 let serverFifos = [];
@@ -1114,8 +1116,9 @@ async function datastoreInput(
 async function onJoin(playerName, discordChannelID, discordClient) {
   const froles = await getFactorioRoles(playerName);
   const joinedServer = getServerFromChannelInput(discordChannelID);
-  if (froles == null) return;
-  else {
+  if (froles == null) {
+    rconCommand(`/whisper ${playerName} ${firstJoinMessage}`, joinedServer.name);
+  } else {
     froles.roles.forEach((role) => {
       givePlayerRoles(playerName, role, joinedServer.name);
     });
