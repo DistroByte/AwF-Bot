@@ -467,7 +467,7 @@ async function rconCommandAll(command) {
   });
   let promiseArray = serverNames.map((server) => {
     return new Promise((resolve) => {
-      rconCommand("/p o", server.name)
+      rconCommand(command, server.name)
         .then((res) => {
           if (!res[1].startsWith("error")) {
             resolve([res, server.name]);
