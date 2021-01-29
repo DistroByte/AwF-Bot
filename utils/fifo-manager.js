@@ -32,11 +32,10 @@ class _ServerFifoManager {
         if (newPresence.status != "offline") {
             this.usedFifos.forEach((server) => {
                 if (server.serverObject.dev == true) {
-                    this.unusedFifos.push(server);
-                    this.usedFifos.filter((currentFifo) => {
-                        if (currentFifo.serverObject.dev === false)
+                    this.usedFifos = this.usedFifos.filter((currentFifo) => {
+                        if (!currentFifo.serverObject.dev)
                             return currentFifo;
-                        if (currentFifo.serverObject.dev === true)
+                        if (currentFifo.serverObject.dev)
                             this.unusedFifos.push(currentFifo);
                     });
                 }
@@ -45,7 +44,7 @@ class _ServerFifoManager {
 
         // test bot is now offline
         if (newPresence.status == "offline") {
-            this.unusedFifos.filter((currentFifo) => {
+            this.unusedFifos = this.unusedFifos.filter((currentFifo) => {
                 this.usedFifos.push(currentFifo);
             })
         }
@@ -66,6 +65,7 @@ class _ServerFifoManager {
             if (server.serverObject.discordChannelID === message.channel.id)
                 server.serverFifo.write(toSend, () => {});
         });
+        return;
     }
     /**
      * @description Send a message to all servers (announcement or something)
