@@ -12,8 +12,8 @@ const fs = require("fs");
 // remove all files from ./temp/ dir to prevent random bs
 let tempFiles = fs.readdirSync('./temp/')
 tempFiles.forEach(file => {
-    fs.rmSync(`./temp/${file}`);
-    console.log(`File ./temp/${file} removed!`)
+  fs.rmSync(`./temp/${file}`);
+  console.log(`File ./temp/${file} removed!`)
 })
 
 let serverTails = [];
