@@ -4,6 +4,7 @@
 const functions = require("./functions");
 const { filterBan } = require("./filterBan");
 const servers = require("./servers.json");
+const { RconConnectionManager } = require("./utils/rcon-connection")
 
 module.exports = function chatFormat(line, channel, client, serverConsoleName) {
     const helpdesk = client.channels.cache.get("590241134740111387");
@@ -110,7 +111,7 @@ module.exports = function chatFormat(line, channel, client, serverConsoleName) {
                                 servers[server].discordChannelID ==
                                 client.channels.cache.get(channel).id
                             ) {
-                                functions.rconCommand(
+                                RconConnectionManager.rconCommand(
                                     `/w ${username} Welcome to AwF. You can join the Discord server on awf.yt and link yourself to Discord with \`!linkme <discordUsername>\`\n`,
                                     servers[server].name
                                 );

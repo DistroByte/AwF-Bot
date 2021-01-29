@@ -1,6 +1,7 @@
 const Discord = require("discord.js");
-const { rconCommand } = require("../../functions");
+const { RconConnectionManager } = require("../../utils/rcon-connection");
 const serverJson = require("../../servers.json");
+const { on } = require("npm");
 
 module.exports = {
   config: {
@@ -22,46 +23,18 @@ module.exports = {
         `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
         client.user.displayAvatarURL()
       );
-    let servers = [];
-    Object.keys(serverJson).forEach((element) => {
-      if (serverJson[element].serverFolderName != "")
-        //if server isn't hidden
-        servers.push([
-          serverJson[element].name,
-          serverJson[element].discordChannelName,
-        ]);
+    
+    const res = await RconConnectionManager.rconCommandAll('/p o');
+    res.forEach((out) => {
+      try {
+        if (typeof (out[0]) == "object") throw out
+        if (out[0].length > 1024) throw Error("Response too long!");
+        else onlinePlayers.addField(`${out[1].discordChannelName}`, out[0]);
+      } catch (error) {
+        onlinePlayers.addField(`${out[1].discordChannelName}`, error);
+        console.error(error);
+      }
     });
-
-    let promiseArray = servers.map((server) => {
-      return new Promise((resolve) => {
-        rconCommand("/p o", server[0])
-          .then((res) => {
-            if (!res[1].startsWith("error")) {
-              resolve(
-                onlinePlayers.addField(server[1], res[0])
-              );
-            } else {
-              resolve(
-                onlinePlayers.addField(
-                  server[1],
-                  "Error getting players online. Server may be offline"
-                )
-              );
-            }
-          })
-          .catch((e) => {
-            resolve(
-              onlinePlayers.addField(
-                server[1],
-                "Error getting players online",
-                (inline = true)
-              )
-            );
-          });
-      });
-    });
-    Promise.all(promiseArray).then((serverPlayers) => {
-      return message.channel.send(onlinePlayers);
-    });
+    return message.channel.send(onlinePlayers);
   },
 };
