@@ -4,10 +4,13 @@
 const { Client, Collection } = require("discord.js");
 var Tail = require("tail").Tail;
 const chatFormat = require("./chatFormat");
-const { token, prefix } = require("./botconfig.json");
+const { token, prefix, clientErrChannelID } = require("./botconfig.json");
 const servers = require("./servers.json"); // tails, fifo, discord IDs etc.
 const { discordLog, awfLogging, datastoreInput } = require("./functions");
 const fs = require("fs");
+
+// let { RconConnectionManager } = require("./utils/rcon-connection");
+let { ErrorManager } = require('./utils/error-manager')
 
 // remove all files from ./temp/ dir to prevent random bs
 try {
@@ -55,6 +58,11 @@ client.prefix = prefix;
 ["command", "event"].forEach((x) => require(`./handlers/${x}`)(client));
 
 client.login(token);
+
+setTimeout(async () => {
+  // RconConnectionManager.setJammyChannel((await client.channels.fetch(clientErrChannelID)));
+  ErrorManager.setJammyErrChannel((await client.channels.fetch(clientErrChannelID)));
+}, 2500);
 
 serverTails.forEach((element) => {
   element[0].on("line", function (line) {

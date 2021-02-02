@@ -2,6 +2,7 @@ const Discord = require("discord.js");
 const { RconConnectionManager } = require("../../utils/rcon-connection");
 const serverJson = require("../../servers.json");
 const { on } = require("npm");
+const { ErrorManager } = require('../../utils/error-manager')
 
 module.exports = {
   config: {
@@ -23,18 +24,26 @@ module.exports = {
         `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
         client.user.displayAvatarURL()
       );
-    
-    const res = await RconConnectionManager.rconCommandAll('/p o');
-    res.forEach((out) => {
-      try {
-        if (typeof (out[0]) == "object") throw out
-        if (out[0].length > 1024) throw Error("Response too long!");
-        else onlinePlayers.addField(`${out[1].discordChannelName}`, out[0]);
-      } catch (error) {
-        onlinePlayers.addField(`${out[1].discordChannelName}`, error);
-        console.error(error);
-      }
-    });
-    return message.channel.send(onlinePlayers);
+
+    try {
+      const res = await RconConnectionManager.rconCommandAll('/p o')
+          .catch(err => {
+            console.error(err);
+          });
+      res.forEach((out) => {
+        try {
+          if (typeof (out[0]) == "object") throw out
+          if (out[0].length > 1024) throw Error("Response too long!");
+          else onlinePlayers.addField(`${out[1].discordChannelName}`, out[0]);
+        } catch (error) {
+          onlinePlayers.addField(`${out[1].discordChannelName}`, error);
+          console.error(error);
+        }
+      });
+      return message.channel.send(onlinePlayers);
+    } catch (error) {
+      ErrorManager.Error(error)
+      return 
+    }
   },
 };
