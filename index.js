@@ -60,7 +60,6 @@ client.prefix = prefix;
 client.login(token);
 
 setTimeout(async () => {
-  // RconConnectionManager.setJammyChannel((await client.channels.fetch(clientErrChannelID)));
   ErrorManager.setJammyErrChannel((await client.channels.fetch(clientErrChannelID)));
 }, 2500);
 
