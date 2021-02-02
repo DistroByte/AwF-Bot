@@ -5,11 +5,6 @@ module.exports = async (client, message) => {
     let args = message.content.slice(prefix.length).trim().split(/ +/g);
     let cmd = args.shift().toLowerCase();
     if (message.author.bot) return;
-    if (message.content.startsWith(prefix)) {
-        let commandfile = client.commands.get(cmd) || client.commands.get(client.aliases.get(cmd));
-        if (commandfile) commandfile.run(client, message, args);
-        return;
-    }
 
     let slap = client.emojis.cache.find((emoji) => emoji.name === "slap");
     if (message.content.includes("Jammy say hi"))
@@ -31,6 +26,16 @@ module.exports = async (client, message) => {
         );
     }
 
+    if (message.content.trim() == prefix) {
+        message.channel.send("<https://www.youtube.com/watch?v=ck5f9LzQmjY>")
+    }
+    else if (message.content.startsWith(prefix)) {
+        let commandfile = client.commands.get(cmd) || client.commands.get(client.aliases.get(cmd));
+        if (commandfile) commandfile.run(client, message, args);
+        return;
+    }
+
+    // do anything before this. this is the point of preparation for sending FIFO stuff to servers
     if (message.content.includes("<@")) {
         //check if the message that the bot reads has a mention of a user
         message.mentions.users.forEach((user) => {
