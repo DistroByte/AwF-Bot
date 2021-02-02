@@ -13,6 +13,7 @@ const Rcon = require("rcon-client");
 const { MessageEmbed } = require("discord.js");
 const { request } = require("http");
 const PastebinAPI = require('pastebin-ts');
+const { RconConnectionManager } = require("./utils/rcon-connection");
 
 const { firstJoinMessage } = require("./config/messages.json")
 
@@ -397,6 +398,7 @@ async function deleteManyDB(databaseName, collectionName, filter) {
 }
 /**
  * @async
+ * @deprecated
  * @description Sends a Factorio command to RCON.
  * @param {string} command - Command to send to the server (auto-prefixed with '/')
  * @param {string} serverName - Name of the server according to the name parameter in servers.json
@@ -451,6 +453,7 @@ async function rconCommand(command, serverName) {
 }
 /**
  * @async
+ * @deprecated
  * @description Like the function rconCommand but sends the RCON command to all servers
  * @param {string} command - Command to send to server (auto prefixed with '/')
  * @returns {Array<Array, string>} Returns an array of command outputs (arrays) and errors (strings), with the command outputs being same as rconCommand: either ["2 days, 28 minutes and 1 second", ""] or ["", "error: stuff"] if an error occurs. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
@@ -583,13 +586,13 @@ async function getFactorioRoles(factorioName) {
  */
 async function givePlayerRoles(factorioName, role, serverName) {
   // This function itself doesnt touch the database, that is done by giveFactorioRole
-  let response = await rconCommand(
+  let response = await RconConnectionManager.rconCommand(
     `/interface local names = {} for i, role in ipairs(Roles.get_player_roles("${factorioName}")) do names[i] = role.name end return names`,
     serverName
   );
-  if (response[1] == "error")
+  if (typeof(response) == "object")
     return console.log(`Error contacting server ${serverName} using RCON`);
-  if (response[0].includes("Unknown command"))
+  if (response.includes("Unknown command"))
     return console.log(`Server ${serverName} doesn't have the scenario, therefore no role system`);
   response = response[0].slice(0, response[0].indexOf("\n"));
   response = response.slice(
@@ -600,7 +603,7 @@ async function givePlayerRoles(factorioName, role, serverName) {
   let currentRoles = response.split(",  ");
   if (!currentRoles.includes(role)) {
     // If the player doesn't have the role, give it to them
-    rconCommand(`/assign-role ${factorioName} ${role}`, serverName);
+    RconConnectionManager.rconCommand(`/assign-role ${factorioName} ${role}`, serverName);
   }
   // assign the role in the database if it is not there yet
   giveFactorioRole(factorioName, role);
@@ -1045,19 +1048,19 @@ async function datastoreInput(
     let send;
     if (find == null) send = "";
     else send = JSON.stringify(find.data);
-    rconCommand(
+    RconConnectionManager.rconCommand(
       `/interface Datastore.ingest('request', '${collectionName}', '${playerName}', '${send}')`,
       factorioServer.name
     );
   } else if (requestType == "message") {
     // send to all servers without saving
-    rconCommandAll(
+    RconConnectionManager.rconCommandAll(
       // args is now the rest of the stuff
       `/interface Datastore.ingest('message', '${collectionName}', '${playerName}', '${args}')`
     );
   } else if (requestType == "propagate") {
     // send to all servers except the server the request is coming from and send to database
-    rconCommandAllExclude(
+    RconConnectionManager.rconCommandAllExclude(
       // args is now the rest of the stuff
       `/interface Datastore.ingest('propagate', '${collectionName}', '${playerName}', '${args}')`,
       [`${serverObject.name}`]
