@@ -1,5 +1,5 @@
 const { MessageEmbed } = require("discord.js");
-const { rconCommandAll } = require("../../functions");
+const { RconConnectionManager } = require("../../utils/rcon-connection");
 const serverJson = require("../../servers.json");
 
 module.exports = {
@@ -19,8 +19,6 @@ module.exports = {
       authRoles.some((r) => r.name === "Moderator") ||
       authRoles.some((r) => r.name === "dev")
     ) {
-      const command = args.join(" ");
-      const res = await rconCommandAll(command);
       let outEmbed = new MessageEmbed()
         .setTitle(`RCON Output`)
         .setDescription(`Output of RCON command to all servers`)
@@ -34,14 +32,15 @@ module.exports = {
           `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
           client.user.displayAvatarURL()
         );
+      const command = args.join(" ");
+      const res = await RconConnectionManager.rconCommandAll(command);
       res.forEach((out) => {
         try {
-          if (out[0][0].length > 1024) throw Error("Response too long!");
-          if (out[0][1].startsWith("error"))
-            outEmbed.addField(`Server ${out[1]}`, out[0][1]);
-          else outEmbed.addField(`Server ${out[1]}`, out[0][0]);
+          if (typeof (out[0]) == "object") throw out
+          if (out[0].length > 1024) throw Error("Response too long!");
+          else outEmbed.addField(`${out[1].discordChannelName}`, out[0]);
         } catch (error) {
-          outEmbed.addField(`Server ${out[1]}`, error);
+          outEmbed.addField(`${out[1].discordChannelName}`, error);
           console.error(error);
         }
       });

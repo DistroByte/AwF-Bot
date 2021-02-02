@@ -1,5 +1,6 @@
 const Discord = require("discord.js");
-const { searchOneDB, rconCommand, getServerFromChannelInput } = require("../../functions");
+const { searchOneDB, getServerFromChannelInput } = require("../../functions");
+const { RconConnectionManager } = require("../../utils/rcon-connection");
 
 module.exports = {
   config: {
@@ -74,8 +75,8 @@ module.exports = {
         `\`${maxLevelResearch[0]}\` at level \`${maxLevelResearch[1]}\``
       );
       let factorioServerObject = getServerFromChannelInput(message.mentions.channels.first().id);
-      let evolutionString = await rconCommand(`/evolution`, factorioServerObject.name);
-      let timePlayed = await rconCommand(`/time`, factorioServerObject.name);
+      let evolutionString = await RconConnectionManager.rconCommand(`/evolution`, factorioServerObject.name);
+      let timePlayed = await RconConnectionManager.rconCommand(`/time`, factorioServerObject.name);
       statsEmbed.addField("Evolution", evolutionString);
       statsEmbed.addField("Time played", timePlayed);
       return message.channel.send(statsEmbed);
