@@ -179,8 +179,8 @@ module.exports = {
     }
 
     // spawn a new child slave to run the server setup
-    // let server = child_process.spawn('./bin/x64/factorio', commandArgs, { cwd: `${absPath}/${serverObject.serverFolderName}` });
-    let server = child_process.spawn('./bin/x64/factorio', ['--start-server-load-scenario', 'AwF-Scenario'], { cwd: `${absPath}/${serverObject.serverFolderName}` });
+    let server = child_process.spawn('./bin/x64/factorio', commandArgs, { cwd: `${absPath}/${serverObject.serverFolderName}` });
+    // let server = child_process.spawn('./bin/x64/factorio', ['--start-server-load-scenario', 'AwF-Scenario'], { cwd: `${absPath}/${serverObject.serverFolderName}` });
     let outputData = [];
     const serverStartRegExp = new RegExp(/Info ServerMultiplayerManager.cpp:\d\d\d: Matching server connection resumed/);
     server.stdout.on("data", (data) => {
