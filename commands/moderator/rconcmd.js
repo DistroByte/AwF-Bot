@@ -36,11 +36,11 @@ module.exports = {
       const cmdArr = args.slice(1);
       const command = cmdArr.join(" ");
       let res = await RconConnectionManager.rconCommand(command, server);
-      if (res[1] == "error")
+      if (typeof(res) == "object")
         return message.channel.send(
-          `Error. Command may have worked, but didn't give a response: ${res[0]}`
+          `Error. Command may have worked, but didn't give a response: ${res}`
         );
-      return message.channel.send(`Command worked. Output: \n \`${res[0]}\``);
+      return message.channel.send(`Command worked. Output: \n \`${res}\``);
     }
   },
 };
