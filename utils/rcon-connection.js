@@ -2,6 +2,7 @@ const { rconport, rconpw } = require("../botconfig.json");
 const Rcon = require("rcon-client");
 const serversJSON = require("../servers.json");
 const { Message, MessageEmbed } = require("discord.js");
+const { ErrorManager } = require('./error-manager')
 
 /**
  * @class
@@ -12,6 +13,7 @@ class _RconConnectionManager {
         // [{connection: rconConnection, serverObject: serverObjectFromServersJSON}]
         this._rconConnections = []
         this._createRcon();
+        this._jammyErrChannel = undefined;
     }
     /**
      * @description Creates all RCON connections to servers from scratch, i.e. if they stop working/should be reset
@@ -25,22 +27,26 @@ class _RconConnectionManager {
                 port: `${port}`,
                 password: `${rconpw}`,
             });
-            await rcon.connect();
+            try {
+                await rcon.connect();
+            } catch (error) {
+                ErrorManager.Error(`Error connecting with RCON to <#${serversJSON[serverKey].discordChannelID}>`);
+            }
             this._rconConnections.push({
                 connection: rcon,
                 serverObject: serversJSON[serverKey]
             });
             rcon.on('connect', () => {
-                console.log(`Server ${serversJSON[serverKey].name}: RCON connected`);
+                ErrorManager.Error(`Server <#${serversJSON[serverKey].discordChannelID}>: RCON connected`);
             });
             rcon.on('error', () => {
-                console.error(`Server ${serversJSON[serverKey].name}: RCON error. Attempting reconnect in 30s`);
+                ErrorManager.Error(`Server <#${serversJSON[serverKey].discordChannelID}>: RCON error. Attempting reconnect in 30s`);
                 setTimeout(async () => {
                     await rcon.connect();
                 }, 30000);
             })
             rcon.on('end', () => {
-                console.error(`Server ${serversJSON[serverKey].name}: RCON connection died. Attempting reconnect in 30s`);
+                ErrorManager.Error(`Server <#${serversJSON[serverKey].discordChannelID}>: RCON connection died. Attempting reconnect in 30s`);
                 setTimeout(async () => {
                     await rcon.connect();
                 }, 30000);
@@ -54,7 +60,8 @@ class _RconConnectionManager {
      */
     refreshRcon() {
         this._rconConnections.filter(server => {
-            server.connection.end();
+            server.connection.end()
+                .catch(e => ErrorManager.Error(e))
         });
         this._rconConnections = [];
         this._createRcon();
@@ -88,9 +95,7 @@ class _RconConnectionManager {
             if (typeof resp == "string" && resp.length) return resp;
             else throw new Error("No length");
         } catch (error) {
-            console.error(
-                `RCON Error --- Details --- \nNAME: ${err.name} \nDESC: ${err.description} \nStack: ${err.stack}`
-            );
+            ErrorManager.Error(`RCON Error --- Details --- \nNAME: ${error.name} \nDESC: ${error.description}`);
             return error;
         }
     }
