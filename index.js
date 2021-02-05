@@ -59,10 +59,6 @@ client.prefix = prefix;
 
 client.login(token);
 
-setTimeout(async () => {
-  ErrorManager.setJammyErrChannel((await client.channels.fetch(clientErrChannelID)));
-}, 2500);
-
 serverTails.forEach((element) => {
   element[0].on("line", function (line) {
     chatFormat(line, element[1].discordChannelID, client, element[1].name);
