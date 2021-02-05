@@ -14,6 +14,7 @@ const { MessageEmbed } = require("discord.js");
 const { request } = require("http");
 const PastebinAPI = require('pastebin-ts');
 const { RconConnectionManager } = require("./utils/rcon-connection");
+const { CacheManagerClass } = require("./utils/cache-manager");
 
 const { firstJoinMessage } = require("./config/messages.json")
 
@@ -57,6 +58,9 @@ module.exports = {
   datastoreInput,
   onJoin,
   sendToPastebin,
+  giveFactorioRole,
+  removeFactorioRole,
+  getFactorioRoles
 };
 /**
  * @async
@@ -489,6 +493,7 @@ async function rconCommandAll(command) {
 }
 /**
  * @async
+ * @deprecated
  * @description Sends an RCON command to all servers except the ones excluded
  * @param {string} command - Command to send to servers
  * @param {string[]} exclude - Servers to exclude, e.g. ["TEST", "CORE", "AWF-REG"]
@@ -551,10 +556,27 @@ async function giveFactorioRole(username, roleName) {
   } else {
     let toPush = lodash.cloneDeep(res);
     if (!toPush.roles.includes(roleName)) {
-      console.log("Adding role to DB!")
       toPush.roles.push(roleName);
       return await findOneAndReplaceDB("otherData", "playerRoles", res, toPush);
     }
+    return false;
+  }
+}
+
+async function removeFactorioRole(username, roleName) {
+  // removes a factorio role to the database
+  // give it a SINGLE ROLE NAME, not the existing roles
+  let res = await searchOneDB("otherData", "playerRoles", {
+    factorioName: username,
+  });
+  if (res === undefined) {
+    return false;
+  } else {
+    let toPush = lodash.cloneDeep(res);
+    toPush.roles = toPush.roles.filter(role => {
+      return role != roleName
+    })
+    return await findOneAndReplaceDB("otherData", "playerRoles", res, toPush)
   }
 }
 
@@ -586,24 +608,26 @@ async function getFactorioRoles(factorioName) {
  */
 async function givePlayerRoles(factorioName, role, serverName) {
   // This function itself doesnt touch the database, that is done by giveFactorioRole
-  let response = await RconConnectionManager.rconCommand(
-    `/interface local names = {} for i, role in ipairs(Roles.get_player_roles("${factorioName}")) do names[i] = role.name end return names`,
-    serverName
-  );
-  if (typeof(response) == "object")
-    return console.log(`Error contacting server ${serverName} using RCON`);
-  if (response.includes("Unknown command"))
-    return console.log(`Server ${serverName} doesn't have the scenario, therefore no role system`);
-  response = response[0].slice(0, response[0].indexOf("\n"));
-  response = response.slice(
-    response.indexOf("{") + 2,
-    response.indexOf("}") - 1
-  );
-  response = response.replace(/"/g, "");
-  let currentRoles = response.split(",  ");
-  if (!currentRoles.includes(role)) {
-    // If the player doesn't have the role, give it to them
-    RconConnectionManager.rconCommand(`/assign-role ${factorioName} ${role}`, serverName);
+  if (serverName !== undefined) {
+    let response = await RconConnectionManager.rconCommand(
+      `/interface local names = {} for i, role in ipairs(Roles.get_player_roles("${factorioName}")) do names[i] = role.name end return names`,
+      serverName
+    );
+    if (typeof(response) == "object")
+      return console.log(`Error contacting server ${serverName} using RCON`);
+    if (response.includes("Unknown command"))
+      return console.log(`Server ${serverName} doesn't have the scenario, therefore no role system`);
+    response = response[0].slice(0, response[0].indexOf("\n"));
+    response = response.slice(
+      response.indexOf("{") + 2,
+      response.indexOf("}") - 1
+    );
+    response = response.replace(/"/g, "");
+    let currentRoles = response.split(",  ");
+    if (!currentRoles.includes(role)) {
+      // If the player doesn't have the role, give it to them
+      RconConnectionManager.rconCommand(`/assign-role ${factorioName} ${role}`, serverName);
+    }
   }
   // assign the role in the database if it is not there yet
   giveFactorioRole(factorioName, role);
@@ -787,7 +811,6 @@ async function parseJammyLogger(line, channel) {
  * @returns {Array<string>} Array of strings (server folder names)
  */
 function getServerList() {
-  // TODO: maybe change this to push the whole server objects, might be more useful. also create a dedicated one for filtered servers
   let serverNames = [];
   Object.keys(servers).forEach((element) => {
     if (servers[element].serverFolderName !== "")
@@ -813,6 +836,7 @@ async function runShellCommand(cmd) {
 }
 /**
  * @async
+ * @deprecated
  * @description Links a Factorio and Discord user, goes through the process of linking them. After linking, assigns the Member role to the player where the player issued the command to link themselves
  * @param {Object} discordClient - Discord client object
  * @param {string} factorioName - Factorio name of the user
@@ -946,6 +970,11 @@ async function changePoints(user, built, time, death = 0) {
   return [replaceWith, user];
 }
 
+let LinkingCache = new CacheManagerClass({
+  checkperiod: 120,
+  stdTTL: 1800, // auto expires after 15 mins
+});
+module.exports.LinkingCache = LinkingCache;
 /**
  * @async
  * @description Parse logging of lines from script-output/ext/awflogging.out into various things, for now joining, leaving and linking
@@ -966,12 +995,17 @@ async function awfLogging(line, discordChannelID, discordClient) {
   */
 
   if (logObject.type == "link") {
-    linkFactorioDiscordUser(
-      discordClient,
-      logObject.playerName,
-      logObject.discordName,
-      discordChannelID
-    );
+    if (logObject.linkID !== undefined)
+      LinkingCache.set(logObject.linkID, logObject.playerName);
+    else {
+      // backwards compatibility. new saves use the new method
+      linkFactorioDiscordUser(
+        discordClient,
+        logObject.playerName,
+        logObject.discordName,
+        discordChannelID
+      );
+    }
   } else if (logObject.type == "join") {
     discordClient.channels.cache
       .get(discordChannelID)

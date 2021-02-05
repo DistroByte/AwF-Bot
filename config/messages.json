@@ -1,3 +1,4 @@
 {
-  "firstJoinMessage": "Heyas! Welcome to the AwF community. Since you are new, you don't have many permissions. For those, please go to the http://awf.yt Discord"
+  "firstJoinMessage": "Heyas! Welcome to the AwF community. Since you are new, you don't have many permissions. For those, please go to the http://awf.yt Discord",
+  "linkConfirmation": "You have chosen to link your Discord account, %%USERNAME%% with your Factorio account on AwF, %%FACTORIONAME%%. The request will timeout after 1 minute of sending. React with :hammer: to re-link your account. If complications arise, please contact devs/admins (relinking is when switching Factorio username, for switching Discord account contact admins/devs. Changing your Discord username **IS NOT** changing an account, whilst changing your Factorio username **is**)"
 }

@@ -1,3 +1,6 @@
+const { ErrorManager } = require("../../utils/error-manager");
+const { clientErrChannelID } = require("../../botconfig.json");
+
 module.exports = (client) => {
   console.log(
     `${client.user.username} is online: ${new Date().toString().slice(4, 24)}`
@@ -17,4 +20,9 @@ module.exports = (client) => {
       ),
     15000
   );
+
+  client.channels.fetch(clientErrChannelID)
+    .then(channel => {
+      ErrorManager.setJammyErrChannel(channel);
+    })
 };
