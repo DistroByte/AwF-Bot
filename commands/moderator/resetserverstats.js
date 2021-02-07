@@ -1,4 +1,4 @@
-const { deleteOneDB, searchOneDB } = require("../../functions");
+const { DatabaseConnection } = require("../../utils/database-manager");
 
 module.exports = {
   config: {
@@ -37,14 +37,14 @@ module.exports = {
             return message.channel.send("Wiping cancelled");
           let blank = false;
           while (!blank) {
-            const res = await searchOneDB(args[0], "deaths");
+            const res = await DatabaseConnection.findOneDB(args[0], "deaths");
             if (res == null) break;
-            await deleteOneDB(args[0], "deaths", res);
+            await DatabaseConnection.deleteOneDB(args[0], "deaths", res);
           }
           while (!blank) {
-            const res = await searchOneDB(args[0], "stats");
+            const res = await DatabaseConnection.findOneDB(args[0], "stats");
             if (res == null) break;
-            await deleteOneDB(args[0], "stats", res);
+            await DatabaseConnection.deleteOneDB(args[0], "stats", res);
           }
           message.channel.send("Server stats cleaned!");
         })

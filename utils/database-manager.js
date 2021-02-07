@@ -64,7 +64,7 @@ class DatabaseConnectionClass {
   /**
    * @async
    * @description Finds specified object and replaces it in the database's collection.
-   * @see {@link searchOneDB} to get the object to search for
+   * @see {@link findOneDB} to get the object to search for
    * @param {string} databaseName - Database to find and replace in
    * @param {string} collectionName - Collection of database to find and replace in
    * @param {Object} toFind - Object to find (key)
@@ -82,7 +82,7 @@ class DatabaseConnectionClass {
   /**
    * @async
    * @description Finds and deletes the specified object from the database's collection. If parameters is null or an empty object, it will delete the first object found
-   * @see {@link searchOneDB} to get the object to delete
+   * @see {@link findOneDB} to get the object to delete
    * @param {string} databaseName
    * @param {string} collectionName
    * @param {Object} params - The object to delete

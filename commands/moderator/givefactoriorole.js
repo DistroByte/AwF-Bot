@@ -1,9 +1,10 @@
 const Discord = require("discord.js");
-const { searchOneDB, giveFactorioRole, insertOneDB, findOneAndReplaceDB } = require("../../functions");
+const { giveFactorioRole } = require("../../functions");
 const { LinkingCache } = require("../../functions");
 const { ErrorManager } = require("../../utils/error-manager");
 const lodash = require("lodash");
-let { linkConfirmation } = require("../../config/messages.json")
+let { linkConfirmation } = require("../../config/messages.json");
+const { DatabaseConnection } = require("../../utils/database-manager");
 
 module.exports = {
   config: {
@@ -31,7 +32,7 @@ module.exports = {
     
     let user;
     if (message.mentions.users.first()) {
-      let res = await searchOneDB("otherData", "linkedPlayers", {
+      let res = await DatabaseConnection.findOneDB("otherData", "linkedPlayers", {
         discordID: (message.mentions.users.first()).id,
       })
       if (res == undefined)

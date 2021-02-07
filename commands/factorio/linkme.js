@@ -1,9 +1,10 @@
 const Discord = require("discord.js");
-const { searchOneDB, giveFactorioRole, insertOneDB, findOneAndReplaceDB } = require("../../functions");
+const { giveFactorioRole } = require("../../functions");
 const { LinkingCache } = require("../../functions");
 const { ErrorManager } = require("../../utils/error-manager");
 const lodash = require("lodash");
-let { linkConfirmation } = require("../../config/messages.json")
+let { linkConfirmation } = require("../../config/messages.json");
+const { DatabaseConnection } = require("../../utils/database-manager");
 
 module.exports = {
   config: {
@@ -51,7 +52,7 @@ module.exports = {
     }
     const reaction = reactions.first();
     const dat = { factorioName: factorioName, discordID: message.author.id };
-    const found = await searchOneDB("otherData", "linkedPlayers", {
+    const found = await DatabaseConnection.findOneDB("otherData", "linkedPlayers", {
       discordID: message.author.id,
     });
 
@@ -59,7 +60,7 @@ module.exports = {
       return message.channel.send("Linking cancelled!");
     if (found !== null && reaction.emoji.name === "🔨") {
       // re-link user
-      let res = await findOneAndReplaceDB(
+      let res = await DatabaseConnection.findOneAndReplaceDB(
         "otherData",
         "linkedPlayers",
         found,
@@ -70,12 +71,12 @@ module.exports = {
           "Please contact devs/admins for re-linking, process failed"
         );
       //redo statistics
-      let prevStats = await searchOneDB("otherData", "globPlayerStats", {
+      let prevStats = await DatabaseConnection.findOneDB("otherData", "globPlayerStats", {
         discordID: found.discordID,
       });
       let newStats = lodash.cloneDeep(prevStats);
       newStats.factorioName = factorioName;
-      res = await findOneAndReplaceDB(
+      res = await DatabaseConnection.findOneAndReplaceDB(
         "otherData",
         "globPlayerStats",
         prevStats,
@@ -96,7 +97,7 @@ module.exports = {
       }
       try {
         giveFactorioRole(factorioName, "Member"); // give the Member role to new players
-        let res = await insertOneDB("otherData", "linkedPlayers", toInsert);
+        let res = await DatabaseConnection.insertOneDB("otherData", "linkedPlayers", toInsert);
         if (res.result.ok == true) return message.channel.send("Linked successfully!");
         else return message.channel.send("Didn't insert correctly into database");
       } catch (error) {

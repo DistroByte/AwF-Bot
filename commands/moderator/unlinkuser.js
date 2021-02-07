@@ -1,4 +1,4 @@
-const { searchOneDB, deleteOneDB } = require("../../functions");
+const { DatabaseConnection } = require("../../utils/database-manager");
 
 module.exports = {
   config: {
@@ -20,9 +20,9 @@ module.exports = {
       );
     }
     const discordID = message.mentions.users.first() ? (message.mentions.users.first()).id : args[0];
-    let db = await searchOneDB("otherData", "linkedPlayers", { discordID: discordID });
+    let db = await DatabaseConnection.findOneDB("otherData", "linkedPlayers", { discordID: discordID });
     if (db === null) return message.channel.send("User is not linked!");
-    let res = await deleteOneDB("otherData", "linkedPlayers", db);
+    let res = await DatabaseConnection.deleteOneDB("otherData", "linkedPlayers", db);
     if (res.result.ok) return message.channel.send(`User ${discordID} successfully unlinked!`);
     console.error(res);
     return message.channel.send(`Error linking!`);

@@ -1,5 +1,6 @@
 const Discord = require("discord.js");
-const { searchOneDB, removeFactorioRole } = require("../../functions");
+const { removeFactorioRole } = require("../../functions");
+const { DatabaseConnection } = require("../../utils/database-manager");
 const { ErrorManager } = require("../../utils/error-manager");
 
 module.exports = {
@@ -28,7 +29,7 @@ module.exports = {
     
     let username;
     if (message.mentions.users.first()) {
-      let res = await searchOneDB("otherData", "linkedPlayers", {
+      let res = await DatabaseConnection.findOneDB("otherData", "linkedPlayers", {
         discordID: (message.mentions.users.first()).id,
       })
       if (res == undefined)

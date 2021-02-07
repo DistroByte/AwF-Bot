@@ -12,13 +12,12 @@ class _RconConnectionManager {
     constructor() {
         // [{connection: rconConnection, serverObject: serverObjectFromServersJSON}]
         this._rconConnections = []
-        this._createRcon();
         this._jammyErrChannel = undefined;
     }
     /**
      * @description Creates all RCON connections to servers from scratch, i.e. if they stop working/should be reset
      */
-    async _createRcon() {
+    async createRcon() {
         this._rconConnections = [];
         Object.keys(serversJSON).forEach(async (serverKey) => {
             const port = parseInt(rconport) + parseInt(serversJSON[serverKey].rconPortOffset);
@@ -56,7 +55,7 @@ class _RconConnectionManager {
 
     /**
      * @description Closes all RCON connecetion and then re-instates them
-     * @see {@link _createRcon}
+     * @see {@link createRcon}
      */
     refreshRcon() {
         this._rconConnections.filter(server => {
@@ -64,7 +63,7 @@ class _RconConnectionManager {
                 .catch(e => ErrorManager.Error(e))
         });
         this._rconConnections = [];
-        this._createRcon();
+        this.createRcon();
     }
 
     /**
@@ -169,7 +168,6 @@ class _RconConnectionManager {
 }
 
 let RconConnectionManager = new _RconConnectionManager();
-
 module.exports = {
     RconConnectionManager,
 }

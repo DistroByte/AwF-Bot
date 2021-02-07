@@ -6,5 +6,5 @@ log-all
 .DS_Store
 servers.json
 /commands/owner/updateip.js
-test.js
+testing.js
 temp/*

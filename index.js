@@ -10,7 +10,9 @@ const { discordLog, awfLogging, datastoreInput } = require("./functions");
 const fs = require("fs");
 
 // let { RconConnectionManager } = require("./utils/rcon-connection");
-let { ErrorManager } = require('./utils/error-manager')
+let { ErrorManager } = require('./utils/error-manager');
+let { RconConnectionManager } = require('./utils/rcon-connection');
+let { DatabaseConnection } = require('./utils/database-manager')
 
 // remove all files from ./temp/ dir to prevent random bs
 try {
@@ -58,6 +60,11 @@ client.prefix = prefix;
 ["command", "event"].forEach((x) => require(`./handlers/${x}`)(client));
 
 client.login(token);
+
+
+// create RCON connections after bot loggging in
+RconConnectionManager.createRcon();
+DatabaseConnection.connect();
 
 serverTails.forEach((element) => {
   element[0].on("line", function (line) {

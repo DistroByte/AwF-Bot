@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const { searchOneDB } = require("../../functions");
+const { DatabaseConnection } = require("../../utils/database-manager");
 
 module.exports = {
   config: {
@@ -13,7 +13,7 @@ module.exports = {
   run: async (client, message, args) => {
     if (!args[0]) {
       // no argument at all
-      let res = await searchOneDB("otherData", "linkedPlayers", {
+      let res = await DatabaseConnection.findOneDB("otherData", "linkedPlayers", {
         factorioName: message.author.username,
       });
       if (res == null) return message.channel.send("You are not linked yet");
@@ -22,7 +22,7 @@ module.exports = {
     if (!args[1]) {
       // if the server name is provided but no 2nd argument, searches for generic server data
       if (message.mentions.users.first()) {
-        let res = await searchOneDB("otherData", "linkedPlayers", {
+        let res = await DatabaseConnection.findOneDB("otherData", "linkedPlayers", {
           discordID: message.mentions.members.first().id,
         });
         if (res == null)
@@ -38,7 +38,7 @@ module.exports = {
             }\` is already linked under username ${res.factorioName}!`
           );
       } else {
-        let res = await searchOneDB("otherData", "linkedPlayers", {
+        let res = await DatabaseConnection.findOneDB("otherData", "linkedPlayers", {
           factorioName: args[0],
         });
         if (res == null)

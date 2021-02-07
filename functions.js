@@ -7,21 +7,22 @@ const MongoClient = require("mongodb").MongoClient;
 const lodash = require("lodash");
 const servers = require("./servers.json"); // tails, fifo, discord IDs etc.
 const { exec } = require("child_process");
-const { uri, PastebinApiToken, testserverchannelid } = require("./botconfig.json");
+const { PastebinApiToken, testserverchannelid } = require("./botconfig.json");
 const { MessageEmbed } = require("discord.js");
 const PastebinAPI = require('pastebin-ts');
 const { RconConnectionManager } = require("./utils/rcon-connection");
 const { CacheManagerClass } = require("./utils/cache-manager");
+const { DatabaseConnection } = require('./utils/database-manager')
 
 const { firstJoinMessage } = require("./config/messages.json")
 
 let pastebin = new PastebinAPI(`${PastebinApiToken}`)
 
-const client = new MongoClient(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-const dBclientConnectionPromise = client.connect();
+// const client = new MongoClient(uri, {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// });
+// const dBclientConnectionPromise = client.connect();
 
 module.exports = {
   formatVersion,
@@ -31,11 +32,6 @@ module.exports = {
   sortModifiedDate,
   getServerFromChannelInput,
   formatChatData,
-  searchOneDB,
-  insertOneDB,
-  findOneAndReplaceDB,
-  deleteOneDB,
-  deleteManyDB,
   parseJammyLogger,
   getServerList,
   changePoints,
@@ -244,98 +240,6 @@ function getServerFromChannelInput(channelID) {
   }
   return null;
 }
-/**
- * @async
- * @description Search for one item in the database
- * @param {string} databaseName - Database name
- * @param {string} collectionName - Collection name
- * @param {Object} toSearch - "Key" to search for/with
- * @returns {(Object|null)} Object from database's collection or null if not found
- * @see {@link http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#findOne MongoCollection#findOne} for how the function works in more detail
- * @example
- * // returns the object with a property factorioName with the value "oof2win2"
- * await searchOneDB("otherData", "linkedPlayers", {factorioName: "oof2win2"})
- */
-async function searchOneDB(databaseName, collectionName, toSearch) {
-  await dBclientConnectionPromise; //just wait so the database is connected
-  // Returns an object of the thing found or null if not found
-  const collection = client.db(databaseName).collection(collectionName);
-  return collection.findOne(toSearch);
-}
-/**
- * @async
- * @description Inserts an object into a specified database's collection
- * @param {string} databaseName - Database name
- * @param {string} collectionName - Collection name
- * @param {Object} toInsert - Object to insert to the database
- * @returns {Object} Object with return values, e.g. the ID of the object, return status etc
- * @see {@link http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#insertOne MongoCollection#insertOne} for how the function works
- * @example
- * // inserts {factorioName: "oof2win2", discordID: "6684"} into the database otherData collection linkedPlayers
- * await insertOneDB("otherData", "linkedPlayers", {factorioName: "oof2win2", discordID: "6684"})
- */
-async function insertOneDB(databaseName, collectionName, toInsert) {
-  await dBclientConnectionPromise; //just wait so the database is connected
-  // To check if written in correctly, use: ret.result.ok (1 if correctly, 0 if written falsely)
-  const collection = client.db(databaseName).collection(collectionName);
-  return collection.insertOne(toInsert);
-}
-/**
- * @async
- * @description Finds specified object and replaces it in the database's collection.
- * @see {@link searchOneDB} to get the object to search for
- * @param {string} databaseName - Database to find and replace in
- * @param {string} collectionName - Collection of database to find and replace in
- * @param {Object} toFind - Object to find (key)
- * @param {Object} toReplace - Object to replace
- * @returns {Object} The original document (toFind) or the document that it has been replaced with (toReplace)
- * @see {@link http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#findOneAndReplace MongoCollection#findOneAndReplace} for how the function works
- * @example
- * // Will replace oof2win2's playtime from 1 to 900
- * findOneAndReplaceDB("otherData", "stats", {playerName: "oof2win2", playtime: 1}, {playerName: "oof2win2", playtime: 900})
- */
-async function findOneAndReplaceDB(databaseName, collectionName, toFind, toReplace) {
-  await dBclientConnectionPromise; //just wait so the database is connected
-  // To check if written in correctly, use: ret.result.ok (1 if correctly, 0 if written falsely)
-  const collection = client.db(databaseName).collection(collectionName);
-  return collection.findOneAndReplace(toFind, toReplace);
-}
-/**
- * @async
- * @description Finds and deletes the specified object from the database's collection
- * @see {@link searchOneDB} to get the object to delete
- * @param {string} databaseName
- * @param {string} collectionName
- * @param {Object} params - The object to delete
- * @returns {Object} Object containing: A boolean acknowledged as true if the operation ran with write concern or false if write concern was disabled; deletedCount containing the number of deleted documents
- * @see {@link http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#deleteOne MongoCollection#deleteOne}
- * @example
- * // deletes the object {playerName: "oof2win2", playtime: 6000} from otherData's collection linkedPlayers
- * deleteOneDB("otherData", "linkedPlayers", {playerName: "oof2win2", playtime: 6000})
- */
-async function deleteOneDB(databaseName, collectionName, params) {
-  // deletes the data object {params} from the database dat collection coll
-  // filter is what to delete, see https://docs.mongodb.com/manual/reference/method/db.collection.deleteOne
-  // if params is {}, it will delete the first thing found
-  await dBclientConnectionPromise; //just wait so the database is connected
-  // To check if written in correctly, use: ret.acknowledged (1 if correctly, 0 if written falsely)
-  const collection = client.db(databaseName).collection(collectionName);
-  return collection.deleteOne(params);
-}
-/**
- * @async
- * @description Deletes many objects from the database's collection
- * @param {string} databaseName - Name of the database to delete from
- * @param {string} collectionName - Name of the collection to delete from
- * @param {Object} filter - Filter object of what to delete/what to keep
- * @returns {Promise<Object>}
- * @see {@link http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#deleteMany MongoCollection#deleteMany}
- */
-async function deleteManyDB(databaseName, collectionName, filter) {
-  await dBclientConnectionPromise; // wait so the database is connected before doing anything
-  const collection = client.db(databaseName).collection(collectionName);
-  return collection.deleteMany(filter);
-}
 
 /**
  * @async
@@ -351,7 +255,7 @@ async function giveFactorioRole(username, roleName) {
   // DO NOT USE THIS FUNCTION TO ASSIGN ROLES
   // adds a factorio role to the database
   // give it a SINGLE ROLE NAME, not the existing roles
-  let res = await searchOneDB("otherData", "playerRoles", {
+  let res = await DatabaseConnection.findOneDB("otherData", "playerRoles", {
     factorioName: username,
   });
   if (res == null) {
@@ -359,12 +263,12 @@ async function giveFactorioRole(username, roleName) {
       factorioName: username,
       roles: [roleName],
     };
-    return await insertOneDB("otherData", "playerRoles", push);
+    return await DatabaseConnection.insertOneDB("otherData", "playerRoles", push);
   } else {
     let toPush = lodash.cloneDeep(res);
     if (!toPush.roles.includes(roleName)) {
       toPush.roles.push(roleName);
-      return await findOneAndReplaceDB("otherData", "playerRoles", res, toPush);
+      return await DatabaseConnection.findOneAndReplaceDB("otherData", "playerRoles", res, toPush);
     }
     return false;
   }
@@ -373,7 +277,7 @@ async function giveFactorioRole(username, roleName) {
 async function removeFactorioRole(username, roleName) {
   // removes a factorio role to the database
   // give it a SINGLE ROLE NAME, not the existing roles
-  let res = await searchOneDB("otherData", "playerRoles", {
+  let res = await DatabaseConnection.findOneDB("otherData", "playerRoles", {
     factorioName: username,
   });
   if (res === undefined) {
@@ -383,7 +287,7 @@ async function removeFactorioRole(username, roleName) {
     toPush.roles = toPush.roles.filter(role => {
       return role != roleName
     })
-    return await findOneAndReplaceDB("otherData", "playerRoles", res, toPush)
+    return await DatabaseConnection.findOneAndReplaceDB("otherData", "playerRoles", res, toPush)
   }
 }
 
@@ -398,7 +302,7 @@ async function removeFactorioRole(username, roleName) {
  * getFactorioRoles("oof2win2")
  */
 async function getFactorioRoles(factorioName) {
-  return await searchOneDB("otherData", "playerRoles", {
+  return await DatabaseConnection.findOneDB("otherData", "playerRoles", {
     factorioName: factorioName,
   });
 }
@@ -450,7 +354,7 @@ async function givePlayerRoles(factorioName, role, serverName) {
  * addDeath("awf-regular", "oof2win2", "locomitive")
  */
 async function addDeath(server, player, reason) {
-  var res = await searchOneDB(server, "deaths", { player: `${player}` });
+  var res = await DatabaseConnection.findOneDB(server, "deaths", { player: `${player}` });
   if (res == null) {
     // if the player wasn't found in the server's database
     var writeObj = {
@@ -459,14 +363,14 @@ async function addDeath(server, player, reason) {
         [reason]: 1,
       },
     };
-    var out = await insertOneDB(server, "deaths", writeObj);
+    var out = await DatabaseConnection.insertOneDB(server, "deaths", writeObj);
     if (out.result.ok !== 1) console.log("error adding to database");
     return;
   } else {
     var replaceWith = lodash.cloneDeep(res); // duplicate the object
     if (replaceWith.deaths[reason]) replaceWith.deaths[reason]++;
     else replaceWith.deaths[reason] = 1;
-    var out = await findOneAndReplaceDB(server, "deaths", res, replaceWith);
+    var out = await DatabaseConnection.findOneAndReplaceDB(server, "deaths", res, replaceWith);
     return;
   }
 }
@@ -479,7 +383,7 @@ async function addDeath(server, player, reason) {
  * addRocket("awf-regular")
  */
 async function addRocket(server) {
-  var res = await searchOneDB(server, "stats", {
+  var res = await DatabaseConnection.findOneDB(server, "stats", {
     rocketLaunches: { $exists: true },
   });
   if (res == null) {
@@ -487,14 +391,14 @@ async function addRocket(server) {
     var writeObj = {
       rocketLaunches: 1,
     };
-    var out = await insertOneDB(server, "stats", writeObj);
+    var out = await DatabaseConnection.insertOneDB(server, "stats", writeObj);
     if (out.result.ok !== 1) console.log("error adding to database");
     return 1;
   } else {
     var replaceWith = await lodash.cloneDeep(res); // duplicate the object
     if (replaceWith.rocketLaunches) replaceWith.rocketLaunches++;
     else replaceWith.rocketLaunches = 1;
-    var out = await findOneAndReplaceDB(server, "stats", res, replaceWith);
+    var out = await DatabaseConnection.findOneAndReplaceDB(server, "stats", res, replaceWith);
     if (typeof out == "object") {
       if (out.ok !== 1) console.log("error adding to database");
     } else {
@@ -511,7 +415,7 @@ async function addRocket(server) {
  * @param {number} level - Level of research
  */
 async function addResearch(server, research, level) {
-  var res = await searchOneDB(server, "stats", { research: "researchData" });
+  var res = await DatabaseConnection.findOneDB(server, "stats", { research: "researchData" });
   if (level < 1) level = 1;
   if (res == null) {
     // if the server's research wasn't found in the server's database (first research)
@@ -521,7 +425,7 @@ async function addResearch(server, research, level) {
         [research]: level,
       },
     };
-    var out = await insertOneDB(server, "stats", writeObj);
+    var out = await DatabaseConnection.insertOneDB(server, "stats", writeObj);
     if (out.result.ok !== 1) console.log("error adding to database");
     return;
   } else {
@@ -529,7 +433,7 @@ async function addResearch(server, research, level) {
     if (res.completedResearch[research] <= 1)
       replaceWith.completedResearch[research]++;
     else replaceWith.completedResearch[research] = level;
-    var out = await findOneAndReplaceDB(server, "stats", res, replaceWith);
+    var out = await DatabaseConnection.findOneAndReplaceDB(server, "stats", res, replaceWith);
     if (typeof out == "object") {
       if (out.ok !== 1) console.log("error adding to database");
     } else {
@@ -566,7 +470,7 @@ async function parseJammyLogger(line, channel) {
     if (line[0] == "PLAYER:") line.shift();
     addDeath(channel.name, line[0], line[1]);
     channel.send(`Player \`${line[0]}\` died due to \`${line[1]}\``);
-    let user = await searchOneDB("otherData", "linkedPlayers", {
+    let user = await DatabaseConnection.findOneDB("otherData", "linkedPlayers", {
       factorioName: line[0],
     });
     if (user == null) return; //non-linked user
@@ -595,7 +499,7 @@ async function parseJammyLogger(line, channel) {
     let built = parseInt(line[1]); // first part of the line
     let time = parseInt(line[2]); // second part of the line
     time = time / (60 * 60); // get time into minutes
-    let user = await searchOneDB("otherData", "linkedPlayers", {
+    let user = await DatabaseConnection.findOneDB("otherData", "linkedPlayers", {
       factorioName: username,
     });
     if (user == null) return; //non-linked user
@@ -649,8 +553,8 @@ async function runShellCommand(cmd) {
  * @param {Number} built - Number of entities built to add to statistics
  * @param {Number} time - Number of minutes the user has played
  * @param {Number} death - number of deaths
- * @see {@link searchOneDB} to see how searching database is done
- * @see {@link findOneAndReplaceDB} to how replacing in database is done
+ * @see {@link DatabaseConnection.findOneDB} to see how searching database is done
+ * @see {@link DatabaseConnection.findOneAndReplaceDB} to how replacing in database is done
  * @returns {Array<Object>} an array of the object the data was replaced with, object of the user inputted
  * @example
  * // ex1: oof2win2 built 68 entities and played 93 minutes
@@ -659,7 +563,7 @@ async function runShellCommand(cmd) {
  * changePoints({factorioName: "oofw2win2", discordID: "69420"}, 0, 0, 1)
  */
 async function changePoints(user, built, time, death = 0) {
-  var res = await searchOneDB("otherData", "globPlayerStats", {
+  var res = await DatabaseConnection.findOneDB("otherData", "globPlayerStats", {
     discordID: user.discordID,
   });
   if (res == null) {
@@ -686,7 +590,7 @@ async function changePoints(user, built, time, death = 0) {
   if (replaceWith.points == null) replaceWith.points = 0;
   replaceWith.points += built;
   replaceWith.points += (time / 60) * 50; //50 pts/h
-  await findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
+  await DatabaseConnection.findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
   return [replaceWith, user];
 }
 
@@ -796,7 +700,7 @@ async function datastoreInput(
   );
   if (requestType == "request") {
     // request from database and send back to server
-    let find = await searchOneDB("otherData", collectionName, {
+    let find = await DatabaseConnection.findOneDB("otherData", collectionName, {
       playername: playerName,
     });
     let send;
@@ -819,7 +723,7 @@ async function datastoreInput(
       `/interface Datastore.ingest('propagate', '${collectionName}', '${playerName}', '${args}')`,
       [`${serverObject.name}`]
     );
-    let find = await searchOneDB("otherData", collectionName, {
+    let find = await DatabaseConnection.findOneDB("otherData", collectionName, {
       playername: playerName,
     });
     if (find == null) {
@@ -827,16 +731,16 @@ async function datastoreInput(
         playername: playerName,
         data: JSON.parse(args),
       };
-      insertOneDB("otherData", collectionName, send);
+      DatabaseConnection.insertOneDB("otherData", collectionName, send);
     } else {
       let send = lodash.cloneDeep(find);
       send.data = JSON.parse(args);
 
-      findOneAndReplaceDB("otherData", collectionName, find, send);
+      DatabaseConnection.findOneAndReplaceDB("otherData", collectionName, find, send);
     }
   } else if (requestType == "save") {
     // save to database
-    let find = await searchOneDB("otherData", collectionName, {
+    let find = await DatabaseConnection.findOneDB("otherData", collectionName, {
       playername: playerName,
     });
     if (find == null) {
@@ -844,11 +748,11 @@ async function datastoreInput(
         playername: playerName,
         data: JSON.parse(line),
       };
-      insertOneDB("otherData", collectionName, send);
+      DatabaseConnection.insertOneDB("otherData", collectionName, send);
     } else {
       let send = lodash.cloneDeep(find);
       send.data = JSON.parse(line);
-      findOneAndReplaceDB("otherData", collectionName, find, send);
+      DatabaseConnection.findOneAndReplaceDB("otherData", collectionName, find, send);
     }
   } else if (requestType == "remove") {
     // remove from database
@@ -856,7 +760,7 @@ async function datastoreInput(
       playername: playerName,
       data: JSON.parse(args),
     };
-    deleteOneDB("otherData", collectionName, toDelete);
+    DatabaseConnection.deleteOneDB("otherData", collectionName, toDelete);
   }
 }
 /**
