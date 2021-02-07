@@ -18,12 +18,6 @@ const { firstJoinMessage } = require("./config/messages.json")
 
 let pastebin = new PastebinAPI(`${PastebinApiToken}`)
 
-// const client = new MongoClient(uri, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// });
-// const dBclientConnectionPromise = client.connect();
-
 module.exports = {
   formatVersion,
   formatDate,
@@ -302,7 +296,7 @@ async function removeFactorioRole(username, roleName) {
  * getFactorioRoles("oof2win2")
  */
 async function getFactorioRoles(factorioName) {
-  return await DatabaseConnection.findOneDB("otherData", "playerRoles", {
+  return DatabaseConnection.findOneDB("otherData", "playerRoles", {
     factorioName: factorioName,
   });
 }

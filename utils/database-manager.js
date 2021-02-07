@@ -20,7 +20,16 @@ class DatabaseConnectionClass {
   }
 
   async connect() {
-    this.clientConnectionPromise = this.client.connect();
+    this.clientConnectionPromise = await this.client.connect();
+    return this.clientConnectionPromise
+  }
+
+  async disconnect() {
+    this.client.close();
+  }
+
+  checkConnection() {
+    return this.client.isConnected();
   }
 
   /**
@@ -93,7 +102,7 @@ class DatabaseConnectionClass {
     await this.clientConnectionPromise; //just wait so the database is connected
     // To check if written in correctly, use: ret.acknowledged (1 if correctly, 0 if written falsely)
     const collection = this.client.db(databaseName).collection(collectionName);
-    return collection.deleteOne(params);
+    return collection.deleteOne(toDelete);
   }
 }
 
