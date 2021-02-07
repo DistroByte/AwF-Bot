@@ -2,16 +2,13 @@
  * @file A collection of useful functions that are used across many other files
  */
 
-const FIFO = require("fifo-js");
 const fs = require("fs");
 const MongoClient = require("mongodb").MongoClient;
 const lodash = require("lodash");
 const servers = require("./servers.json"); // tails, fifo, discord IDs etc.
 const { exec } = require("child_process");
-const { uri, rconport, rconpw, PastebinApiToken, testserverchannelid } = require("./botconfig.json");
-const Rcon = require("rcon-client");
+const { uri, PastebinApiToken, testserverchannelid } = require("./botconfig.json");
 const { MessageEmbed } = require("discord.js");
-const { request } = require("http");
 const PastebinAPI = require('pastebin-ts');
 const { RconConnectionManager } = require("./utils/rcon-connection");
 const { CacheManagerClass } = require("./utils/cache-manager");
@@ -19,11 +16,6 @@ const { CacheManagerClass } = require("./utils/cache-manager");
 const { firstJoinMessage } = require("./config/messages.json")
 
 let pastebin = new PastebinAPI(`${PastebinApiToken}`)
-
-let serverFifos = [];
-Object.keys(servers).forEach((element) => {
-  serverFifos.push([new FIFO(servers[element].serverFifo), servers[element]]);
-});
 
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
@@ -35,8 +27,6 @@ module.exports = {
   formatVersion,
   formatDate,
   formatSaveData,
-  sendToAll,
-  sendToServer,
   bubbleSort,
   sortModifiedDate,
   getServerFromChannelInput,
@@ -48,11 +38,8 @@ module.exports = {
   deleteManyDB,
   parseJammyLogger,
   getServerList,
-  linkFactorioDiscordUser,
   changePoints,
   runShellCommand,
-  rconCommand,
-  rconCommandAll,
   discordLog,
   awfLogging,
   datastoreInput,
@@ -123,57 +110,6 @@ function bubbleSort(arr) {
     }
   }
   return arr;
-}
-
-/**
- * @description Sends a message to only one server. Use the new utils/fifo-manager class instead!
- * @deprecated
- * @param {Object} message - Discord message object to send to Factorio server. Used for which server to send to by getting the server by channel ID
- * @param {bool} sendWithUsername - Whether to send with username or not
- */
-function sendToServer(message, sendWithUsername) {
-  if (sendWithUsername == true) {
-    //sends the message with the username and colon, as $sendWithUsername is true
-    serverFifos.forEach((factorioServer) => {
-      if (message.channel.id === factorioServer[1].discordChannelID) {
-        factorioServer[0].write(
-          `${message.author.username}: ${message.content}`,
-          () => {}
-        );
-      }
-    });
-  } else {
-    //sends just the message, no username, nothing as $sendWithUsername is false
-    serverFifos.forEach((factorioServer) => {
-      if (message.channel.id === factorioServer[1].discordChannelID) {
-        factorioServer[0].write(`${message.content}`, () => {});
-      }
-    });
-  }
-}
-
-/**
- * @description Send a message to all servers (announcement or something). Use the new utils/fifo-manager class instead!
- * @deprecated
- * @param {Object} message - Message to send, format of DiscordMessage
- * @param {bool} sendWithUsername - Whether to send message with username or not
- */
-function sendToAll(message, sendWithUsername) {
-  // The $message given to this function is an object of discord.js - it has the author username, message content, mentions etc.
-  // The $sendWithUsername given to the function is a boolean value (fixed from being a 0 or 1). If sendWithUsername is true, it will send the message with the username
-  // sends a message to all servers at once
-  if (sendWithUsername) {
-    // $sendWithUsername is true, therefore the message is sent with the username
-    serverFifos.forEach((fifo) => {
-      fifo[0].write(`${message.author.username}: ${message.content}`, () => {});
-    });
-  } else {
-    // sends just the message, no username, nothing because $sendWithUsername is false
-    let toSend = message.content || message;
-    serverFifos.forEach((fifo) => {
-      fifo[0].write(`${toSend}`, () => {});
-    });
-  }
 }
 
 /**
@@ -399,135 +335,6 @@ async function deleteManyDB(databaseName, collectionName, filter) {
   await dBclientConnectionPromise; // wait so the database is connected before doing anything
   const collection = client.db(databaseName).collection(collectionName);
   return collection.deleteMany(filter);
-}
-/**
- * @async
- * @deprecated
- * @description Sends a Factorio command to RCON.
- * @param {string} command - Command to send to the server (auto-prefixed with '/')
- * @param {string} serverName - Name of the server according to the name parameter in servers.json
- * @returns {string[]} Returns an array with 2 elements, first being command output (string). Second element is either a blank string, or a string beginning with "error:" and containing the error given
- * @example
- * // sends /time to server with name TEST in servers.json
- * // returns ["2 days, 28 minutes and 1 second", ""] when succesfull
- * // returns ["", "error: stuff"] when unsuccesfull
- * rconCommand(`/time`, "TEST")
- */
-async function rconCommand(command, serverName) {
-  if (!command.startsWith("/")) command = `/${command}`; //add a '/' if not present
-  let server;
-  Object.keys(servers).forEach((s) => {
-    if (servers[s].name == serverName) server = servers[s];
-  });
-  if (server == null)
-    return ["", `error: no server corresponding to ${serverName}`];
-  let port = parseInt(rconport) + parseInt(server.rconPortOffset); // the port to connect to, ports are one after another
-  try {
-    const rcon = new Rcon.Rcon({
-      host: "127.0.0.1",
-      port: `${port}`,
-      password: `${rconpw}`,
-    });
-    // rcon.on("connect", () => { console.log(`connected ${serverName}`)}); //why spam console
-    rcon.on("error", (e) => {
-      console.log(`rcon error ${serverName}: ${e}`);
-    });
-    // rcon.on("authenticated", () => console.log(`authenticated ${serverName}`)); //why spam console
-    // rcon.on("end", () => console.log(`end ${serverName}`)); //why spam console
-
-    await rcon.connect(); // wait for connecting before continuing
-    let res = await rcon.send(command);
-    let responseType;
-    if (typeof res == "string" && res.length) responseType = "";
-    else responseType = "error";
-    rcon.end();
-    return [res, responseType];
-  } catch (err) {
-    if (err.stack.startsWith(`Error: connect ECONNREFUSED`)) {
-      console.log(
-        `Connection Error --- Details --- \nNAME: ${err.name} \nDESC: ${err.description} \nStack: ${err.stack}`
-      );
-    } else {
-      console.log(
-        `Connection Error --- Details --- \nNAME: ${err.name} \nDESC: ${err.description} \nStack: ${err.stack}`
-      );
-    }
-    return [err, "error"];
-  }
-}
-/**
- * @async
- * @deprecated
- * @description Like the function rconCommand but sends the RCON command to all servers
- * @param {string} command - Command to send to server (auto prefixed with '/')
- * @returns {Array<Array, string>} Returns an array of command outputs (arrays) and errors (strings), with the command outputs being same as rconCommand: either ["2 days, 28 minutes and 1 second", ""] or ["", "error: stuff"] if an error occurs. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
- * @see {@link rconCommand} to see how the RCON commands work
- * @example
- * // sends /time to all servers
- * // returns [[["2 days, 28 minutes and 1 second", ""], "CORE"], [["19 days, 5 minutes and 1 second", ""], "AWF-REG"]]
- * // the number of returns and return values depends on the number of servers and age of servers respectively
- * await rconCommandAll("/time")
- */
-async function rconCommandAll(command) {
-  if (!command.startsWith("/")) command = `/${command}`; //add a '/' if not present
-  let serverNames = [];
-  Object.keys(servers).forEach((s) => {
-    serverNames.push(servers[s]);
-  });
-  let promiseArray = serverNames.map((server) => {
-    return new Promise((resolve) => {
-      rconCommand(command, server.name)
-        .then((res) => {
-          if (!res[1].startsWith("error")) {
-            resolve([res, server.name]);
-          } else {
-            resolve([res, server.name]);
-          }
-        })
-        .catch((e) => {
-          reject([e, server.name]);
-        });
-    });
-  });
-  return await Promise.all(promiseArray);
-}
-/**
- * @async
- * @deprecated
- * @description Sends an RCON command to all servers except the ones excluded
- * @param {string} command - Command to send to servers
- * @param {string[]} exclude - Servers to exclude, e.g. ["TEST", "CORE", "AWF-REG"]
- * @returns {Array<Array, string>} Returns an array of command outputs (arrays) and errors (strings), with the command outputs being same as rconCommand: either ["2 days, 28 minutes and 1 second", ""] or ["", "error: stuff"] if an error occurs. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
- * @see {@link rconCommand} to see how the RCON commands work
- * @example
- * // sends /time to all servers except dev server
- * // returns [[["2 days, 28 minutes and 1 second", ""], "CORE"], [["19 days, 5 minutes and 1 second", ""], "AWF-REG"]]
- * // the number of returns and return values depends on the number of servers and age of servers respectively, with the excluded server not being shown as returned
- * await rconCommandAllExclude("/time", ["TEST"])
- */
-async function rconCommandAllExclude(command, exclude) {
-  // exclude is an ARRAY of server names which to exclude
-  if (!command.startsWith("/")) command = `/${command}`; //add a '/' if not present
-  let serverNames = [];
-  Object.keys(servers).forEach((s) => {
-    if (!exclude.includes(servers[s].name)) serverNames.push(servers[s]);
-  });
-  let promiseArray = serverNames.map((server) => {
-    return new Promise((resolve) => {
-      rconCommand("/p o", server.name)
-        .then((res) => {
-          if (!res[1].startsWith("error")) {
-            resolve([res, server.name]);
-          } else {
-            resolve([res, server.name]);
-          }
-        })
-        .catch((e) => {
-          reject([e, server.name]);
-        });
-    });
-  });
-  return await Promise.all(promiseArray);
 }
 
 /**
@@ -834,94 +641,7 @@ async function runShellCommand(cmd) {
     });
   });
 }
-/**
- * @async
- * @deprecated
- * @description Links a Factorio and Discord user, goes through the process of linking them. After linking, assigns the Member role to the player where the player issued the command to link themselves
- * @param {Object} discordClient - Discord client object
- * @param {string} factorioName - Factorio name of the user
- * @param {string} discordName - Discord name of the user
- * @param {Object} discordChannelID - Discord Channel ID, used to add roles
- */
-async function linkFactorioDiscordUser(
-  discordClient,
-  factorioName,
-  discordName,
-  discordChannelID
-) {
-  //links the Factorio and Discord usernames, can be used for verification later
-  //discordName is the name and tag of the user, e.g. SomeRandomPerson#0000
-  let factorioServer = getServerFromChannelInput(discordChannelID);
-  let server = await discordClient.guilds.cache.get("548410604679856151");
-  let sendToUser = await server.members.fetch({ query: discordName, limit: 1 });
-  sendToUser = sendToUser.first();
-  let sentMsg = await sendToUser.send(
-    `You have chosen to link your Discord account, \`${discordName}\` with your Factorio account on AwF, \`${factorioName}\`. The request will timeout after 5 minutes of sending. React with :hammer: to re-link your account. If complications arise, please contact devs/admins (relinking is when switching Factorio username, for switching Discord account contact admins/devs. Changing your Discord username **IS NOT** changing an account, whilst changing your Factorio username **is**)`
-  );
-  sentMsg.react("✅");
-  sentMsg.react("🔨");
-  sentMsg.react("❌");
-  const filter = (reaction, user) => {
-    return user.id === sendToUser.id;
-  };
-  // 5*60*1000 to get five minutes to milliseconds
-  sentMsg
-    .awaitReactions(filter, { max: 1, time: 5 * 60 * 1000, errors: ["time"] })
-    .then(async (messageReaction) => {
-      let reaction = messageReaction.first();
-      if (reaction.emoji.name === "❌")
-        return sendToUser.send("Linking cancelled");
-      let dat = { factorioName: factorioName, discordID: sendToUser.id };
-      let found = await searchOneDB("otherData", "linkedPlayers", {
-        discordID: sendToUser.id,
-      });
-      if (found !== null && reaction.emoji.name === "🔨") {
-        // re-link user
-        let res = await findOneAndReplaceDB(
-          "otherData",
-          "linkedPlayers",
-          found,
-          dat
-        );
-        if (res.ok != 1)
-          return sendToUser.send(
-            "Please contact devs/admins for re-linking, process failed"
-          );
-        //redo statistics
-        let prevStats = await searchOneDB("otherData", "globPlayerStats", {
-          discordID: found.discordID,
-        });
-        let newStats = lodash.cloneDeep(prevStats);
-        newStats.factorioName = factorioName;
-        res = await findOneAndReplaceDB(
-          "otherData",
-          "globPlayerStats",
-          prevStats,
-          newStats
-        );
-        if (res.ok != 1)
-          return sendToUser.send(
-            "Please contact devs/admins for re-linking, process failed"
-          );
-        sendToUser.send("Re-linked succesfully!");
-        givePlayerRoles(factorioName, "Member", factorioServer.name); // give the Member role to new players
-      } else if (found !== null && reaction.emoji.name === "❌")
-        // cancel, found a user and they
-        return sendToUser.send("Already linked");
-      else if (found === null && reaction.emoji.name === "✅") {
-        let res = await insertOneDB("otherData", "linkedPlayers", dat);
-        if (res.result.ok == 0)
-          sendToUser.send("Failed linking. Contact devs/admins");
-        else sendToUser.send("Linked successfully");
-        givePlayerRoles(factorioName, "Member", factorioServer.name); // give the Member role to new players
-      }
-    })
-    .catch((out) => {
-      if (out.size == 0)
-        return sendToUser.send(`Didn't react in time. Please try again.`);
-      else return sendToUser.send("Error. Please contact admin/dev");
-    });
-}
+
 /**
  * @async
  * @description Changes the amount of points the player has in the database
