@@ -6,16 +6,46 @@ class CacheManagerClass {
     this._cache = new NodeCache(opts);
   }
   get(key) {
-    return this._cache.get(key);
-  }
-  set(key, obj, timeout) {
-    const res = this._cache.set(key, obj, timeout);
-    if (res === false) {
-      ErrorManager.Error("Cache not behaving correctly. Didn't set value");
-    } else {
-      return true;
+    try {
+      return this._cache.get(key);
+    } catch (error) {
+      ErrorManager.error(error)
     }
   }
+  set(key, obj, timeout) {
+    try {
+      const res = this._cache.set(key, obj, timeout);
+      if (res === false) {
+        ErrorManager.Error("Cache not behaving correctly. Didn't set value");
+      } else {
+        return true;
+      }
+    } catch (error) {
+      ErrorManager.Error(error);
+    }
+  }
+  take(key) {
+    try {
+      return this._cache.take(key);
+    } catch (error) {
+      ErrorManager.Error(error)
+    }
+  }
+  del(key) {
+    try {
+      return this._cache.del(key);
+    } catch (error) {
+      ErrorManager.Error(error)
+    }
+  }
+  has(key) {
+    try {
+      return this._cache.has(key)
+    } catch (error) {
+      ErrorManager.Error(error)
+    }
+  }
+
 }
 let CacheManager = new CacheManagerClass({
   checkperiod: 120,
