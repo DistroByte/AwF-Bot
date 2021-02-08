@@ -7,9 +7,9 @@ module.exports = {
         name: "spamfactorioserver",
         aliases: [],
         usage: "<server ping> <number of messages> [message to send]",
-        category: "testing",
+        category: "dev",
         description: "Spam a Factorio server with lots of chat stuff",
-        accessableby: "Admin",
+        accessableby: "Dev",
     },
     run: async (client, message, args) => {
         let authRoles = message.member.roles.cache;
