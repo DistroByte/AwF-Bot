@@ -6,6 +6,11 @@ module.exports = async (client, message) => {
     let cmd = args.shift().toLowerCase();
     if (message.author.bot) return;
 
+
+    for (i = 0; i < args.length; i++)
+        if (args[i] === '||||')
+            args = args.slice(0, i);
+
     let slap = client.emojis.cache.find((emoji) => emoji.name === "slap");
     if (message.content.includes("Jammy say hi"))
         return message.channel.send(":wave:");
