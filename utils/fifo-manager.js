@@ -1,3 +1,4 @@
+const { Presence } = require("discord.js")
 const serversJSON = require("../servers.json"); // tails, fifo, discord IDs etc.
 const FIFO = require("fifo-js");
 
@@ -26,7 +27,10 @@ class _ServerFifoManager {
             }
         });
     }
-
+    /**
+     * Turns logging on/off for development server if the bot turns offline/online to prevent errors
+     * @param {Presence} newPresence - Discord presence of the testing/development bot
+     */
     checkDevServer(newPresence) {
         // test bot turned online
         if (newPresence.status != "offline") {

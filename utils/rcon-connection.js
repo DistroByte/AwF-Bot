@@ -70,7 +70,7 @@ class _RconConnectionManager {
      * @async
      * @description Sends a Factorio command to RCON.
      * @param {string} command - Command to send to the server (auto-prefixed with '/')
-     * @param {string} serverName - Server identifier, such as server name, channel ID or channel name
+     * @param {string} serverIdentifier - Server identifier, such as server name, Discord channel ID or Discord channel name
      * @returns {string[]} Returns an array with 2 elements, first being command output (string). Second element is either a blank string, or a string beginning with "error:" and containing the error given
      * @example
      * // sends /time to server with name TEST in servers.json
@@ -103,7 +103,7 @@ class _RconConnectionManager {
      * @async
      * @description Like the function rconCommand but sends the RCON command to all servers
      * @param {string} command - Command to send to server (auto prefixed with '/')
-     * @returns {Array<string, string>} Returns an array of command outputs (strings), with the command outputs being same as {@link rconCommand}. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
+     * @returns {Array<Array<string, string>>} Returns an array of command outputs (strings), with the command outputs being same as {@link rconCommand}. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
      * @see {@link rconCommand} to see how the RCON commands work
      * @example
      * // sends /time to all servers
@@ -127,6 +127,13 @@ class _RconConnectionManager {
         return await Promise.all(promiseArray);
     }
 
+    /**
+     * Sends a command to all Factorio servers excluding one
+     * @param {string} command - Command to send to Factorio (automatically prefixed with '/')
+     * @param {string} exclusionServerIdentifiers - Discord channel ID, server name from servers.json, Discord channel name used to identify server to exclude from
+     * @returns {Array<Array<string, string>>} Returns an array of command outputs (strings), with the command outputs being same as {@link rconCommand}. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
+     * @see {@link rconCommandAll}
+     */
     async rconCommandAllExclude(command, exclusionServerIdentifiers) {
         if (!command.startsWith("/")) command = `/${command}`; //add a '/' if not present
 

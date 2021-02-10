@@ -38,7 +38,7 @@ a = {
 // research of a server in <serverName>/stats
 a = {
     research: "researchData", // this is a constant name, doesn't change
-    research = {
+    research: {
         "automation": 2, // name and level of research
         "gate": 1
     }

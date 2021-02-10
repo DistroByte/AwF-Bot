@@ -4,6 +4,10 @@ const { ErrorManager } = require('./error-manager');
 const { uri } = require('../botconfig.json')
 
 class DatabaseConnectionClass {
+  /**
+   * Initializes the database manager with a client - doesn't connect though
+   * @param {string} connectionString - MongoDB connection string to database
+   */
   constructor(connectionString) {
     this.client = new MongoClient(connectionString, {
       useNewUrlParser: true,
@@ -14,20 +18,35 @@ class DatabaseConnectionClass {
     this.clientConnectionPromise = this._randomPromise();
   }
 
+  /**
+   * Sets a random promise. Used for the constructor so other methods have something to await when manager isn't connected yet
+   * @returns {Promise} A promise with no rejection/resolution value. Doesn't resolve or reject
+   */
   async _randomPromise() {
     return new Promise((resolve, reject) => {
     })
   }
 
+  /**
+   * Connect to the database
+   * @returns {MongoClient} Client of MongoDB that it connected with
+   */
   async connect() {
     this.clientConnectionPromise = await this.client.connect();
     return this.clientConnectionPromise
   }
 
+  /**
+   * Cleanly disconnect from the database
+   */
   async disconnect() {
     this.client.close();
   }
 
+  /**
+   * Check if database manager is connected to remote
+   * @returns {boolean} Whether database manager is connected or not
+   */
   checkConnection() {
     return this.client.isConnected();
   }
