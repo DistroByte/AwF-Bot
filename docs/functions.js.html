@@ -30,53 +30,42 @@
  * @file A collection of useful functions that are used across many other files
  */
 
-const FIFO = require("fifo-js");
 const fs = require("fs");
 const MongoClient = require("mongodb").MongoClient;
 const lodash = require("lodash");
 const servers = require("./servers.json"); // tails, fifo, discord IDs etc.
 const { exec } = require("child_process");
-const { uri, rconport, rconpw } = require("./botconfig.json");
-const Rcon = require("rcon-client");
+const { PastebinApiToken, testserverchannelid } = require("./botconfig.json");
 const { MessageEmbed } = require("discord.js");
-const { request } = require("http");
+const PastebinAPI = require('pastebin-ts');
+const { RconConnectionManager } = require("./utils/rcon-connection");
+const { CacheManagerClass } = require("./utils/cache-manager");
+const { DatabaseConnection } = require('./utils/database-manager')
 
-let serverFifos = [];
-Object.keys(servers).forEach((element) => {
-  serverFifos.push([new FIFO(servers[element].serverFifo), servers[element]]);
-});
+const { firstJoinMessage } = require("./config/messages.json")
 
-const client = new MongoClient(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-const dBclientConnectionPromise = client.connect();
+let pastebin = new PastebinAPI(`${PastebinApiToken}`)
 
 module.exports = {
   formatVersion,
   formatDate,
   formatSaveData,
-  sendToAll,
-  sendToServer,
   bubbleSort,
   sortModifiedDate,
   getServerFromChannelInput,
   formatChatData,
-  searchOneDB,
-  insertOneDB,
-  findOneAndReplaceDB,
-  deleteOneDB,
   parseJammyLogger,
   getServerList,
-  linkFactorioDiscordUser,
   changePoints,
   runShellCommand,
-  rconCommand,
-  rconCommandAll,
   discordLog,
   awfLogging,
   datastoreInput,
   onJoin,
+  sendToPastebin,
+  giveFactorioRole,
+  removeFactorioRole,
+  getFactorioRoles
 };
 /**
  * @async
@@ -101,6 +90,7 @@ async function sortModifiedDate(dir) {
   return new Promise((resolve, reject) => {
     fs.readdir(dir, function (err, files) {
       if (err) reject(err);
+      if (!files) return resolve([])
       files = files
         .map(function (fileName) {
           return {
@@ -138,55 +128,6 @@ function bubbleSort(arr) {
     }
   }
   return arr;
-}
-
-/**
- * @description Sends a message to only one server
- * @param {Object} message - Discord message object to send to Factorio server. Used for which server to send to by getting the server by channel ID
- * @param {bool} sendWithUsername - Whether to send with username or not
- */
-function sendToServer(message, sendWithUsername) {
-  if (sendWithUsername == true) {
-    //sends the message with the username and colon, as $sendWithUsername is true
-    serverFifos.forEach((factorioServer) => {
-      if (message.channel.id === factorioServer[1].discordChannelID) {
-        factorioServer[0].write(
-          `${message.author.username}: ${message.content}`,
-          () => {}
-        );
-      }
-    });
-  } else {
-    //sends just the message, no username, nothing as $sendWithUsername is false
-    serverFifos.forEach((factorioServer) => {
-      if (message.channel.id === factorioServer[1].discordChannelID) {
-        factorioServer[0].write(`${message.content}`, () => {});
-      }
-    });
-  }
-}
-
-/**
- * @description Send a message to all servers (announcement or something)
- * @param {Object} message - Message to send, format of DiscordMessage
- * @param {bool} sendWithUsername - Whether to send message with username or not
- */
-function sendToAll(message, sendWithUsername) {
-  // The $message given to this function is an object of discord.js - it has the author username, message content, mentions etc.
-  // The $sendWithUsername given to the function is a boolean value (fixed from being a 0 or 1). If sendWithUsername is true, it will send the message with the username
-  // sends a message to all servers at once
-  if (sendWithUsername) {
-    // $sendWithUsername is true, therefore the message is sent with the username
-    serverFifos.forEach((fifo) => {
-      fifo[0].write(`${message.author.username}: ${message.content}`, () => {});
-    });
-  } else {
-    // sends just the message, no username, nothing because $sendWithUsername is false
-    let toSend = message.content || message;
-    serverFifos.forEach((fifo) => {
-      fifo[0].write(`${toSend}`, () => {});
-    });
-  }
 }
 
 /**
@@ -321,222 +262,13 @@ function getServerFromChannelInput(channelID) {
   }
   return null;
 }
-/**
- * @async
- * @description Search for one item in the database
- * @param {string} databaseName - Database name
- * @param {string} collectionName - Collection name
- * @param {Object} toSearch - "Key" to search for/with
- * @returns {(Object|null)} Object from database's collection or null if not found
- * @see {@link http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#findOne MongoCollection#findOne} for how the function works in more detail
- * @example
- * // returns the object with a property factorioName with the value "oof2win2"
- * await searchOneDB("otherData", "linkedPlayers", {factorioName: "oof2win2"})
- */
-async function searchOneDB(dat, coll, toSearch) {
-  await dBclientConnectionPromise; //just wait so the database is connected
-  // Returns an object of the thing found or null if not found
-  const collection = client.db(databaseName).collection(collectionName);
-  return collection.findOne(toSearch);
-}
-/**
- * @async
- * @description Inserts an object into a specified database's collection
- * @param {string} databaseName - Database name
- * @param {string} collectionName - Collection name
- * @param {Object} toInsert - Object to insert to the database
- * @returns {Object} Object with return values, e.g. the ID of the object, return status etc
- * @see {@link http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#insertOne MongoCollection#insertOne} for how the function works
- * @example
- * // inserts {factorioName: "oof2win2", discordID: "6684"} into the database otherData collection linkedPlayers
- * await insertOneDB("otherData", "linkedPlayers", {factorioName: "oof2win2", discordID: "6684"})
- */
-async function insertOneDB(databaseName, collectionName, toInsert) {
-  await dBclientConnectionPromise; //just wait so the database is connected
-  // To check if written in correctly, use: ret.result.ok (1 if correctly, 0 if written falsely)
-  const collection = client.db(databaseName).collection(collectionName);
-  return collection.insertOne(toInsert);
-}
-/**
- * @async
- * @description Finds specified object and replaces it in the database's collection.
- * @see {@link searchOneDB} to get the object to search for
- * @param {string} databaseName - Database to find and replace in
- * @param {string} collectionName - Collection of database to find and replace in
- * @param {Object} toFind - Object to find (key)
- * @param {Object} toReplace - Object to replace
- * @returns {Object} The original document (toFind) or the document that it has been replaced with (toReplace)
- * @see {@link http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#findOneAndReplace MongoCollection#findOneAndReplace} for how the function works
- * @example
- * // Will replace oof2win2's playtime from 1 to 900
- * findOneAndReplaceDB("otherData", "stats", {playerName: "oof2win2", playtime: 1}, {playerName: "oof2win2", playtime: 900})
- */
-async function findOneAndReplaceDB(
-  databaseName,
-  collectionName,
-  toFind,
-  toReplace
-) {
-  await dBclientConnectionPromise; //just wait so the database is connected
-  // To check if written in correctly, use: ret.result.ok (1 if correctly, 0 if written falsely)
-  const collection = client.db(databaseName).collection(collectionName);
-  return collection.findOneAndReplace(toFind, toReplace);
-}
-/**
- * @async
- * @description Finds and deletes the specified object from the database's collection
- * @see {@link searchOneDB} to get the object to delete
- * @param {string} databaseName
- * @param {string} collectionName
- * @param {Object} params - The object to delete
- * @returns {Object} Object containing: A boolean acknowledged as true if the operation ran with write concern or false if write concern was disabled; deletedCount containing the number of deleted documents
- * @see {@link http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#deleteOne MongoCollection#deleteOne}
- * @example
- * // deletes the object {playerName: "oof2win2", playtime: 6000} from otherData's collection linkedPlayers
- * deleteOneDB("otherData", "linkedPlayers", {playerName: "oof2win2", playtime: 6000})
- */
-async function deleteOneDB(databaseName, collectionName, params) {
-  // deletes the data object {params} from the database dat collection coll
-  // filter is what to delete, see https://docs.mongodb.com/manual/reference/method/db.collection.deleteOne
-  // if params is {}, it will delete the first thing found
-  await dBclientConnectionPromise; //just wait so the database is connected
-  // To check if written in correctly, use: ret.acknowledged (1 if correctly, 0 if written falsely)
-  const collection = client.db(databaseName).collection(collectionName);
-  return collection.deleteOne(params);
-}
-/**
- * @async
- * @description Sends a Factorio command to RCON.
- * @param {string} command - Command to send to the server (auto-prefixed with '/')
- * @param {string} serverName - Name of the server according to the name parameter in servers.json
- * @returns {string[]} Returns an array with 2 elements, first being command output (string). Second element is either a blank string, or a string beginning with "error:" and containing the error given
- * @example
- * // sends /time to server with name TEST in servers.json
- * // returns ["2 days, 28 minutes and 1 second", ""] when succesfull
- * // returns ["", "error: stuff"] when unsuccesfull
- * rconCommand(`/time`, "TEST")
- */
-async function rconCommand(command, serverName) {
-  if (!command.startsWith("/")) command = `/${command}`; //add a '/' if not present
-  let server;
-  Object.keys(servers).forEach((s) => {
-    if (servers[s].name == serverName) server = servers[s];
-  });
-  if (server == null)
-    return ["", `error: no server corresponding to ${serverName}`];
-  let port = parseInt(rconport) + parseInt(server.rconPortOffset); // the port to connect to, ports are one after another
-  try {
-    const rcon = new Rcon.Rcon({
-      host: "127.0.0.1",
-      port: `${port}`,
-      password: `${rconpw}`,
-    });
-    // rcon.on("connect", () => { console.log(`connected ${serverName}`)}); //why spam console
-    rcon.on("error", (e) => {
-      console.log(`rcon error ${serverName}: ${e}`);
-    });
-    // rcon.on("authenticated", () => console.log(`authenticated ${serverName}`)); //why spam console
-    // rcon.on("end", () => console.log(`end ${serverName}`)); //why spam console
-
-    await rcon.connect(); // wait for connecting before continuing
-    let res = await rcon.send(command);
-    let responseType;
-    if (typeof res == "string" &amp;&amp; res.length) responseType = "";
-    else responseType = "error";
-    rcon.end();
-    return [res, responseType];
-  } catch (err) {
-    if (err.stack.startsWith(`Error: connect ECONNREFUSED`)) {
-      console.log(
-        `Connection Error --- Details --- \nNAME: ${err.name} \nDESC: ${err.description} \nStack: ${err.stack}`
-      );
-    } else {
-      console.log(
-        `Connection Error --- Details --- \nNAME: ${err.name} \nDESC: ${err.description} \nStack: ${err.stack}`
-      );
-    }
-    return [err, "error"];
-  }
-}
-/**
- * @async
- * @description Like the function rconCommand but sends the RCON command to all servers
- * @param {string} command - Command to send to server (auto prefixed with '/')
- * @returns {Array&lt;Array, string>} Returns an array of command outputs (arrays) and errors (strings), with the command outputs being same as rconCommand: either ["2 days, 28 minutes and 1 second", ""] or ["", "error: stuff"] if an error occurs. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
- * @see {@link rconCommand} to see how the RCON commands work
- * @example
- * // sends /time to all servers
- * // returns [[["2 days, 28 minutes and 1 second", ""], "CORE"], [["19 days, 5 minutes and 1 second", ""], "AWF-REG"]]
- * // the number of returns and return values depends on the number of servers and age of servers respectively
- * await rconCommandAll("/time")
- */
-async function rconCommandAll(command) {
-  if (!command.startsWith("/")) command = `/${command}`; //add a '/' if not present
-  let serverNames = [];
-  Object.keys(servers).forEach((s) => {
-    serverNames.push(servers[s]);
-  });
-  let promiseArray = serverNames.map((server) => {
-    return new Promise((resolve) => {
-      rconCommand("/p o", server.name)
-        .then((res) => {
-          if (!res[1].startsWith("error")) {
-            resolve([res, server.name]);
-          } else {
-            resolve([res, server.name]);
-          }
-        })
-        .catch((e) => {
-          reject([e, server.name]);
-        });
-    });
-  });
-  return await Promise.all(promiseArray);
-}
-/**
- * @async
- * @description Sends an RCON command to all servers except the ones excluded
- * @param {string} command - Command to send to servers
- * @param {string[]} exclude - Servers to exclude, e.g. ["TEST", "CORE", "AWF-REG"]
- * @returns {Array&lt;Array, string>} Returns an array of command outputs (arrays) and errors (strings), with the command outputs being same as rconCommand: either ["2 days, 28 minutes and 1 second", ""] or ["", "error: stuff"] if an error occurs. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
- * @see {@link rconCommand} to see how the RCON commands work
- * @example
- * // sends /time to all servers except dev server
- * // returns [[["2 days, 28 minutes and 1 second", ""], "CORE"], [["19 days, 5 minutes and 1 second", ""], "AWF-REG"]]
- * // the number of returns and return values depends on the number of servers and age of servers respectively, with the excluded server not being shown as returned
- * await rconCommandAllExclude("/time", ["TEST"])
- */
-async function rconCommandAllExclude(command, exclude) {
-  // exclude is an ARRAY of server names which to exclude
-  if (!command.startsWith("/")) command = `/${command}`; //add a '/' if not present
-  let serverNames = [];
-  Object.keys(servers).forEach((s) => {
-    if (!exclude.includes(servers[s].name)) serverNames.push(servers[s]);
-  });
-  let promiseArray = serverNames.map((server) => {
-    return new Promise((resolve) => {
-      rconCommand("/p o", server.name)
-        .then((res) => {
-          if (!res[1].startsWith("error")) {
-            resolve([res, server.name]);
-          } else {
-            resolve([res, server.name]);
-          }
-        })
-        .catch((e) => {
-          reject([e, server.name]);
-        });
-    });
-  });
-  return await Promise.all(promiseArray);
-}
 
 /**
  * @async
  * @description This function adds the role given to the user in the database, so the user gets the role upon connecting
  * @param {string} username - The name of the player
  * @param {string} roleName - The name of the role you want to give to the player
- * @returns {Object} Output of inserting to database, therefore object with return values, confirmation etc.
+ * @returns {(Object|null)} Output of inserting to database, therefore object with return values, confirmation etc. Returns null if it is in the DB
  * @example
  * // adds "Member" to oof2win2's roles in the database, doesn't actually give the role in-game
  * giveFactorioRole("oof2win2", "Member")
@@ -545,7 +277,7 @@ async function giveFactorioRole(username, roleName) {
   // DO NOT USE THIS FUNCTION TO ASSIGN ROLES
   // adds a factorio role to the database
   // give it a SINGLE ROLE NAME, not the existing roles
-  let res = await searchOneDB("otherData", "playerRoles", {
+  let res = await DatabaseConnection.findOneDB("otherData", "playerRoles", {
     factorioName: username,
   });
   if (res == null) {
@@ -553,11 +285,31 @@ async function giveFactorioRole(username, roleName) {
       factorioName: username,
       roles: [roleName],
     };
-    return await insertOneDB("otherData", "playerRoles", push);
+    return await DatabaseConnection.insertOneDB("otherData", "playerRoles", push);
   } else {
     let toPush = lodash.cloneDeep(res);
-    toPush.roles.push(roleName);
-    return await findOneAndReplaceDB("otherData", "playerRoles", res, toPush);
+    if (!toPush.roles.includes(roleName)) {
+      toPush.roles.push(roleName);
+      return await DatabaseConnection.findOneAndReplaceDB("otherData", "playerRoles", res, toPush);
+    }
+    return false;
+  }
+}
+
+async function removeFactorioRole(username, roleName) {
+  // removes a factorio role to the database
+  // give it a SINGLE ROLE NAME, not the existing roles
+  let res = await DatabaseConnection.findOneDB("otherData", "playerRoles", {
+    factorioName: username,
+  });
+  if (res === undefined) {
+    return false;
+  } else {
+    let toPush = lodash.cloneDeep(res);
+    toPush.roles = toPush.roles.filter(role => {
+      return role != roleName
+    })
+    return await DatabaseConnection.findOneAndReplaceDB("otherData", "playerRoles", res, toPush)
   }
 }
 
@@ -572,13 +324,13 @@ async function giveFactorioRole(username, roleName) {
  * getFactorioRoles("oof2win2")
  */
 async function getFactorioRoles(factorioName) {
-  return await searchOneDB("otherData", "playerRoles", {
+  return DatabaseConnection.findOneDB("otherData", "playerRoles", {
     factorioName: factorioName,
   });
 }
 /**
  * @async
- * @description Gives a plauer roles on a specific server, adds the role to the database if the role is not on the player yet
+ * @description Gives a player roles on a specific server, adds the role to the database if the role is not on the player yet
  * @param {string} factorioName - Name of the Factorio player to assign roles to
  * @param {string} role - Role name to assign on server
  * @param {string} serverName - Name of the server as in servers.json
@@ -589,24 +341,29 @@ async function getFactorioRoles(factorioName) {
  */
 async function givePlayerRoles(factorioName, role, serverName) {
   // This function itself doesnt touch the database, that is done by giveFactorioRole
-  let response = await rconCommand(
-    `/interface local names = {} for i, role in ipairs(Roles.get_player_roles("${factorioName}")) do names[i] = role.name end return names`,
-    serverName
-  );
-  if (response[1] == "error")
-    return console.log(`Error contacting server ${serverName} using RCON`);
-  response = response[0].slice(0, response[0].indexOf("\n"));
-  response = response.slice(
-    response.indexOf("{") + 2,
-    response.indexOf("}") - 1
-  );
-  response = response.replace(/"/g, "");
-  currentRoles = response.split(",  ");
-  if (!currentRoles.includes(role)) {
-    // If the role is not in the database, add it
-    rconCommand(`/assign-role ${factorioName} ${role}`, serverName);
-    giveFactorioRole(factorioName, role);
+  if (serverName !== undefined) {
+    let response = await RconConnectionManager.rconCommand(
+      `/interface local names = {} for i, role in ipairs(Roles.get_player_roles("${factorioName}")) do names[i] = role.name end return names`,
+      serverName
+    );
+    if (typeof(response) == "object")
+      return console.log(`Error contacting server ${serverName} using RCON`);
+    if (response.includes("Unknown command"))
+      return console.log(`Server ${serverName} doesn't have the scenario, therefore no role system`);
+    response = response[0].slice(0, response[0].indexOf("\n"));
+    response = response.slice(
+      response.indexOf("{") + 2,
+      response.indexOf("}") - 1
+    );
+    response = response.replace(/"/g, "");
+    let currentRoles = response.split(",  ");
+    if (!currentRoles.includes(role)) {
+      // If the player doesn't have the role, give it to them
+      RconConnectionManager.rconCommand(`/assign-role ${factorioName} ${role}`, serverName);
+    }
   }
+  // assign the role in the database if it is not there yet
+  giveFactorioRole(factorioName, role);
 }
 /**
  * @async
@@ -619,7 +376,7 @@ async function givePlayerRoles(factorioName, role, serverName) {
  * addDeath("awf-regular", "oof2win2", "locomitive")
  */
 async function addDeath(server, player, reason) {
-  var res = await searchOneDB(server, "deaths", { player: `${player}` });
+  var res = await DatabaseConnection.findOneDB(server, "deaths", { player: `${player}` });
   if (res == null) {
     // if the player wasn't found in the server's database
     var writeObj = {
@@ -628,14 +385,14 @@ async function addDeath(server, player, reason) {
         [reason]: 1,
       },
     };
-    var out = await insertOneDB(server, "deaths", writeObj);
+    var out = await DatabaseConnection.insertOneDB(server, "deaths", writeObj);
     if (out.result.ok !== 1) console.log("error adding to database");
     return;
   } else {
     var replaceWith = lodash.cloneDeep(res); // duplicate the object
     if (replaceWith.deaths[reason]) replaceWith.deaths[reason]++;
     else replaceWith.deaths[reason] = 1;
-    var out = await findOneAndReplaceDB(server, "deaths", res, replaceWith);
+    var out = await DatabaseConnection.findOneAndReplaceDB(server, "deaths", res, replaceWith);
     return;
   }
 }
@@ -648,7 +405,7 @@ async function addDeath(server, player, reason) {
  * addRocket("awf-regular")
  */
 async function addRocket(server) {
-  var res = await searchOneDB(server, "stats", {
+  var res = await DatabaseConnection.findOneDB(server, "stats", {
     rocketLaunches: { $exists: true },
   });
   if (res == null) {
@@ -656,14 +413,14 @@ async function addRocket(server) {
     var writeObj = {
       rocketLaunches: 1,
     };
-    var out = await insertOneDB(server, "stats", writeObj);
+    var out = await DatabaseConnection.insertOneDB(server, "stats", writeObj);
     if (out.result.ok !== 1) console.log("error adding to database");
     return 1;
   } else {
     var replaceWith = await lodash.cloneDeep(res); // duplicate the object
     if (replaceWith.rocketLaunches) replaceWith.rocketLaunches++;
     else replaceWith.rocketLaunches = 1;
-    var out = await findOneAndReplaceDB(server, "stats", res, replaceWith);
+    var out = await DatabaseConnection.findOneAndReplaceDB(server, "stats", res, replaceWith);
     if (typeof out == "object") {
       if (out.ok !== 1) console.log("error adding to database");
     } else {
@@ -680,7 +437,7 @@ async function addRocket(server) {
  * @param {number} level - Level of research
  */
 async function addResearch(server, research, level) {
-  var res = await searchOneDB(server, "stats", { research: "researchData" });
+  var res = await DatabaseConnection.findOneDB(server, "stats", { research: "researchData" });
   if (level &lt; 1) level = 1;
   if (res == null) {
     // if the server's research wasn't found in the server's database (first research)
@@ -690,7 +447,7 @@ async function addResearch(server, research, level) {
         [research]: level,
       },
     };
-    var out = await insertOneDB(server, "stats", writeObj);
+    var out = await DatabaseConnection.insertOneDB(server, "stats", writeObj);
     if (out.result.ok !== 1) console.log("error adding to database");
     return;
   } else {
@@ -698,7 +455,7 @@ async function addResearch(server, research, level) {
     if (res.completedResearch[research] &lt;= 1)
       replaceWith.completedResearch[research]++;
     else replaceWith.completedResearch[research] = level;
-    var out = await findOneAndReplaceDB(server, "stats", res, replaceWith);
+    var out = await DatabaseConnection.findOneAndReplaceDB(server, "stats", res, replaceWith);
     if (typeof out == "object") {
       if (out.ok !== 1) console.log("error adding to database");
     } else {
@@ -735,7 +492,7 @@ async function parseJammyLogger(line, channel) {
     if (line[0] == "PLAYER:") line.shift();
     addDeath(channel.name, line[0], line[1]);
     channel.send(`Player \`${line[0]}\` died due to \`${line[1]}\``);
-    let user = await searchOneDB("otherData", "linkedPlayers", {
+    let user = await DatabaseConnection.findOneDB("otherData", "linkedPlayers", {
       factorioName: line[0],
     });
     if (user == null) return; //non-linked user
@@ -764,7 +521,7 @@ async function parseJammyLogger(line, channel) {
     let built = parseInt(line[1]); // first part of the line
     let time = parseInt(line[2]); // second part of the line
     time = time / (60 * 60); // get time into minutes
-    let user = await searchOneDB("otherData", "linkedPlayers", {
+    let user = await DatabaseConnection.findOneDB("otherData", "linkedPlayers", {
       factorioName: username,
     });
     if (user == null) return; //non-linked user
@@ -787,7 +544,6 @@ async function parseJammyLogger(line, channel) {
  * @returns {Array&lt;string>} Array of strings (server folder names)
  */
 function getServerList() {
-  // TODO: maybe change this to push the whole server objects, might be more useful. also create a dedicated one for filtered servers
   let serverNames = [];
   Object.keys(servers).forEach((element) => {
     if (servers[element].serverFolderName !== "")
@@ -811,93 +567,7 @@ async function runShellCommand(cmd) {
     });
   });
 }
-/**
- * @async
- * @description Links a Factorio and Discord user, goes through the process of linking them. After linking, assigns the Member role to the player where the player issued the command to link themselves
- * @param {Object} discordClient - Discord client object
- * @param {string} factorioName - Factorio name of the user
- * @param {string} discordName - Discord name of the user
- * @param {Object} discordChannelID - Discord Channel ID, used to add roles
- */
-async function linkFactorioDiscordUser(
-  discordClient,
-  factorioName,
-  discordName,
-  discordChannelID
-) {
-  //links the Factorio and Discord usernames, can be used for verification later
-  //discordName is the name and tag of the user, e.g. SomeRandomPerson#0000
-  let factorioServer = getServerFromChannelInput(discordChannelID);
-  let server = await discordClient.guilds.cache.get("548410604679856151");
-  let sendToUser = await server.members.fetch({ query: discordName, limit: 1 });
-  sendToUser = sendToUser.first();
-  let sentMsg = await sendToUser.send(
-    `You have chosen to link your Discord account, \`${discordName}\` with your Factorio account on AwF, \`${factorioName}\`. The request will timeout after 5 minutes of sending. React with :hammer: to re-link your account. If complications arise, please contact devs/admins (relinking is when switching Factorio username, for switching Discord account contact admins/devs. Changing your Discord username **IS NOT** changing an account, whilst changing your Factorio username **is**)`
-  );
-  sentMsg.react("✅");
-  sentMsg.react("🔨");
-  sentMsg.react("❌");
-  const filter = (reaction, user) => {
-    return user.id === sendToUser.id;
-  };
-  // 5*60*1000 to get five minutes to milliseconds
-  sentMsg
-    .awaitReactions(filter, { max: 1, time: 5 * 60 * 1000, errors: ["time"] })
-    .then(async (messageReaction) => {
-      let reaction = messageReaction.first();
-      if (reaction.emoji.name === "❌")
-        return sendToUser.send("Linking cancelled");
-      let dat = { factorioName: factorioName, discordID: sendToUser.id };
-      let found = await searchOneDB("otherData", "linkedPlayers", {
-        discordID: sendToUser.id,
-      });
-      if (found !== null &amp;&amp; reaction.emoji.name === "🔨") {
-        // re-link user
-        let res = await findOneAndReplaceDB(
-          "otherData",
-          "linkedPlayers",
-          found,
-          dat
-        );
-        if (res.ok != 1)
-          return sendToUser.send(
-            "Please contact devs/admins for re-linking, process failed"
-          );
-        //redo statistics
-        let prevStats = await searchOneDB("otherData", "globPlayerStats", {
-          discordID: found.discordID,
-        });
-        let newStats = lodash.cloneDeep(prevStats);
-        newStats.factorioName = factorioName;
-        res = await findOneAndReplaceDB(
-          "otherData",
-          "globPlayerStats",
-          prevStats,
-          newStats
-        );
-        if (res.ok != 1)
-          return sendToUser.send(
-            "Please contact devs/admins for re-linking, process failed"
-          );
-        sendToUser.send("Re-linked succesfully!");
-        givePlayerRoles(factorioName, "Member", factorioServer.name); // give the Member role to new players
-      } else if (found !== null &amp;&amp; reaction.emoji.name === "❌")
-        // cancel, found a user and they
-        return sendToUser.send("Already linked");
-      else if (found === null &amp;&amp; reaction.emoji.name === "✅") {
-        let res = await insertOneDB("otherData", "linkedPlayers", dat);
-        if (res.result.ok == 0)
-          sendToUser.send("Failed linking. Contact devs/admins");
-        else sendToUser.send("Linked successfully");
-        givePlayerRoles(factorioName, "Member", factorioServer.name); // give the Member role to new players
-      }
-    })
-    .catch((out) => {
-      if (out.size == 0)
-        return sendToUser.send(`Didn't react in time. Please try again.`);
-      else return sendToUser.send("Error. Please contact admin/dev");
-    });
-}
+
 /**
  * @async
  * @description Changes the amount of points the player has in the database
@@ -905,8 +575,8 @@ async function linkFactorioDiscordUser(
  * @param {Number} built - Number of entities built to add to statistics
  * @param {Number} time - Number of minutes the user has played
  * @param {Number} death - number of deaths
- * @see {@link searchOneDB} to see how searching database is done
- * @see {@link findOneAndReplaceDB} to how replacing in database is done
+ * @see {@link DatabaseConnection.findOneDB} to see how searching database is done
+ * @see {@link DatabaseConnection.findOneAndReplaceDB} to how replacing in database is done
  * @returns {Array&lt;Object>} an array of the object the data was replaced with, object of the user inputted
  * @example
  * // ex1: oof2win2 built 68 entities and played 93 minutes
@@ -915,7 +585,7 @@ async function linkFactorioDiscordUser(
  * changePoints({factorioName: "oofw2win2", discordID: "69420"}, 0, 0, 1)
  */
 async function changePoints(user, built, time, death = 0) {
-  var res = await searchOneDB("otherData", "globPlayerStats", {
+  var res = await DatabaseConnection.findOneDB("otherData", "globPlayerStats", {
     discordID: user.discordID,
   });
   if (res == null) {
@@ -928,25 +598,29 @@ async function changePoints(user, built, time, death = 0) {
       points: 0,
     };
     res = pushData;
-  } else {
-    let replaceWith = lodash.cloneDeep(res);
-    if (replaceWith.time) replaceWith.time += time;
-    else replaceWith.time = time;
-    if (replaceWith.built) replaceWith.built += built;
-    else replaceWith.built = built;
-    if (death != 0) {
-      if (replaceWith.deaths) replaceWith.deaths += death;
-      else replaceWith.deaths = death;
-      replaceWith.points -= 100 * death; //-100pts for death
-    }
-    if (replaceWith.points == null) replaceWith.points = 0;
-    replaceWith.points += built;
-    replaceWith.points += (time / 60) * 50; //50 pts/h
-    await findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
-    return [replaceWith, user];
   }
+  let replaceWith = lodash.cloneDeep(res);
+  if (replaceWith.time) replaceWith.time += time;
+  else replaceWith.time = time;
+  if (replaceWith.built) replaceWith.built += built;
+  else replaceWith.built = built;
+  if (death != 0) {
+    if (replaceWith.deaths) replaceWith.deaths += death;
+    else replaceWith.deaths = death;
+    replaceWith.points -= 100 * death; //-100pts for death
+  }
+  if (replaceWith.points == null) replaceWith.points = 0;
+  replaceWith.points += built;
+  replaceWith.points += (time / 60) * 50; //50 pts/h
+  await DatabaseConnection.findOneAndReplaceDB("otherData", "globPlayerStats", res, replaceWith);
+  return [replaceWith, user];
 }
 
+let LinkingCache = new CacheManagerClass({
+  checkperiod: 120,
+  stdTTL: 1800, // auto expires after 15 mins
+});
+module.exports.LinkingCache = LinkingCache;
 /**
  * @async
  * @description Parse logging of lines from script-output/ext/awflogging.out into various things, for now joining, leaving and linking
@@ -967,12 +641,17 @@ async function awfLogging(line, discordChannelID, discordClient) {
   */
 
   if (logObject.type == "link") {
-    linkFactorioDiscordUser(
-      discordClient,
-      logObject.playerName,
-      logObject.discordName,
-      discordChannelID
-    );
+    if (logObject.linkID !== undefined)
+      LinkingCache.set(logObject.linkID, logObject.playerName);
+    else {
+      // backwards compatibility. new saves use the new method
+      linkFactorioDiscordUser(
+        discordClient,
+        logObject.playerName,
+        logObject.discordName,
+        discordChannelID
+      );
+    }
   } else if (logObject.type == "join") {
     discordClient.channels.cache
       .get(discordChannelID)
@@ -999,13 +678,15 @@ async function awfLogging(line, discordChannelID, discordClient) {
 async function discordLog(line, discordChannelID, discordClient) {
   // example input
   // {"title":"C","description":"/c was used","color":"0x808080","fields":[{"name":"Server Details","value":"Server: ${serverName} Time: 1 days 0 hours 18 minutes\nTotal: 7 Online: 1 Admins: 1"},{"name":"By","value":"oof2win2","inline":true},{"name":"Details","value":"game.reload_script()","inline":true}]}
+  if (discordChannelID == testserverchannelid) return;
   let objLine = JSON.parse(line);
   objLine.fields[0].value = objLine.fields[0].value.replace(
     "${serverName}",
     discordClient.channels.cache.get(discordChannelID)
   );
   let embed = new MessageEmbed(objLine);
-  discordClient.channels.cache.get("697146357819113553").send(embed); // moderators channel
+  discordClient.channels.cache.get(discordChannelID).send(embed);
+  return discordClient.channels.cache.get("697146357819113553").send(embed); // moderators channel
 }
 /**
  * @async
@@ -1041,30 +722,30 @@ async function datastoreInput(
   );
   if (requestType == "request") {
     // request from database and send back to server
-    let find = await searchOneDB("otherData", collectionName, {
+    let find = await DatabaseConnection.findOneDB("otherData", collectionName, {
       playername: playerName,
     });
     let send;
     if (find == null) send = "";
     else send = JSON.stringify(find.data);
-    rconCommand(
+    RconConnectionManager.rconCommand(
       `/interface Datastore.ingest('request', '${collectionName}', '${playerName}', '${send}')`,
       factorioServer.name
     );
   } else if (requestType == "message") {
     // send to all servers without saving
-    rconCommandAll(
+    RconConnectionManager.rconCommandAll(
       // args is now the rest of the stuff
       `/interface Datastore.ingest('message', '${collectionName}', '${playerName}', '${args}')`
     );
   } else if (requestType == "propagate") {
     // send to all servers except the server the request is coming from and send to database
-    rconCommandAllExclude(
+    RconConnectionManager.rconCommandAllExclude(
       // args is now the rest of the stuff
       `/interface Datastore.ingest('propagate', '${collectionName}', '${playerName}', '${args}')`,
       [`${serverObject.name}`]
     );
-    let find = await searchOneDB("otherData", collectionName, {
+    let find = await DatabaseConnection.findOneDB("otherData", collectionName, {
       playername: playerName,
     });
     if (find == null) {
@@ -1072,16 +753,16 @@ async function datastoreInput(
         playername: playerName,
         data: JSON.parse(args),
       };
-      insertOneDB("otherData", collectionName, send);
+      DatabaseConnection.insertOneDB("otherData", collectionName, send);
     } else {
       let send = lodash.cloneDeep(find);
       send.data = JSON.parse(args);
 
-      findOneAndReplaceDB("otherData", collectionName, find, send);
+      DatabaseConnection.findOneAndReplaceDB("otherData", collectionName, find, send);
     }
   } else if (requestType == "save") {
     // save to database
-    let find = await searchOneDB("otherData", collectionName, {
+    let find = await DatabaseConnection.findOneDB("otherData", collectionName, {
       playername: playerName,
     });
     if (find == null) {
@@ -1089,11 +770,11 @@ async function datastoreInput(
         playername: playerName,
         data: JSON.parse(line),
       };
-      insertOneDB("otherData", collectionName, send);
+      DatabaseConnection.insertOneDB("otherData", collectionName, send);
     } else {
       let send = lodash.cloneDeep(find);
       send.data = JSON.parse(line);
-      findOneAndReplaceDB("otherData", collectionName, find, send);
+      DatabaseConnection.findOneAndReplaceDB("otherData", collectionName, find, send);
     }
   } else if (requestType == "remove") {
     // remove from database
@@ -1101,7 +782,7 @@ async function datastoreInput(
       playername: playerName,
       data: JSON.parse(args),
     };
-    deleteOneDB("otherData", collectionName, toDelete);
+    DatabaseConnection.deleteOneDB("otherData", collectionName, toDelete);
   }
 }
 /**
@@ -1118,14 +799,31 @@ async function datastoreInput(
 async function onJoin(playerName, discordChannelID, discordClient) {
   const froles = await getFactorioRoles(playerName);
   const joinedServer = getServerFromChannelInput(discordChannelID);
-  if (froles == null) return;
-  else {
+  if (froles == null) {
+    RconConnectionManager.rconCommand(`/whisper ${playerName} ${firstJoinMessage}`, joinedServer.name);
+  } else {
     froles.roles.forEach((role) => {
       givePlayerRoles(playerName, role, joinedServer.name);
     });
   }
 }
-</code></pre>
+
+/**
+ * @async
+ * @description Uploads a long string to Pastebin
+ * @param {string} toUpload - String to upload. Can also be a file path
+ * @param {bool} mode - Whether string is a file or not
+ * @returns {string} Link of Pastebin paste
+ */
+async function sendToPastebin(paste, mode = false, pasteName = undefined) {
+  if (mode) {
+    let pasteRes = await pastebin.createPaste(paste, pasteName)
+    return pasteRes;
+  } else {
+    let pasteRes = await pastebin.createPasteFromFile(paste, pasteName)
+    return pasteRes;
+  }
+}</code></pre>
         </article>
     </section>
 
@@ -1135,13 +833,13 @@ async function onJoin(playerName, discordChannelID, discordClient) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addDeath">addDeath</a></li><li><a href="global.html#addResearch">addResearch</a></li><li><a href="global.html#addRocket">addRocket</a></li><li><a href="global.html#awfLogging">awfLogging</a></li><li><a href="global.html#bubbleSort">bubbleSort</a></li><li><a href="global.html#changePoints">changePoints</a></li><li><a href="global.html#datastoreInput">datastoreInput</a></li><li><a href="global.html#deleteOneDB">deleteOneDB</a></li><li><a href="global.html#discordLog">discordLog</a></li><li><a href="global.html#findOneAndReplaceDB">findOneAndReplaceDB</a></li><li><a href="global.html#formatChatData">formatChatData</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatSaveData">formatSaveData</a></li><li><a href="global.html#formatVersion">formatVersion</a></li><li><a href="global.html#getFactorioRoles">getFactorioRoles</a></li><li><a href="global.html#getServerFromChannelInput">getServerFromChannelInput</a></li><li><a href="global.html#getServerList">getServerList</a></li><li><a href="global.html#giveFactorioRole">giveFactorioRole</a></li><li><a href="global.html#givePlayerRoles">givePlayerRoles</a></li><li><a href="global.html#insertOneDB">insertOneDB</a></li><li><a href="global.html#linkFactorioDiscordUser">linkFactorioDiscordUser</a></li><li><a href="global.html#onJoin">onJoin</a></li><li><a href="global.html#parseJammyLogger">parseJammyLogger</a></li><li><a href="global.html#rconCommand">rconCommand</a></li><li><a href="global.html#rconCommandAll">rconCommandAll</a></li><li><a href="global.html#rconCommandAllExclude">rconCommandAllExclude</a></li><li><a href="global.html#runShellCommand">runShellCommand</a></li><li><a href="global.html#searchOneDB">searchOneDB</a></li><li><a href="global.html#sendToAll">sendToAll</a></li><li><a href="global.html#sendToServer">sendToServer</a></li><li><a href="global.html#sortModifiedDate">sortModifiedDate</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_ErrorManager.html">_ErrorManager</a></li><li><a href="-_RconConnectionManager.html">_RconConnectionManager</a></li><li><a href="-_ServerFifoManager.html">_ServerFifoManager</a></li><li><a href="CacheManagerClass.html">CacheManagerClass</a></li><li><a href="DatabaseConnectionClass.html">DatabaseConnectionClass</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addDeath">addDeath</a></li><li><a href="global.html#addResearch">addResearch</a></li><li><a href="global.html#addRocket">addRocket</a></li><li><a href="global.html#awfLogging">awfLogging</a></li><li><a href="global.html#bubbleSort">bubbleSort</a></li><li><a href="global.html#changePoints">changePoints</a></li><li><a href="global.html#datastoreInput">datastoreInput</a></li><li><a href="global.html#discordLog">discordLog</a></li><li><a href="global.html#formatChatData">formatChatData</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatSaveData">formatSaveData</a></li><li><a href="global.html#formatVersion">formatVersion</a></li><li><a href="global.html#getFactorioRoles">getFactorioRoles</a></li><li><a href="global.html#getServerFromChannelInput">getServerFromChannelInput</a></li><li><a href="global.html#getServerList">getServerList</a></li><li><a href="global.html#giveFactorioRole">giveFactorioRole</a></li><li><a href="global.html#givePlayerRoles">givePlayerRoles</a></li><li><a href="global.html#onJoin">onJoin</a></li><li><a href="global.html#parseJammyLogger">parseJammyLogger</a></li><li><a href="global.html#runShellCommand">runShellCommand</a></li><li><a href="global.html#sendToPastebin">sendToPastebin</a></li><li><a href="global.html#sortModifiedDate">sortModifiedDate</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Thu Dec 24 2020 11:21:04 GMT+0100 (Central European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Wed Feb 10 2021 21:07:30 GMT+0100 (Central European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

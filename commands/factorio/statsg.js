@@ -1,6 +1,5 @@
 const Discord = require("discord.js");
-const { searchOneDB } = require("../../functions");
-
+const { DatabaseConnection } = require("../../utils/database-manager");
 module.exports = {
   config: {
     name: "statsg",
@@ -25,7 +24,7 @@ module.exports = {
         user = await server.members.fetch({ query: args[0], limit: 1 });
         user = user.first().user;
       }
-      let data = await searchOneDB("otherData", "globPlayerStats", {
+      let data = await DatabaseConnection.findOneDB("otherData", "globPlayerStats", {
         discordID: user.id,
       });
       if (data == null)

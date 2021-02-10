@@ -251,7 +251,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line593">line 593</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line350">line 350</a>
     </li></ul></dd>
     
 
@@ -440,7 +440,7 @@ addDeath("awf-regular", "oof2win2", "locomitive")</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line654">line 654</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line411">line 411</a>
     </li></ul></dd>
     
 
@@ -577,7 +577,7 @@ addDeath("awf-regular", "oof2win2", "locomitive")</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line622">line 622</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line379">line 379</a>
     </li></ul></dd>
     
 
@@ -766,7 +766,7 @@ addRocket("awf-regular")</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line932">line 932</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line606">line 606</a>
     </li></ul></dd>
     
 
@@ -921,7 +921,7 @@ awfLogging(`{"type":"join","playerName":"oof2win2"}`, "723280139982471247", disc
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line99">line 99</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line89">line 89</a>
     </li></ul></dd>
     
 
@@ -1169,7 +1169,7 @@ awfLogging(`{"type":"join","playerName":"oof2win2"}`, "723280139982471247", disc
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line889">line 889</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line559">line 559</a>
     </li></ul></dd>
     
 
@@ -1179,9 +1179,9 @@ awfLogging(`{"type":"join","playerName":"oof2win2"}`, "723280139982471247", disc
     <dt class="tag-see">See:</dt>
     <dd class="tag-see">
         <ul>
-            <li><a href="global.html#searchOneDB">searchOneDB</a> to see how searching database is done</li>
+            <li>DatabaseConnection.findOneDB to see how searching database is done</li>
         
-            <li><a href="global.html#findOneAndReplaceDB">findOneAndReplaceDB</a> to how replacing in database is done</li>
+            <li>DatabaseConnection.findOneAndReplaceDB to how replacing in database is done</li>
         </ul>
     </dd>
     
@@ -1437,7 +1437,7 @@ changePoints({factorioName: "oofw2win2", discordID: "69420"}, 0, 0, 1)</code></p
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line998">line 998</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line679">line 679</a>
     </li></ul></dd>
     
 
@@ -1480,226 +1480,6 @@ changePoints({factorioName: "oofw2win2", discordID: "69420"}, 0, 0, 1)</code></p
 // In different types ("request" can be other things, see scenario), this function can work with the database
 // in different ways
 datastoreInput("request PlayerData oof2win2", "723280139982471247", discordClient, "dev-dump", serverObject)</code></pre>
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="deleteOneDB"><span class="type-signature">(async) </span>deleteOneDB<span class="signature">(databaseName, collectionName, params)</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Finds and deletes the specified object from the database's collection
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>databaseName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>collectionName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>params</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The object to delete</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line370">line 370</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="global.html#searchOneDB">searchOneDB</a> to get the object to delete</li>
-        
-            <li><a href="http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#deleteOne">MongoCollection#deleteOne</a></li>
-        </ul>
-    </dd>
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    Object containing: A boolean acknowledged as true if the operation ran with write concern or false if write concern was disabled; deletedCount containing the number of deleted documents
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>// deletes the object {playerName: "oof2win2", playtime: 6000} from otherData's collection linkedPlayers
-deleteOneDB("otherData", "linkedPlayers", {playerName: "oof2win2", playtime: 6000})</code></pre>
 
 
 
@@ -1856,7 +1636,7 @@ deleteOneDB("otherData", "linkedPlayers", {playerName: "oof2win2", playtime: 600
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line971">line 971</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line650">line 650</a>
     </li></ul></dd>
     
 
@@ -1896,249 +1676,6 @@ deleteOneDB("otherData", "linkedPlayers", {playerName: "oof2win2", playtime: 600
     
     <pre class="prettyprint"><code>// oof2win2 used /c
 discordLog("{"title":"C","description":"/c was used","color":"0x808080","fields":[{"name":"Server Details","value":"Server: ${serverName} Time: 1 days 0 hours 18 minutes\nTotal: 7 Online: 1 Admins: 1"},{"name":"By","value":"oof2win2","inline":true},{"name":"Details","value":"game.reload_script()","inline":true}]}", "723280139982471247", discordClient)</code></pre>
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="findOneAndReplaceDB"><span class="type-signature">(async) </span>findOneAndReplaceDB<span class="signature">(databaseName, collectionName, toFind, toReplace)</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Finds specified object and replaces it in the database's collection.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>databaseName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Database to find and replace in</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>collectionName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Collection of database to find and replace in</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>toFind</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Object to find (key)</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>toReplace</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Object to replace</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line346">line 346</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="global.html#searchOneDB">searchOneDB</a> to get the object to search for</li>
-        
-            <li><a href="http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#findOneAndReplace">MongoCollection#findOneAndReplace</a> for how the function works</li>
-        </ul>
-    </dd>
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    The original document (toFind) or the document that it has been replaced with (toReplace)
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>// Will replace oof2win2's playtime from 1 to 900
-findOneAndReplaceDB("otherData", "stats", {playerName: "oof2win2", playtime: 1}, {playerName: "oof2win2", playtime: 900})</code></pre>
 
 
 
@@ -2272,7 +1809,7 @@ findOneAndReplaceDB("otherData", "stats", {playerName: "oof2win2", playtime: 1},
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line198">line 198</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line139">line 139</a>
     </li></ul></dd>
     
 
@@ -2437,7 +1974,7 @@ formatChatData("2020-12-16 20:27:45 [CHAT] ZTX: here [gps=0, 0], [item=iron-plat
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line181">line 181</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line122">line 122</a>
     </li></ul></dd>
     
 
@@ -2596,7 +2133,7 @@ formatChatData("2020-12-16 20:27:45 [CHAT] ZTX: here [gps=0, 0], [item=iron-plat
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line172">line 172</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line113">line 113</a>
     </li></ul></dd>
     
 
@@ -2761,7 +2298,7 @@ formatSaveData("[REGULAR] 41300.079 Info AppManager.cpp:306: Saving to _autosave
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line194">line 194</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line135">line 135</a>
     </li></ul></dd>
     
 
@@ -2926,7 +2463,7 @@ formatVersion("    0.000 2020-12-20 01:30:07; Factorio 1.1.6 (build 57355, linux
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line546">line 546</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line298">line 298</a>
     </li></ul></dd>
     
 
@@ -3098,7 +2635,7 @@ getFactorioRoles("oof2win2")</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line286">line 286</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line227">line 227</a>
     </li></ul></dd>
     
 
@@ -3226,7 +2763,7 @@ getFactorioRoles("oof2win2")</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line761">line 761</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line518">line 518</a>
     </li></ul></dd>
     
 
@@ -3284,7 +2821,7 @@ getFactorioRoles("oof2win2")</code></pre>
     
 
     
-    <h4 class="name" id="giveFactorioRole"><span class="type-signature">(async) </span>giveFactorioRole<span class="signature">(username, roleName)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="giveFactorioRole"><span class="type-signature">(async) </span>giveFactorioRole<span class="signature">(username, roleName)</span><span class="type-signature"> &rarr; {Object|null}</span></h4>
     
 
     
@@ -3408,7 +2945,7 @@ getFactorioRoles("oof2win2")</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line516">line 516</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line248">line 248</a>
     </li></ul></dd>
     
 
@@ -3437,7 +2974,7 @@ getFactorioRoles("oof2win2")</code></pre>
 
         
 <div class="param-desc">
-    Output of inserting to database, therefore object with return values, confirmation etc.
+    Output of inserting to database, therefore object with return values, confirmation etc. Returns null if it is in the DB
 </div>
 
 
@@ -3449,6 +2986,9 @@ getFactorioRoles("oof2win2")</code></pre>
     <dd>
         
 <span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
 
 
     </dd>
@@ -3480,7 +3020,7 @@ giveFactorioRole("oof2win2", "Member")</code></pre>
 
 
 <div class="description">
-    Gives a plauer roles on a specific server, adds the role to the database if the role is not on the player yet
+    Gives a player roles on a specific server, adds the role to the database if the role is not on the player yet
 </div>
 
 
@@ -3619,7 +3159,7 @@ giveFactorioRole("oof2win2", "Member")</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line562">line 562</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line314">line 314</a>
     </li></ul></dd>
     
 
@@ -3659,430 +3199,6 @@ giveFactorioRole("oof2win2", "Member")</code></pre>
     
     <pre class="prettyprint"><code>// gives oof2win2 role "Trainee" (they don't have it yet) on server Core
 givePlayerRoles("oof2win2", "Trainee", "CORE")</code></pre>
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="insertOneDB"><span class="type-signature">(async) </span>insertOneDB<span class="signature">(databaseName, collectionName, toInsert)</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Inserts an object into a specified database's collection
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>databaseName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Database name</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>collectionName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Collection name</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>toInsert</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Object to insert to the database</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line326">line 326</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#insertOne">MongoCollection#insertOne</a> for how the function works</li>
-        </ul>
-    </dd>
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    Object with return values, e.g. the ID of the object, return status etc
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>// inserts {factorioName: "oof2win2", discordID: "6684"} into the database otherData collection linkedPlayers
-await insertOneDB("otherData", "linkedPlayers", {factorioName: "oof2win2", discordID: "6684"})</code></pre>
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="linkFactorioDiscordUser"><span class="type-signature">(async) </span>linkFactorioDiscordUser<span class="signature">(discordClient, factorioName, discordName, discordChannelID)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Links a Factorio and Discord user, goes through the process of linking them. After linking, assigns the Member role to the player where the player issued the command to link themselves
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>discordClient</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Discord client object</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>factorioName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Factorio name of the user</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>discordName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Discord name of the user</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>discordChannelID</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Discord Channel ID, used to add roles</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line794">line 794</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -4239,7 +3355,7 @@ await insertOneDB("otherData", "linkedPlayers", {factorioName: "oof2win2", disco
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line1090">line 1090</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line771">line 771</a>
     </li></ul></dd>
     
 
@@ -4412,7 +3528,7 @@ onJoin("oof2win2", "723280139982471247", discordClient)</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line697">line 697</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line454">line 454</a>
     </li></ul></dd>
     
 
@@ -4460,567 +3576,6 @@ onJoin("oof2win2", "723280139982471247", discordClient)</code></pre>
 // first number (116) is number of entities built, second number (43180) is number of ticks played
 // both measured since last time played
 parseJammyLogger("JLOGGER: STATS: Windsinger 116 43180", awf-regularChannelObject)</code></pre>
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="rconCommand"><span class="type-signature">(async) </span>rconCommand<span class="signature">(command, serverName)</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Sends a Factorio command to RCON.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>command</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Command to send to the server (auto-prefixed with '/')</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>serverName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Name of the server according to the name parameter in servers.json</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line391">line 391</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    Returns an array with 2 elements, first being command output (string). Second element is either a blank string, or a string beginning with "error:" and containing the error given
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Array.&lt;string></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>// sends /time to server with name TEST in servers.json
-// returns ["2 days, 28 minutes and 1 second", ""] when succesfull
-// returns ["", "error: stuff"] when unsuccesfull
-rconCommand(`/time`, "TEST")</code></pre>
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="rconCommandAll"><span class="type-signature">(async) </span>rconCommandAll<span class="signature">(command)</span><span class="type-signature"> &rarr; {Array.&lt;Array, string>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Like the function rconCommand but sends the RCON command to all servers
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>command</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Command to send to server (auto prefixed with '/')</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line445">line 445</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="global.html#rconCommand">rconCommand</a> to see how the RCON commands work</li>
-        </ul>
-    </dd>
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    Returns an array of command outputs (arrays) and errors (strings), with the command outputs being same as rconCommand: either ["2 days, 28 minutes and 1 second", ""] or ["", "error: stuff"] if an error occurs. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Array.&lt;Array, string></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>// sends /time to all servers
-// returns [[["2 days, 28 minutes and 1 second", ""], "CORE"], [["19 days, 5 minutes and 1 second", ""], "AWF-REG"]]
-// the number of returns and return values depends on the number of servers and age of servers respectively
-await rconCommandAll("/time")</code></pre>
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="rconCommandAllExclude"><span class="type-signature">(async) </span>rconCommandAllExclude<span class="signature">(command, exclude)</span><span class="type-signature"> &rarr; {Array.&lt;Array, string>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Sends an RCON command to all servers except the ones excluded
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>command</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Command to send to servers</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>exclude</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;string></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Servers to exclude, e.g. ["TEST", "CORE", "AWF-REG"]</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line481">line 481</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="global.html#rconCommand">rconCommand</a> to see how the RCON commands work</li>
-        </ul>
-    </dd>
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    Returns an array of command outputs (arrays) and errors (strings), with the command outputs being same as rconCommand: either ["2 days, 28 minutes and 1 second", ""] or ["", "error: stuff"] if an error occurs. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Array.&lt;Array, string></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>// sends /time to all servers except dev server
-// returns [[["2 days, 28 minutes and 1 second", ""], "CORE"], [["19 days, 5 minutes and 1 second", ""], "AWF-REG"]]
-// the number of returns and return values depends on the number of servers and age of servers respectively, with the excluded server not being shown as returned
-await rconCommandAllExclude("/time", ["TEST"])</code></pre>
 
 
 
@@ -5131,7 +3686,7 @@ await rconCommandAllExclude("/time", ["TEST"])</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line777">line 777</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line533">line 533</a>
     </li></ul></dd>
     
 
@@ -5192,7 +3747,7 @@ await rconCommandAllExclude("/time", ["TEST"])</code></pre>
     
 
     
-    <h4 class="name" id="searchOneDB"><span class="type-signature">(async) </span>searchOneDB<span class="signature">(databaseName, collectionName, toSearch)</span><span class="type-signature"> &rarr; {Object|null}</span></h4>
+    <h4 class="name" id="sendToPastebin"><span class="type-signature">(async) </span>sendToPastebin<span class="signature">(toUpload, mode)</span><span class="type-signature"> &rarr; {string}</span></h4>
     
 
     
@@ -5200,7 +3755,7 @@ await rconCommandAllExclude("/time", ["TEST"])</code></pre>
 
 
 <div class="description">
-    Search for one item in the database
+    Uploads a long string to Pastebin
 </div>
 
 
@@ -5236,7 +3791,7 @@ await rconCommandAllExclude("/time", ["TEST"])</code></pre>
 
         <tr>
             
-                <td class="name"><code>databaseName</code></td>
+                <td class="name"><code>toUpload</code></td>
             
 
             <td class="type">
@@ -5252,20 +3807,20 @@ await rconCommandAllExclude("/time", ["TEST"])</code></pre>
 
             
 
-            <td class="description last">Database name</td>
+            <td class="description last">String to upload. Can also be a file path</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>collectionName</code></td>
+                <td class="name"><code>mode</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">bool</span>
 
 
             
@@ -5275,30 +3830,7 @@ await rconCommandAllExclude("/time", ["TEST"])</code></pre>
 
             
 
-            <td class="description last">Collection name</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>toSearch</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">"Key" to search for/with</td>
+            <td class="description last">Whether string is a file or not</td>
         </tr>
 
     
@@ -5339,19 +3871,12 @@ await rconCommandAllExclude("/time", ["TEST"])</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line308">line 308</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line790">line 790</a>
     </li></ul></dd>
     
 
     
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#findOne">MongoCollection#findOne</a> for how the function works in more detail</li>
-        </ul>
-    </dd>
     
 
     
@@ -5375,7 +3900,7 @@ await rconCommandAllExclude("/time", ["TEST"])</code></pre>
 
         
 <div class="param-desc">
-    Object from database's collection or null if not found
+    Link of Pastebin paste
 </div>
 
 
@@ -5386,342 +3911,13 @@ await rconCommandAllExclude("/time", ["TEST"])</code></pre>
     </dt>
     <dd>
         
-<span class="param-type">Object</span>
-|
-
-<span class="param-type">null</span>
+<span class="param-type">string</span>
 
 
     </dd>
 </dl>
 
     
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>// returns the object with a property factorioName with the value "oof2win2"
-await searchOneDB("otherData", "linkedPlayers", {factorioName: "oof2win2"})</code></pre>
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="sendToAll"><span class="type-signature"></span>sendToAll<span class="signature">(message, sendWithUsername)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Send a message to all servers (announcement or something)
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>message</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Message to send, format of DiscordMessage</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>sendWithUsername</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">bool</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Whether to send message with username or not</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line146">line 146</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="sendToServer"><span class="type-signature"></span>sendToServer<span class="signature">(message, sendWithUsername)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Sends a message to only one server
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>message</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Discord message object to send to Factorio server. Used for which server to send to by getting the server by channel ID</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>sendWithUsername</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">bool</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Whether to send with username or not</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line120">line 120</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -5834,7 +4030,7 @@ await searchOneDB("otherData", "linkedPlayers", {factorioName: "oof2win2"})</cod
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line72">line 72</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line61">line 61</a>
     </li></ul></dd>
     
 
@@ -5918,13 +4114,13 @@ sortModifiedDate("./commands/basic")
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addDeath">addDeath</a></li><li><a href="global.html#addResearch">addResearch</a></li><li><a href="global.html#addRocket">addRocket</a></li><li><a href="global.html#awfLogging">awfLogging</a></li><li><a href="global.html#bubbleSort">bubbleSort</a></li><li><a href="global.html#changePoints">changePoints</a></li><li><a href="global.html#datastoreInput">datastoreInput</a></li><li><a href="global.html#deleteOneDB">deleteOneDB</a></li><li><a href="global.html#discordLog">discordLog</a></li><li><a href="global.html#findOneAndReplaceDB">findOneAndReplaceDB</a></li><li><a href="global.html#formatChatData">formatChatData</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatSaveData">formatSaveData</a></li><li><a href="global.html#formatVersion">formatVersion</a></li><li><a href="global.html#getFactorioRoles">getFactorioRoles</a></li><li><a href="global.html#getServerFromChannelInput">getServerFromChannelInput</a></li><li><a href="global.html#getServerList">getServerList</a></li><li><a href="global.html#giveFactorioRole">giveFactorioRole</a></li><li><a href="global.html#givePlayerRoles">givePlayerRoles</a></li><li><a href="global.html#insertOneDB">insertOneDB</a></li><li><a href="global.html#linkFactorioDiscordUser">linkFactorioDiscordUser</a></li><li><a href="global.html#onJoin">onJoin</a></li><li><a href="global.html#parseJammyLogger">parseJammyLogger</a></li><li><a href="global.html#rconCommand">rconCommand</a></li><li><a href="global.html#rconCommandAll">rconCommandAll</a></li><li><a href="global.html#rconCommandAllExclude">rconCommandAllExclude</a></li><li><a href="global.html#runShellCommand">runShellCommand</a></li><li><a href="global.html#searchOneDB">searchOneDB</a></li><li><a href="global.html#sendToAll">sendToAll</a></li><li><a href="global.html#sendToServer">sendToServer</a></li><li><a href="global.html#sortModifiedDate">sortModifiedDate</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_ErrorManager.html">_ErrorManager</a></li><li><a href="-_RconConnectionManager.html">_RconConnectionManager</a></li><li><a href="-_ServerFifoManager.html">_ServerFifoManager</a></li><li><a href="CacheManagerClass.html">CacheManagerClass</a></li><li><a href="DatabaseConnectionClass.html">DatabaseConnectionClass</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addDeath">addDeath</a></li><li><a href="global.html#addResearch">addResearch</a></li><li><a href="global.html#addRocket">addRocket</a></li><li><a href="global.html#awfLogging">awfLogging</a></li><li><a href="global.html#bubbleSort">bubbleSort</a></li><li><a href="global.html#changePoints">changePoints</a></li><li><a href="global.html#datastoreInput">datastoreInput</a></li><li><a href="global.html#discordLog">discordLog</a></li><li><a href="global.html#formatChatData">formatChatData</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatSaveData">formatSaveData</a></li><li><a href="global.html#formatVersion">formatVersion</a></li><li><a href="global.html#getFactorioRoles">getFactorioRoles</a></li><li><a href="global.html#getServerFromChannelInput">getServerFromChannelInput</a></li><li><a href="global.html#getServerList">getServerList</a></li><li><a href="global.html#giveFactorioRole">giveFactorioRole</a></li><li><a href="global.html#givePlayerRoles">givePlayerRoles</a></li><li><a href="global.html#onJoin">onJoin</a></li><li><a href="global.html#parseJammyLogger">parseJammyLogger</a></li><li><a href="global.html#runShellCommand">runShellCommand</a></li><li><a href="global.html#sendToPastebin">sendToPastebin</a></li><li><a href="global.html#sortModifiedDate">sortModifiedDate</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Thu Dec 24 2020 11:21:04 GMT+0100 (Central European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Wed Feb 10 2021 21:07:30 GMT+0100 (Central European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

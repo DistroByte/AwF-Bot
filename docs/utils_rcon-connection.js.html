@@ -1,4 +1,32 @@
-const { rconport, rconpw } = require("../botconfig.json");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: utils/rcon-connection.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: utils/rcon-connection.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const { rconport, rconpw } = require("../botconfig.json");
 const Rcon = require("rcon-client");
 const serversJSON = require("../servers.json");
 const { Message, MessageEmbed } = require("discord.js");
@@ -29,23 +57,23 @@ class _RconConnectionManager {
             try {
                 await rcon.connect();
             } catch (error) {
-                ErrorManager.Error(`Error connecting with RCON to <#${serversJSON[serverKey].discordChannelID}>`);
+                ErrorManager.Error(`Error connecting with RCON to &lt;#${serversJSON[serverKey].discordChannelID}>`);
             }
             this._rconConnections.push({
                 connection: rcon,
                 serverObject: serversJSON[serverKey]
             });
             rcon.on('connect', () => {
-                ErrorManager.Error(`Server <#${serversJSON[serverKey].discordChannelID}>: RCON connected`);
+                ErrorManager.Error(`Server &lt;#${serversJSON[serverKey].discordChannelID}>: RCON connected`);
             });
             rcon.on('error', () => {
-                ErrorManager.Error(`Server <#${serversJSON[serverKey].discordChannelID}>: RCON error. Attempting reconnect in 30s`);
+                ErrorManager.Error(`Server &lt;#${serversJSON[serverKey].discordChannelID}>: RCON error. Attempting reconnect in 30s`);
                 setTimeout(async () => {
                     await rcon.connect();
                 }, 30000);
             })
             rcon.on('end', () => {
-                ErrorManager.Error(`Server <#${serversJSON[serverKey].discordChannelID}>: RCON connection died. Attempting reconnect in 30s`);
+                ErrorManager.Error(`Server &lt;#${serversJSON[serverKey].discordChannelID}>: RCON connection died. Attempting reconnect in 30s`);
                 setTimeout(async () => {
                     await rcon.connect();
                 }, 30000);
@@ -91,7 +119,7 @@ class _RconConnectionManager {
         }
         try {
             let resp = await server.connection.send(command);
-            if (typeof resp == "string" && resp.length) return resp;
+            if (typeof resp == "string" &amp;&amp; resp.length) return resp;
             else throw new Error("No length");
         } catch (error) {
             ErrorManager.Error(`RCON Error --- Details --- \nNAME: ${error.name} \nDESC: ${error.description}`);
@@ -103,7 +131,7 @@ class _RconConnectionManager {
      * @async
      * @description Like the function rconCommand but sends the RCON command to all servers
      * @param {string} command - Command to send to server (auto prefixed with '/')
-     * @returns {Array<Array<string, string>>} Returns an array of command outputs (strings), with the command outputs being same as {@link rconCommand}. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
+     * @returns {Array&lt;Array&lt;string, string>>} Returns an array of command outputs (strings), with the command outputs being same as {@link rconCommand}. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
      * @see {@link rconCommand} to see how the RCON commands work
      * @example
      * // sends /time to all servers
@@ -131,7 +159,7 @@ class _RconConnectionManager {
      * Sends a command to all Factorio servers excluding one
      * @param {string} command - Command to send to Factorio (automatically prefixed with '/')
      * @param {string} exclusionServerIdentifiers - Discord channel ID, server name from servers.json, Discord channel name used to identify server to exclude from
-     * @returns {Array<Array<string, string>>} Returns an array of command outputs (strings), with the command outputs being same as {@link rconCommand}. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
+     * @returns {Array&lt;Array&lt;string, string>>} Returns an array of command outputs (strings), with the command outputs being same as {@link rconCommand}. Example return is [["2 days, 28 minutes and 1 second", ""], "CORE"]
      * @see {@link rconCommandAll}
      */
     async rconCommandAllExclude(command, exclusionServerIdentifiers) {
@@ -177,4 +205,26 @@ class _RconConnectionManager {
 let RconConnectionManager = new _RconConnectionManager();
 module.exports = {
     RconConnectionManager,
-}
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_ErrorManager.html">_ErrorManager</a></li><li><a href="-_RconConnectionManager.html">_RconConnectionManager</a></li><li><a href="-_ServerFifoManager.html">_ServerFifoManager</a></li><li><a href="CacheManagerClass.html">CacheManagerClass</a></li><li><a href="DatabaseConnectionClass.html">DatabaseConnectionClass</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addDeath">addDeath</a></li><li><a href="global.html#addResearch">addResearch</a></li><li><a href="global.html#addRocket">addRocket</a></li><li><a href="global.html#awfLogging">awfLogging</a></li><li><a href="global.html#bubbleSort">bubbleSort</a></li><li><a href="global.html#changePoints">changePoints</a></li><li><a href="global.html#datastoreInput">datastoreInput</a></li><li><a href="global.html#discordLog">discordLog</a></li><li><a href="global.html#formatChatData">formatChatData</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatSaveData">formatSaveData</a></li><li><a href="global.html#formatVersion">formatVersion</a></li><li><a href="global.html#getFactorioRoles">getFactorioRoles</a></li><li><a href="global.html#getServerFromChannelInput">getServerFromChannelInput</a></li><li><a href="global.html#getServerList">getServerList</a></li><li><a href="global.html#giveFactorioRole">giveFactorioRole</a></li><li><a href="global.html#givePlayerRoles">givePlayerRoles</a></li><li><a href="global.html#onJoin">onJoin</a></li><li><a href="global.html#parseJammyLogger">parseJammyLogger</a></li><li><a href="global.html#runShellCommand">runShellCommand</a></li><li><a href="global.html#sendToPastebin">sendToPastebin</a></li><li><a href="global.html#sortModifiedDate">sortModifiedDate</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Wed Feb 10 2021 21:07:30 GMT+0100 (Central European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

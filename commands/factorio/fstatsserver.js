@@ -1,5 +1,6 @@
 const Discord = require("discord.js");
-const { searchOneDB, getServerFromChannelInput } = require("../../functions");
+const { getServerFromChannelInput } = require("../../functions");
+const { DatabaseConnection } = require("../../utils/database-manager");
 const { RconConnectionManager } = require("../../utils/rcon-connection");
 
 module.exports = {
@@ -14,13 +15,13 @@ module.exports = {
   run: async (client, message, args) => {
     async function getPlayer(server, message, alternative) {
       const alternativeDB = async(server, alternative) => {
-        return searchOneDB(server, "deaths", { player: alternative });
+        return DatabaseConnection.findOneDB(server, "deaths", { player: alternative });
       }
       if (message.mentions.users.first()) {
-        let linkedPlayer = await searchOneDB("otherData", "linkedPlayers", { discordID: message.mentions.users.first().id });
+        let linkedPlayer = await DatabaseConnection.findOneDB("otherData", "linkedPlayers", { discordID: message.mentions.users.first().id });
         // if the player is linked, it is possible to get their factorio name
         if (linkedPlayer !== null)
-          return await searchOneDB(server, "deaths", { player: linkedPlayer.factorioName });
+          return await DatabaseConnection.findOneDB(server, "deaths", { player: linkedPlayer.factorioName });
         else
           return null;
       } else {
@@ -52,13 +53,13 @@ module.exports = {
           `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
           client.user.displayAvatarURL()
         );
-      let rockets = await searchOneDB(server, "stats", {
+      let rockets = await DatabaseConnection.findOneDB(server, "stats", {
         rocketLaunches: { $exists: true },
       });
       if (rockets == null) rockets = 0;
       else rockets = rockets.rocketLaunches;
       statsEmbed.addField("Rockets launched", rockets);
-      let research = await searchOneDB(server, "stats", {
+      let research = await DatabaseConnection.findOneDB(server, "stats", {
         research: "researchData",
       });
       if (research == null) research = {};

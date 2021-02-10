@@ -1,9 +1,10 @@
 const Discord = require("discord.js");
-const { searchOneDB, getFactorioRoles } = require("../../functions");
+const { getFactorioRoles } = require("../../functions");
 const { LinkingCache } = require("../../functions");
 const { ErrorManager } = require("../../utils/error-manager");
 const lodash = require("lodash");
-let { linkConfirmation } = require("../../config/messages.json")
+let { linkConfirmation } = require("../../config/messages.json");
+const { DatabaseConnection } = require("../../utils/database-manager");
 
 module.exports = {
   config: {
@@ -28,31 +29,35 @@ module.exports = {
       return message.channel.send("Give a Factorio name/Discord ping!")
     let user;
     if (message.mentions.users.first()) {
-      let res = await searchOneDB("otherData", "linkedPlayers", {
+      let res = await DatabaseConnection.findOneDB("otherData", "linkedPlayers", {
         discordID: (message.mentions.users.first()).id,
       })
-      if (res == undefined)
-        return message.channel.send("User not linked!");
+      if (res === undefined || res === null) return message.channel.send("User not linked, therefore has no roles!");
       user = res.factorioName;
     } else {
-      user = args[0];
+      let res = await DatabaseConnection.findOneDB("otherData", "linkedPlayers", {
+        factorioName: args[0],
+      })
+      if (res === undefined || res === null) return message.channel.send("User not linked, therefore has no roles!");
+      user = res.factorioName;
     }
     
     let rolesEmbed = new Discord.MessageEmbed()
-    .setTitle("Roles of a Factorio player")
-    .setDescription("Roles of a Factorio player")
-    .setColor("GREEN")
-    .setAuthor(
-      `${message.guild.me.displayName} Help`,
-      message.guild.iconURL
-    )
-    .setThumbnail(client.user.displayAvatarURL())
-    .setFooter(
-      `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
-      client.user.displayAvatarURL()
-    );
-    const roles = (await getFactorioRoles(user)).roles;
-    rolesEmbed.addField("\u200B", roles.join(", "));
+      .setTitle("Roles of a Factorio player")
+      .setDescription("Roles of a Factorio player")
+      .setColor("GREEN")
+      .setAuthor(
+        `${message.guild.me.displayName} Help`,
+        message.guild.iconURL
+      )
+      .setThumbnail(client.user.displayAvatarURL())
+      .setFooter(
+        `© ${message.guild.me.displayName} | Developed by DistroByte & oof2win2 | Total Commands: ${client.commands.size}`,
+        client.user.displayAvatarURL()
+      );
+    const roles = (await getFactorioRoles(user));
+    if (roles === null || roles === undefined) return message.channel.send('No roles!');
+    rolesEmbed.addField("\u200B", roles.roles.join(", "));
     return message.channel.send(rolesEmbed);
   },
 };
