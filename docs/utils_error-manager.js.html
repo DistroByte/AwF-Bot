@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: utils/error-manager.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: utils/error-manager.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const Queue = require('queue-fifo');
+const { Channel, Message } = require("discord.js")
+
+/**
+ * Class to manage errors and send them to Discord if set to do so
+ */
+class _ErrorManager {
+  constructor() {
+    this._JammyErrChannel = undefined;
+    this._errorQueue = new Queue();
+  }
+  /**
+   * Sets the Jammy error channel so errors can be viewed on Discord
+   * @param {Channel} - Discord channel to set as Jammy error channel
+   */
+  setJammyErrChannel (channel) {
+    if (channel.name) this._JammyErrChannel = channel;
+    else throw new Error("Incorrect channel!");
+  };
+  /**
+   * Sends a message about an error to Discord and logs it to the console
+   * @param {any} error - Anything that can represent an error. An Error class or a string generally
+   * @returns {(Message|null)} Discord message that has been sent with the error or null if it has been added to internal queue
+   */
+  async Error (error) {
+    console.error(error);
+    if (this._JammyErrChannel &amp;&amp; error.description)
+      return this._JammyErrChannel
+        .send(`Error ${error.name}\nDescription: ${error.description}\nStack trace is available in error logs`);
+    else if (this._JammyErrChannel) {
+      return this._JammyErrChannel
+        .send(`Error: ${error}`);
+    }
+    if (error.description)
+      this._errorQueue.enqueue(`Error ${error.name}\nDescription: ${error.description}\nStack trace is available in error logs`);
+    else
+      this._errorQueue.enqueue(`Error: ${error}`);
+    setTimeout(() => {
+      this._trySendErrors()
+    }, 5000);
+    return
+  }
+  /**
+   * Attempts sending errors to Discord
+   */
+  async _trySendErrors() {
+    const tryConnection = () => {
+      setTimeout(() => {
+        this._trySendErrors();
+        console.warn("Attempting sending errors to Discord again...")
+      }, 60000);
+    }
+    if (this._JammyErrChannel.name)
+      this._sendErrors();
+    else {
+      console.error("JammyErrorChannel not assigned!");
+      tryConnection();
+    }
+  }
+  /**
+   * Sends errrors to the Jammy channel once the channel is set with {@link setJammyErrChannel}
+   */
+  async _sendErrors() {
+    while (this._errorQueue.isEmpty() === false) {
+      const toSend = this._errorQueue.dequeue();
+      this._JammyErrChannel.send(toSend);
+    }
+  }
+}
+
+let ErrorManager = new _ErrorManager();
+module.exports = {
+  ErrorManager,
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_ErrorManager.html">_ErrorManager</a></li><li><a href="-_RconConnectionManager.html">_RconConnectionManager</a></li><li><a href="-_ServerFifoManager.html">_ServerFifoManager</a></li><li><a href="CacheManagerClass.html">CacheManagerClass</a></li><li><a href="DatabaseConnectionClass.html">DatabaseConnectionClass</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addDeath">addDeath</a></li><li><a href="global.html#addResearch">addResearch</a></li><li><a href="global.html#addRocket">addRocket</a></li><li><a href="global.html#awfLogging">awfLogging</a></li><li><a href="global.html#bubbleSort">bubbleSort</a></li><li><a href="global.html#changePoints">changePoints</a></li><li><a href="global.html#datastoreInput">datastoreInput</a></li><li><a href="global.html#discordLog">discordLog</a></li><li><a href="global.html#formatChatData">formatChatData</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatSaveData">formatSaveData</a></li><li><a href="global.html#formatVersion">formatVersion</a></li><li><a href="global.html#getFactorioRoles">getFactorioRoles</a></li><li><a href="global.html#getServerFromChannelInput">getServerFromChannelInput</a></li><li><a href="global.html#getServerList">getServerList</a></li><li><a href="global.html#giveFactorioRole">giveFactorioRole</a></li><li><a href="global.html#givePlayerRoles">givePlayerRoles</a></li><li><a href="global.html#onJoin">onJoin</a></li><li><a href="global.html#parseJammyLogger">parseJammyLogger</a></li><li><a href="global.html#runShellCommand">runShellCommand</a></li><li><a href="global.html#sendToPastebin">sendToPastebin</a></li><li><a href="global.html#sortModifiedDate">sortModifiedDate</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Wed Feb 10 2021 21:07:30 GMT+0100 (Central European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
