@@ -1,28 +1,33 @@
-const { ErrorManager } = require("../../utils/error-manager");
-const { clientErrChannelID } = require("../../botconfig.json");
+module.exports = class {
+  constructor(client) {
+    this.client = client;
+  }
 
-module.exports = (client) => {
-  console.log(
-    `${client.user.username} is online: ${new Date().toString().slice(4, 24)}`
-  );
+  async run() {
+    const client = this.client;
+    client.logger.log(`${client.user.tag} is online, serving ${client.users.cache.size} users in ${client.guilds.cache.size} servers.`, 'ready');
 
-  let activities = [
+    // const checkUnmutes = require('../helpers/checkUnmutes.js');
+    // checkUnmutes.init(client);
+
+    const checkReminds = require('../../helpers/checkReminds.js');
+    checkReminds.init(client);
+
+    // const discordbotsorg = require('../helpers/discordbots.org.js');
+    // discordbotsorg.init(client);
+
+    if (client.config.dashboard && client.config.dashboard.enabled) {
+      client.dashboard.load(client);
+    }
+
+    let activities = [
       `${client.guilds.cache.size} servers!`,
       `${client.channels.cache.size} channels!`,
       `${client.users.cache.size} users!`,
     ],
-    i = 0;
-  setInterval(
-    () =>
-      client.user.setActivity(
-        `${client.prefix}help | ${activities[i++ % activities.length]}`,
-        { type: "WATCHING" }
-      ),
-    15000
-  );
-
-  client.channels.fetch(clientErrChannelID)
-    .then(channel => {
-      ErrorManager.setJammyErrChannel(channel);
-    })
-};
+      i = 0;
+    setInterval(() => {
+      client.user.setActivity(`${activities[i++ % activities.length]}`, { type: 'WATCHING' })
+    }, 15000);
+  }
+}
