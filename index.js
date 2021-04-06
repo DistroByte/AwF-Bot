@@ -1,95 +1,60 @@
-/**
- * @file Index file, opening file for the bot. The bot logs in here, loads the commands, events and Factorio handlers.
- */
-const { Client, Collection } = require("discord.js");
-var Tail = require("tail").Tail;
-const chatFormat = require("./chatFormat");
-const { token, prefix, clientErrChannelID } = require("./botconfig.json");
-const servers = require("./servers.json"); // tails, fifo, discord IDs etc.
-const { discordLog, awfLogging, datastoreInput } = require("./functions");
-const fs = require("fs");
+const util = require('util'),
+  fs = require('fs'),
+  readdir = util.promisify(fs.readdir),
+  mongoose = require('mongoose');
 
-// let { RconConnectionManager } = require("./utils/rcon-connection");
-let { ErrorManager } = require('./utils/error-manager');
-let { RconConnectionManager } = require('./utils/rcon-connection');
-let { DatabaseConnection } = require('./utils/database-manager')
+const Comfy = require('./base/Comfy'),
+  client = new Comfy();
 
-// remove all files from ./temp/ dir to prevent random bs
-try {
-  if (!fs.existsSync('./temp/')) fs.mkdirSync('./temp')
-  let tempFiles = fs.readdirSync('./temp/')
-  tempFiles.forEach(file => {
-    fs.rmSync(`./temp/${file}`);
-    console.log(`File ./temp/${file} removed!`)
+const init = async () => {
+
+  // Loads commands
+  const dirs = await readdir('./commands/');
+  dirs.forEach(async (dir) => {
+    const cmds = await readdir(`./commands/${dir}/`);
+    cmds.filter(cmd => cmd.split('.').pop() === 'js').forEach(cmd => {
+      const res = client.loadCommand(`./commands/${dir}`, cmd);
+      if (res) client.logger.log(res, 'error');
+    });
   });
-} catch (error) {
-  console.error(error);
+
+  // Loads events
+  const evtDirs = await readdir('./events/')
+  evtDirs.forEach(async dir => {
+    const evts = await readdir(`./events/${dir}/`);
+    evts.forEach(evt => {
+      const evtName = evt.split('.')[0];
+      const event = new (require(`./events/${dir}/${evt}`))(client);
+      client.on(evtName, (...args) => event.run(...args));
+      delete require.cache[require.resolve(`./events/${dir}/${evt}`)];
+    });
+  });
+
+  client.login(client.config.token);
+
+  let rcon = require("./helpers/rcon")
+  rcon.client = client
+  const serverHandler = require("./helpers/serverHandler")
+  const servers = new serverHandler(client);
+
+  mongoose.connect(client.config.mongoDB, client.config.dbOptions).then(() => {
+    client.logger.log('Database connected', 'log');
+  }).catch(err => client.logger.log('Error connecting to database. Error:' + err, 'error'));
+  mongoose.createConnection(client.config.mongoDB, client.config.dbOptions).then((connection) => connection.useDb("scenario")).then((connection) => {
+    client.logger.log('Second database connected', 'log');
+  }).catch(err => client.logger.log('Error connecting to database. Error:' + err, 'error'));
 }
 
-let serverTails = [];
-let discordLoggingTails = [];
-let awfLoggingTails = [];
-let datastoreTails = [];
-Object.keys(servers).forEach((element) => {
-  awfLoggingTails.push([
-    new Tail(
-      `../servers/${servers[element].serverFolderName}/script-output/ext/awflogging.out`
-    ),
-    servers[element],
-  ]);
-  discordLoggingTails.push([
-    new Tail(
-      `../servers/${servers[element].serverFolderName}/script-output/ext/discord.out`
-    ),
-    servers[element],
-  ]);
-  serverTails.push([new Tail(servers[element].serverOut), servers[element]]);
-  datastoreTails.push([
-    new Tail(
-      `../servers/${servers[element].serverFolderName}/script-output/ext/datastore.out`
-    ),
-    servers[element],
-  ]);
+init();
+
+client.on('disconnect', () => client.logger.log('Bot is disconnecting...', 'warn'))
+  .on('reconnecting', () => client.logger.log('Bot reconnecting...', 'log'))
+  .on('error', (e) => client.logger.log(e, 'error'))
+  .on('warn', (info) => client.logger.log(info, 'warn'));
+
+process.on('unhandledRejection', async (err) => {
+  console.error(err);
 });
 
-const client = new Client();
-
-client.prefix = prefix;
-
-["commands", "aliases"].forEach((x) => (client[x] = new Collection()));
-["command", "event"].forEach((x) => require(`./handlers/${x}`)(client));
-
-client.login(token);
-
-
-// create RCON connections after bot loggging in
-RconConnectionManager.createRcon();
-DatabaseConnection.connect();
-
-serverTails.forEach((element) => {
-  element[0].on("line", function (line) {
-    chatFormat(line, element[1].discordChannelID, client, element[1].name);
-    console.log(`[${element[1].name}] ${line}`);
-  });
-});
-discordLoggingTails.forEach((element) => {
-  element[0].on("line", function (line) {
-    discordLog(line, element[1].discordChannelID, client);
-  });
-});
-awfLoggingTails.forEach((element) => {
-  element[0].on("line", function (line) {
-    awfLogging(line, element[1].discordChannelID, client);
-  });
-});
-datastoreTails.forEach((element) => {
-  element[0].on("line", function (line) {
-    datastoreInput(
-      line,
-      element[1].discordChannelID,
-      client,
-      element[1].discordChannelName,
-      element[1]
-    );
-  });
-});
+// load Prometheus server for data stuff
+require("./base/Prometheus")
