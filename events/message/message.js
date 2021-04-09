@@ -109,7 +109,6 @@ module.exports = class {
     const prefix = client.functions.getPrefix(message, data);
     if (!prefix) {
       fifo.sendToServer(message, true)
-      console.log("sending message!")
       return;
     }
 

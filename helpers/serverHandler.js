@@ -1,7 +1,7 @@
 const Tails = require("../base/Tails")
 const { EventEmitter } = require("events")
 const mongoose = require("mongoose")
-const ServerStatistics = require("../base/serverstatistics")
+const ServerStatistics = require("../base/Serverstatistics")
 
 class serverHandler extends EventEmitter {
   constructor(client) {
@@ -14,6 +14,7 @@ class serverHandler extends EventEmitter {
     Tails.on("playerJoin", (log) => this.playerStuff(log))
     Tails.on("playerLeave", (log) => this.playerStuff(log))
     Tails.on("JLOGGER", (log) => this.jloggerHandler(log))
+    Tails.on("logging", (log) => this.awfLogging(log))
   }
   formatDate(line) {
     return line.trim().slice(line.indexOf("0.000") + 6, 25);
@@ -174,6 +175,12 @@ class serverHandler extends EventEmitter {
           $set: { "evolution.behemoth": true }
         }).then(() => { })
       }
+    }
+  }
+  async awfLogging(data) {
+    let line = JSON.parse(data.line)
+    if (line.type === 'link') {
+      this.client.cache.linkingCache.set(`${line.linkID}`, `${line.playerName}`)
     }
   }
 }

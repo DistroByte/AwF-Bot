@@ -1,6 +1,8 @@
 const nodemailer = require('nodemailer');
 const smtpTransport = require('nodemailer-smtp-transport');
 const { emailUser, emailPass } = require('../config')
+const serversJS = require("../servers")
+const childprocess = require("child_process")
 
 module.exports = {
   getPrefix(message, data) {
@@ -138,4 +140,37 @@ module.exports = {
       }
     })
   },
+  bubbleSort(arr) {
+    var len = arr.length;
+
+    for (var i = 0; i < len; i++) {
+      for (var j = 0; j < len - i - 1; j++) {
+        if (arr[j] > arr[j + 1]) {
+          // swap
+          var temp = arr[j];
+          arr[j] = arr[j + 1];
+          arr[j + 1] = temp;
+        }
+      }
+    }
+    return arr;
+  },
+  getServerFromChannelInput (channelID) {
+    let serverKeys = Object.keys(serversJS);
+    for (let i = 0; i < serverKeys.length; i++) {
+      if (serversJS[serverKeys[i]].discordid == channelID) {
+        return serversJS[serverKeys[i]];
+      }
+    }
+    return null;
+  },
+  async runShellCommand(cmd) {
+  return new Promise((resolve, reject) => {
+    childprocess.exec(cmd, function (error, stdout, stderr) {
+      if (stdout) resolve(stdout);
+      if (stderr) reject(stderr);
+      if (error) reject(error);
+    });
+  });
+}
 }

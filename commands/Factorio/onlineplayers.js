@@ -2,17 +2,17 @@ const { MessageEmbed } = require("discord.js");
 const Command = require("../../base/Command.js");
 const rcon = require("../../helpers/rcon")
 
-class Eightball extends Command {
+class OnlinePlayers extends Command {
   constructor(client) {
     super(client, {
       name: "onlineplayers",
-      description: "I'm telling you the truth!",
+      description: "Get online players on all servers",
       usage: "",
       examples: ["{{p}}onlineplayers"],
       dirname: __dirname,
       enabled: true,
       guildOnly: false,
-      aliases: ["po", "playersomline"],
+      aliases: ["po", "playersonline"],
       memberPermissions: [],
       botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
       nsfw: false,
@@ -36,4 +36,4 @@ class Eightball extends Command {
 
 }
 
-module.exports = Eightball;
+module.exports = OnlinePlayers;

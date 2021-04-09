@@ -29,7 +29,17 @@ const userSchema = new mongoose.Schema({
   afk: { type: String, default: null }, // Whether the member is AFK
   reminds: { type: Array, default: [] }, // the reminds of the user
   logged: { type: Boolean, default: false }, // if the user is logged to the dashboard
-  apiToken: { type: String, default: genToken() } // the api token of the user
+  apiToken: { type: String, default: genToken() }, // the api token of the user
+
+  // factorio linking stuff
+  factorioName: { type: String, default: "" },
+  factorioRoles: [String],
+  factorioStats: {
+    deaths: { type: Number, default: 0 },
+    builtEntities: { type: Number, default: 0 },
+    timePlayed: { type: Number, default: 0 },
+    points: { type: Number, default: 0 },
+  },
 });
 
 userSchema.method('genApiToken', async function () {

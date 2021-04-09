@@ -1,6 +1,7 @@
 const { Client, Collection, MessageEmbed } = require('discord.js');
 const { GiveawaysManager } = require('discord-giveaways');
 const { Player } = require('discord-player');
+const NodeCache = require("node-cache");
 
 const util = require('util'),
   path = require('path'),
@@ -38,6 +39,9 @@ class Comfy extends Client {
     this.databaseCache.usersReminds = new Collection();
     this.databaseCache.mutedUsers = new Collection();
     this.databaseCache.factorioServers = new Collection();
+
+    this.cache = {}
+    this.cache.linkingCache = new NodeCache({stdTTL: 600})
 
     this.authCodes = new Map();
 
