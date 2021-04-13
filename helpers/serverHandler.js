@@ -2,6 +2,7 @@ const Tails = require("../base/Tails")
 const { EventEmitter } = require("events")
 const mongoose = require("mongoose")
 const ServerStatistics = require("../base/Serverstatistics")
+const rcon = require("../helpers/rcon")
 
 class serverHandler extends EventEmitter {
   constructor(client) {
@@ -15,6 +16,7 @@ class serverHandler extends EventEmitter {
     Tails.on("playerLeave", (log) => this.playerStuff(log))
     Tails.on("JLOGGER", (log) => this.jloggerHandler(log))
     Tails.on("logging", (log) => this.awfLogging(log))
+    Tails.on("datastore", (log) => this.datastoreHandler(log))
   }
   formatDate(line) {
     return line.trim().slice(line.indexOf("0.000") + 6, 25);
@@ -79,6 +81,18 @@ class serverHandler extends EventEmitter {
     }
     return data;
   }
+  async _assignRoles(playername, server) {
+    let user = await this.client.findUserFactorioName({ factorioName: playername })
+    if (!user || !user.factorioRoles) return
+    let res = (await rcon.rconCommand(`/interface local names = {} for i, role in ipairs(Roles.get_player_roles("${playername}")) do names[i] = role.name end return names`, server.discordid))
+    if (!res.length)
+      return console.error(res)
+    const roles = res.slice(res.indexOf("{") + 2, res.indexOf("}") - 1).replace(/"/g, "").split(",  ")
+    user.factorioRoles.forEach((role) => {
+      if (!roles.includes(role))
+        rcon.rconCommand(`/interface Roles.assign_player("${playername}", "${role}", "${this.client.user.username}")`, server.discordid).catch(console.error)
+    })
+  }
   async chatHandler(chat) {
     let line = chat.line
     const server = chat.server
@@ -110,10 +124,12 @@ class serverHandler extends EventEmitter {
     const line = data.line
     const server = data.server
     let channel = this.client.channels.cache.get(server.discordid)
-    if (line.type === "join")
-      channel.send(`${this.client.emotes?.playerjoin} ${line.playerName} has joined the game`)
+    if (line.type === "join") {
+      channel?.send(`${this.client.emotes?.playerjoin} ${line.playerName} has joined the game`)
+      this._assignRoles(line.playerName, server).then(() => {})
+    }
     if (line.type === "leave")
-      channel.send(`${this.client.emotes?.playerleave} ${line.playerName} has left the game due to reason ${line.reason}`)
+      channel?.send(`${this.client.emotes?.playerleave} ${line.playerName} has left the game due to reason ${line.reason}`)
   }
   async jloggerHandler(data) {
     let line = data.line
@@ -181,6 +197,79 @@ class serverHandler extends EventEmitter {
     let line = JSON.parse(data.line)
     if (line.type === 'link') {
       this.client.cache.linkingCache.set(`${line.linkID}`, `${line.playerName}`)
+    }
+  }
+  async datastoreHandler(data) {
+    let request = data.line.split(' ')
+    const requestType = request.shift()
+    const collectionName = request.shift()
+    const playerName = request.shift()
+    let line = data.line.slice(
+      // +3 for spaces
+      requestType.length + collectionName.length + playerName.length + 3
+    );
+    if (requestType == "request") {
+      // request from database and send back to server
+      let find = await mongoose.connections[1].client.db("scenario").collection(collectionName).findOne({
+        playername: playerName,
+      })
+      let send;
+      (find) ? send = JSON.stringify(find.data) : send = ""
+      rcon.rconCommand(
+        `/interface Datastore.ingest('request', '${collectionName}', '${playerName}', '${send}')`,
+        data.server.discordid
+      );
+    } else if (requestType == "message") {
+      // send to all servers without saving
+      RconConnectionManager.rconCommandAll(
+        // args is now the rest of the stuff
+        `/interface Datastore.ingest('message', '${collectionName}', '${playerName}', '${args}')`
+      );
+    } else if (requestType == "propagate") {
+      // send to all servers except the server the request is coming from and send to database
+      RconConnectionManager.rconCommandAllExclude(
+        // args is now the rest of the stuff
+        `/interface Datastore.ingest('propagate', '${collectionName}', '${playerName}', '${args}')`,
+        [`${serverObject.name}`]
+      );
+      let find = await mongoose.connections[1].client.db("scenario").collection(collectionName).findOne({
+        playername: playerName,
+      });
+      if (find == null) {
+        let send = {
+          playername: playerName,
+          data: JSON.parse(args),
+        };
+        await mongoose.connections[1].client.db("scenario").collection(collectionName).insertOne(send);
+      } else {
+        let send = lodash.cloneDeep(find);
+        send.data = JSON.parse(args);
+
+        await mongoose.connections[1].client.db("scenario").collection(collectionName).findOneAndReplace(find, send);
+      }
+    } else if (requestType == "save") {
+      // save to database
+      let find = await mongoose.connections[1].client.db("scenario").collection(collectionName).findOne({
+        playername: playerName,
+      })
+      if (find == null) {
+        let send = {
+          playername: playerName,
+          data: JSON.parse(line),
+        };
+        await mongoose.connections[1].client.db("scenario").collection(collectionName).insertOne(send)
+      } else {
+        let send = lodash.cloneDeep(find);
+        send.data = JSON.parse(line);
+        await mongoose.connections[1].client.db("scenario").collection(collectionName).findOneAndReplace(find, send);
+      }
+    } else if (requestType == "remove") {
+      // remove from database
+      let toDelete = {
+        playername: playerName,
+        data: JSON.parse(args),
+      };
+      await mongoose.connections[1].client.db("scenario").collection(collectionName).deleteOne(toDelete);
     }
   }
 }

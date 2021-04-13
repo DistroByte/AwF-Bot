@@ -53,16 +53,12 @@ class Linkme extends Command {
         serverFolder = getServerFromChannelInput(message.mentions.channels.first().id).path;
       else
         serverFolder = args[0];
-      let process = childprocess.exec(`${serverpath}/${serverFolder}/factorio-init/factorio start`, (error, stdout, stderr) => {
-        if (stderr) message.channel.send(`Error stopping: \`${e}\``);
-        if (error) message.channel.send(`Error stopping: \`${e}\``);
-      })
+      let process = childprocess.spawn(`./factorio-init/factorio`, ['start'], { detatched: true, cwd: `${serverpath}/${serverFolder}`})
       // TODO: fix this. factorio-init is tied to this process so i somehow have to stop kill the connection but let factorio-init continue
-      process.on('message', () => {
-        process.disconnect()
-        console.log(process.connected)
-      })
-
+      // process.on('message', () => {
+      //   console.log(process.connected)
+      // })
+      process.unref()
       setTimeout(() => {
         console.log(process.connected)
         runShellCommand(`${serverpath}/${serverFolder}/factorio-init/factorio status`)

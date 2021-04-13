@@ -13,10 +13,10 @@ class tailListener extends EventEmitter {
     this._tailLocations.forEach((tailStuff) => {
       let tail = new Tail(tailStuff.path)
       tail.on('line', (line) => {
+        console.log(line)
         if (line.includes("[CHAT]")) console.log(line)
         if (line.includes(`"join"`)) console.log(line)
         if (line.includes(`"leave"`)) console.log(line)
-        console.log(line, tailStuff.type)
         this.emit("ALL", { line: line, server: tailStuff.server })
         if (line.includes("[CHAT]") && !line.includes("<server>"))
           return this.emit("CHAT", { line: line, server: tailStuff.server })

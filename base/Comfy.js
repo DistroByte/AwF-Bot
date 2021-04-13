@@ -229,6 +229,11 @@ class Comfy extends Client {
       }
     }
   }
+  async findUserFactorioName(toFindWith, isLean) {
+    let userData = (isLean ? await this.usersData.findOne(toFindWith).lean() : await this.usersData.findOne(toFindWith));
+    if (!isLean && userData?.id) this.databaseCache.users.set(userData?.id, userData);
+    return userData;
+  }
 
   convertTime(time, type, noPrefix, locale) {
     if (!type) time = 'to';
