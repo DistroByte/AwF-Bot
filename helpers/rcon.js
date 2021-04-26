@@ -63,7 +63,6 @@ class rconInterface {
     try {
       let resp = await server.rcon.send(command);
       if (typeof resp == "string" && resp.length) return resp;
-      else throw new Error("No length");
     } catch (error) {
       console.error(error);
       return error;

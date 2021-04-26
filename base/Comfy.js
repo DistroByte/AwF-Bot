@@ -2,6 +2,8 @@ const { Client, Collection, MessageEmbed } = require('discord.js');
 const { GiveawaysManager } = require('discord-giveaways');
 const { Player } = require('discord-player');
 const NodeCache = require("node-cache");
+const factorioServers = require("../servers");
+const FIFO = require("fifo")
 
 const util = require('util'),
   path = require('path'),
@@ -11,6 +13,7 @@ const util = require('util'),
 class Comfy extends Client {
   constructor(options) {
     super(options)
+    this.consts = require("../consts")
     this.config = require('../config');
     this.emotes = this.config.emojis;
 
@@ -27,6 +30,32 @@ class Comfy extends Client {
     this.logs = require('./Log');
 
     this.queues = new Collection();
+
+    this.serverQueues = new Map();
+    factorioServers.forEach((server) => {
+      if (!server.discordid) return
+      this.serverQueues.set(server.discordid, {
+        server: server,
+        messageQueue: FIFO(),
+        sendingMessage: false
+      })
+    })
+    setInterval(() => {
+      this.serverQueues.forEach((server) => {
+        if (server.sendingMessage === true) return
+        server.sendingMessage = true
+        let message = ""
+        while (!server.messageQueue.isEmpty()) {
+          let content = server.messageQueue.first()
+          if (message.length + content.length > this.consts.discordMessageLengthLimit) break
+          server.messageQueue.shift()
+          message += `${content}\n`
+        }
+        if (message.length) {
+          this.channels.cache.get(server.server.discordid)?.send(message).then(() => server.sendingMessage = false)
+        } else server.sendingMessage = false
+      })
+    }, 50)
 
     this.states = {};
 
@@ -229,8 +258,8 @@ class Comfy extends Client {
       }
     }
   }
-  async findUserFactorioName(toFindWith, isLean) {
-    let userData = (isLean ? await this.usersData.findOne(toFindWith).lean() : await this.usersData.findOne(toFindWith));
+  async findUserFactorioName(factorioname, isLean) {
+    let userData = (isLean ? await this.usersData.findOne({ factorioName: factorioname }).lean() : await this.usersData.findOne({ factorioName: factorioname }));
     if (!isLean && userData?.id) this.databaseCache.users.set(userData?.id, userData);
     return userData;
   }

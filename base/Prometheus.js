@@ -1,5 +1,6 @@
 const promClient = require('prom-client')
 const http = require('http')
+const serverUPS = require("../helpers/serverUPSHandler")
 
 // TODO: export this whole thing and somehow allow to add in other metrics, such as UPS
 
@@ -15,4 +16,7 @@ http.createServer(async (req, res) => {
   }
 }).listen(9110)
 
-module.exports = promClient
+module.exports = {
+  promClient,
+  register,
+}

@@ -1,12 +1,11 @@
 const Tails = require("../base/Tails")
-const { EventEmitter } = require("events")
 const mongoose = require("mongoose")
 const ServerStatistics = require("../base/Serverstatistics")
 const rcon = require("../helpers/rcon")
+const lodash = require("lodash")
 
-class serverHandler extends EventEmitter {
+class serverHandler {
   constructor(client) {
-    super()
     this.client = client
     this.helpdesk = "723280139982471247" // helpdesk channel
 
@@ -18,13 +17,13 @@ class serverHandler extends EventEmitter {
     Tails.on("logging", (log) => this.awfLogging(log))
     Tails.on("datastore", (log) => this.datastoreHandler(log))
   }
-  formatDate(line) {
+  _formatDate(line) {
     return line.trim().slice(line.indexOf("0.000") + 6, 25);
   }
-  formatVersion(line) {
+  _formatVersion(line) {
     return line.slice(line.indexOf("Factorio"), line.indexOf("(build")).trim();
   }
-  formatChatData(data) {
+  _formatChatData(data) {
     data = data.slice(data.indexOf("]") + 2); //removing the [CHAT] from sending to Discord
     if (data.includes("[")) {
       if (data.replace(/(.*:)\s*\[.*=.*\]\s*/g, "") == "") {
@@ -81,8 +80,15 @@ class serverHandler extends EventEmitter {
     }
     return data;
   }
+  _appendMessage(fromServer, msg) {
+    this.client.serverQueues.forEach((srv) => {
+      if (srv.server.discordid === fromServer.discordid) {
+        srv.messageQueue.push(msg)
+      }
+    })
+  }
   async _assignRoles(playername, server) {
-    let user = await this.client.findUserFactorioName({ factorioName: playername })
+    let user = await this.client.findUserFactorioName(playername)
     if (!user || !user.factorioRoles) return
     let res = (await rcon.rconCommand(`/interface local names = {} for i, role in ipairs(Roles.get_player_roles("${playername}")) do names[i] = role.name end return names`, server.discordid))
     if (!res.length)
@@ -96,19 +102,18 @@ class serverHandler extends EventEmitter {
   async chatHandler(chat) {
     let line = chat.line
     const server = chat.server
-    let channel = this.client.channels.cache.get(server.discordid)
     if (line.includes("?griefer"))
       this.client.channels.fetch(this.helpdesk).then((channel) => channel.send(`Griefer in <#${server.discordid}>!`))
-    line = this.formatChatData(line)
+    line = this._formatChatData(line)
     if (line == "") return
-    channel.send(`:speech_balloon: ${line}`)
+    this._appendMessage(server, `:speech_balloon: ${line}`)
   }
   async outHandler(out) {
     let line = out.line
     const server = out.server
     let channel = this.client.channels.cache.get(server.discordid)
     if (line.includes("; Factorio")) {
-      return channel.setTopic(`Running ${this.formatVersion(line)} since ${this.formatDate(line)}`)
+      return channel.setTopic(`Running ${this._formatVersion(line)} since ${this._formatDate(line)}`)
     }
     if (line.includes("Error")) {
       if (channel.name !== "dev-dump")
@@ -117,19 +122,18 @@ class serverHandler extends EventEmitter {
           .send(`Error in ${channel.name}: ${line}`);
     }
     if (line.includes("Saving game as")) {
-      return channel.send(`${this.client.emotes?.serversave} \`${line.slice(line.lastIndexOf("/") + 1)}\``)
+      return this._appendMessage(server, `${this.client.emotes?.serversave} \`${line.slice(line.lastIndexOf("/") + 1)}\``)
     }
   }
   async playerStuff(data) {
     const line = data.line
     const server = data.server
-    let channel = this.client.channels.cache.get(server.discordid)
     if (line.type === "join") {
-      channel?.send(`${this.client.emotes?.playerjoin} ${line.playerName} has joined the game`)
+      this._appendMessage(server, `${this.client.emotes?.playerjoin} ${line.playerName} has joined the game`)
       this._assignRoles(line.playerName, server).then(() => {})
     }
     if (line.type === "leave")
-      channel?.send(`${this.client.emotes?.playerleave} ${line.playerName} has left the game due to reason ${line.reason}`)
+      this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} has left the game due to reason ${line.reason}`)
   }
   async jloggerHandler(data) {
     let line = data.line
@@ -138,9 +142,9 @@ class serverHandler extends EventEmitter {
     if (line.includes("RESEARCH FINISHED:")) {
       const research = line.slice(line.indexOf("RES") + ("RESEARCH FINISHED:").length).trim().split(" ")[0]
       const level = line.slice(line.indexOf("RES") + ("RESEARCH FINISHED:").length).trim().split(" ")[1]
-      channel.send(`${this.client.emotes?.sciencepack} ${research} at level ${level} has been researched!`)
+      this._appendMessage(server, `${this.client.emotes?.sciencepack} ${research} at level ${level} has been researched!`)
       if (research === "logistic-robotics")
-        channel.send(`${this.client.emotes?.logibots} Is it a bird? Is it a plane...?`)
+        this._appendMessage(server, `${this.client.emotes?.logibots} Is it a bird? Is it a plane...?`)
       ServerStatistics.findOneAndUpdate({ serverID: server.discordid }, {
         $push: { completedResearch: { name: research, level: level } }
       }).then(() => { })
@@ -153,7 +157,14 @@ class serverHandler extends EventEmitter {
         line[1] = `Player ${line[1]}`;
       }
       if (line[0] == "PLAYER:") line.shift();
-      channel.send(`${this.client.emotes?.playerdeath} ${line[0]} died due to ${line[1]}`);
+      this._appendMessage(server, `${this.client.emotes?.playerdeath} ${line[0]} died due to ${line[1]}`);
+      
+      let user = await this.client.findUserFactorioName(line[0])
+      console.log(user.factorioStats)
+      user.factorioStats.deaths++
+      user.factorioStats.points -= 100
+      console.log(user.factorioStats)
+      user.save().then(() => { })
     }
     if (line.includes("ROCKET: ")) {
       let serverStats = await ServerStatistics.findOneAndUpdate({ serverID: server.discordid }, {
@@ -167,11 +178,11 @@ class serverHandler extends EventEmitter {
           completedResearch: []
         })
       if (serverStats.rocketLaunches === 1)
-        return channel.send(`:rocket: Hooray! This server's first rocket has been sent!`)
+        return this._appendMessage(server, `:rocket: Hooray! This server's first rocket has been sent!`)
       let rockets = 10
       for (let i = 0; i < 50; i++) {
         if (serverStats.rocketLaunches === rockets) {
-          return channel.send(`:rocket: Hooray! This server has sent ${rockets} rockets!`)
+          return this._appendMessage(server, `:rocket: Hooray! This server has sent ${rockets} rockets!`)
         }
         rockets *= 2
       }
@@ -180,17 +191,43 @@ class serverHandler extends EventEmitter {
       let evolution = parseFloat(line.slice(line.indexOf("EVOLUTION: ") + ("EVOLUTION: ").length))
       let serverstats = await ServerStatistics.findOne({ serverID: server.discordid })
       if (evolution.toFixed(2) == 0.33 && !serverstats.evolution.big) {
-        channel.send(`${this.client.emotes?.bigspitter} Evolution is now 0.33!`)
+        this._appendMessage(server, `${this.client.emotes?.bigspitter} Evolution is now 0.33!`)
         ServerStatistics.findOneAndUpdate({ serverID: server.discordid }, {
           $set: { "evolution.big": true }
         }).then(() => { })
       }
       if (evolution.toFixed(2) == 0.66 && !serverstats.evolution.behemoth) {
-        channel.send(`${this.client.emotes?.behemothspitter} Evolution is now 0.66! Green boys inc!`)
+        this._appendMessage(server, `${this.client.emotes?.behemothspitter} Evolution is now 0.66! Green boys inc!`)
         ServerStatistics.findOneAndUpdate({ serverID: server.discordid }, {
           $set: { "evolution.behemoth": true }
         }).then(() => { })
       }
+    }
+    if (line.includes("STATS: ")) {
+      let tmp = line.slice(line.indexOf("STATS: ") + "STATS: ".length).split(" ")
+      let playername = tmp.shift()
+      let builtEntities = parseInt(tmp.shift())
+      let playTime = parseInt(tmp.shift())
+      let user = await this.client.findUserFactorioName(playername)
+      if (!user) return // don't run on people who don't have stuff
+      const addHoursPlayed = (parseInt(playTime)/54000)/4 // 54000 ticks in 15 mins, 15*60*60, 60 minutes in an hour
+      const totHoursPlayed = ((parseInt(playTime) + user.factorioStats.timePlayed)/54000)/4
+      user.factorioStats.builtEntities += builtEntities
+      user.factorioStats.timePlayed +=  playTime
+      user.factorioStats.points += builtEntities
+      user.factorioStats.points += addHoursPlayed * 50
+      if (totHoursPlayed > this.client.consts.veteranUserHours) {
+        if (!user.factorioRoles.includes(this.client.config.factorioRoles.veteran.name)) {
+          this.client.guilds.fetch(this.client.consts.guildid).then((guild) => {
+            guild.members.fetch(user.id).then((guildmember) => {
+              guildmember.roles.add(this.client.config.factorioRoles.veteran.id).then(() => {}) // add Veteran role on Discord
+            })
+          })
+          user.factorioRoles.push(this.client.config.factorioRoles.veteran.name) // add role to DB
+          user.save().then(() => this._assignRoles(playername, server).then(() => { })) // assign roles in-game
+        }
+      }
+      else user.save().then(() => {}) // normal save
     }
   }
   async awfLogging(data) {
