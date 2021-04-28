@@ -33,8 +33,8 @@ class rconInterface {
                 clearInterval(interval)
               }).catch(() => {})
               i++
-              if (i === 12) { // 5 minutes
-                clearInterval(interval)
+              if (i === 60) { // 5 minutes
+                // clearInterval(interval) // just keep trying to reconnect
                 this.client?.channels.fetch(errorchannel).then((channel) => channel.send(`Server <#${server.server.discordid}> is having RCON issues`))
               }
             } catch (error) {}

@@ -9,6 +9,21 @@ const Registry = promClient.Registry;
 const register = new Registry();
 collectDefaultMetrics({ register });
 
+const upsGauge = new promClient.Gauge({
+  name: 'factorio_server_ups',
+  help: 'Factorio server UPS',
+  labelNames: ['server'],
+})
+
+setInterval(() => {
+  let data = serverUPS.exportData()
+  data.forEach((server) => {
+    upsGauge.set({ server: server.name }, server.ups)
+  })
+}, 1000)
+
+register.registerMetric(upsGauge)
+
 // Server for data collection
 http.createServer(async (req, res) => {
   if (req.url.endsWith("/metrics")) {
