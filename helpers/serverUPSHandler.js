@@ -2,7 +2,7 @@ const rcon = require("./rcon")
 const Tails = require("../base/Tails")
 const serversJS = require("../servers")
 
-// TODO: export to Prometheus
+// Known issue: servers will report a UPS of 0 if the bot starts and nobody is online on the server
 
 class _UPSHandler {
   constructor(servers) {
