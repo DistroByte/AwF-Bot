@@ -3,6 +3,7 @@ const mongoose = require("mongoose")
 const ServerStatistics = require("../base/Serverstatistics")
 const rcon = require("../helpers/rcon")
 const lodash = require("lodash")
+const { MessageEmbed } = require("discord.js")
 
 class serverHandler {
   constructor(client) {
@@ -16,6 +17,7 @@ class serverHandler {
     Tails.on("JLOGGER", (log) => this.jloggerHandler(log))
     Tails.on("logging", (log) => this.awfLogging(log))
     Tails.on("datastore", (log) => this.datastoreHandler(log))
+    Tails.on("discord", (log) => this.discordHandler(log))
   }
   _formatDate(line) {
     return line.trim().slice(line.indexOf("0.000") + 6, 25);
@@ -308,6 +310,12 @@ class serverHandler {
       };
       await mongoose.connections[1].client.db("scenario").collection(collectionName).deleteOne(toDelete);
     }
+  }
+  async discordHandler(data) {
+    const message = data.line.replace("${serverName}", `<#${data.server.discordid}>`)
+    const embed = JSON.parse(message)
+    this.client.channels.cache.get(data.server.discordid)?.send((new MessageEmbed(embed)))
+    this.client.channels.cache.get(this.client.config.moderatorchannel)?.send((new MessageEmbed(embed)))
   }
 }
 module.exports = serverHandler

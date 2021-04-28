@@ -37,6 +37,8 @@ servers.forEach((server) => {
     tailLocations.push({ path: `${config.serverpath}/${server.path}/${config.watchable.awfLogging}`, server: server, type: "logging" })
   if (server.toWatch.datastore)
     tailLocations.push({ path: `${config.serverpath}/${server.path}/${config.watchable.datastore}`, server: server, type: "datastore" })
+  if (server.toWatch.discord)
+    tailLocations.push({ path: `${config.serverpath}/${server.path}/${config.watchable.discord}`, server: server, type: "discord" })
 })
 
 const listen = new tailListener(tailLocations)
