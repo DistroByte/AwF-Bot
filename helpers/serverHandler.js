@@ -18,6 +18,7 @@ class serverHandler {
     Tails.on("logging", (log) => this.awfLogging(log))
     Tails.on("datastore", (log) => this.datastoreHandler(log))
     Tails.on("discord", (log) => this.discordHandler(log))
+    Tails.on("ALL", (log) => this.allHandler(log))
   }
   _formatDate(line) {
     return line.trim().slice(line.indexOf("0.000") + 6, 25);
@@ -316,6 +317,10 @@ class serverHandler {
     const embed = JSON.parse(message)
     this.client.channels.cache.get(data.server.discordid)?.send((new MessageEmbed(embed)))
     this.client.channels.cache.get(this.client.config.moderatorchannel)?.send((new MessageEmbed(embed)))
+  }
+  async allHandler(data) {
+    if (data.line.toLowerCase().includes("error"))
+      this.client.channels.cache.get(this.client.config.errorchannel)?.send(`Error in <#${data.server.discordid}>\n${data.line}`)
   }
 }
 module.exports = serverHandler

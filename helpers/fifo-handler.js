@@ -8,6 +8,7 @@ class _ServerFifoManager {
   constructor() {
     this.usedFifos = [];
     this.unusedFifos = [];
+    this.client = undefined;
     serversJS.forEach((server) => {
       try {
         this.usedFifos.push({
@@ -27,8 +28,10 @@ class _ServerFifoManager {
           this.usedFifos = this.usedFifos.filter((currentFifo) => {
             if (!currentFifo.serverObject.dev)
               return currentFifo;
-            if (currentFifo.serverObject.dev)
+            if (currentFifo.serverObject.dev) {
               this.unusedFifos.push(currentFifo);
+              this.client?.logger.log("Turning dev server logging offline. Dev bot online", 'debug')
+            }
           });
         }
       });
@@ -36,6 +39,7 @@ class _ServerFifoManager {
 
     // test bot is now offline
     if (newPresence.status == "offline") {
+      this.client?.logger.log("Turning dev server logging online. Dev bot offline", 'debug')
       this.unusedFifos = this.unusedFifos.filter((currentFifo) => {
         this.usedFifos.push(currentFifo);
       })

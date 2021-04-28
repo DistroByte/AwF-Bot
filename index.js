@@ -56,5 +56,12 @@ process.on('unhandledRejection', async (err) => {
   console.error(err);
 });
 
+
+// add client to classes for logging
+const fifoHandler = require("./helpers/fifo-handler")
+const Tails = require("./base/Tails")
+fifoHandler.client = client
+Tails.client = client
+
 // load Prometheus server for data stuff
 require("./base/Prometheus")

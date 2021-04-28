@@ -6,6 +6,7 @@ const config = require("../config")
 class tailListener extends EventEmitter {
   constructor(tailLocations) {
     super()
+    this.client = undefined
     this._tailLocations = tailLocations
     this.init()
   }
@@ -13,7 +14,8 @@ class tailListener extends EventEmitter {
     this._tailLocations.forEach((tailStuff) => {
       let tail = new Tail(tailStuff.path)
       tail.on('line', (line) => {
-        console.log(`${tailStuff.server.name}: ${line}`)
+        if (line.includes("[CHAT]"))
+          this.client?.ws ? this.client.logger.log(`${tailStuff.server.name}: ${line}`) : console.log(`${tailStuff.server.name}: ${line}`)
         this.emit("ALL", { line: line, server: tailStuff.server })
         if (line.includes("[CHAT]") && !line.includes("<server>"))
           return this.emit("CHAT", { line: line, server: tailStuff.server })
