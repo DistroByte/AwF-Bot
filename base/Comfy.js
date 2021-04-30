@@ -1,5 +1,4 @@
 const { Client, Collection, MessageEmbed } = require('discord.js');
-const { GiveawaysManager } = require('discord-giveaways');
 const NodeCache = require("node-cache");
 const factorioServers = require("../servers");
 const FIFO = require("fifo")
@@ -28,8 +27,6 @@ class Comfy extends Client {
     this.membersData = require('./Member');
     this.logs = require('./Log');
 
-    this.queues = new Collection();
-
     this.serverQueues = new Map();
     factorioServers.forEach((server) => {
       if (!server.discordid) return
@@ -46,9 +43,9 @@ class Comfy extends Client {
         let message = ""
         while (!server.messageQueue.isEmpty()) {
           let content = server.messageQueue.first()
-          if (message.length + content.length > this.consts.discordMessageLengthLimit) break
+          if (message.length + server.messageQueue.first().length > this.consts.discordMessageLengthLimit) break
           server.messageQueue.shift()
-          message += `${content}\n`
+          message += `${server.messageQueue.first()}\n`
         }
         if (message.length) {
           this.channels.cache.get(server.server.discordid)?.send(message).then(() => server.sendingMessage = false)
@@ -72,20 +69,7 @@ class Comfy extends Client {
     this.cache = {}
     this.cache.linkingCache = new NodeCache({stdTTL: 600})
 
-    this.authCodes = new Map();
-
     this.AmeAPI = new AmeClient(this.config.apiKeys.amethyste);
-
-    this.giveawaysManager = new GiveawaysManager(this, {
-      storage: './giveaways.json',
-      updateCountdownEvery: 10000,
-      default: {
-        botsCanWin: false,
-        exemptPermissions: ['MANAGE_MESSAGES', 'ADMINISTRATOR'],
-        embedColor: '#FF0000',
-        reaction: '🎉'
-      }
-    });
   }
 
   printDate(date, format) {
