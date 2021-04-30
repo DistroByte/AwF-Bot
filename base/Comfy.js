@@ -55,6 +55,7 @@ class Comfy extends Client {
         } else server.sendingMessage = false
       })
     }, 50)
+    this.factorioServers = factorioServers
 
     this.states = {};
 

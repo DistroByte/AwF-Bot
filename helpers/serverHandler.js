@@ -4,6 +4,7 @@ const ServerStatistics = require("../base/Serverstatistics")
 const rcon = require("../helpers/rcon")
 const lodash = require("lodash")
 const { MessageEmbed } = require("discord.js")
+const Users = require("../base/User")
 
 class serverHandler {
   constructor(client) {
@@ -133,7 +134,7 @@ class serverHandler {
     const server = data.server
     if (line.type === "join") {
       this._appendMessage(server, `${this.client.emotes?.playerjoin} ${line.playerName} has joined the game`)
-      this._assignRoles(line.playerName, server).then(() => {})
+      // this._assignRoles(line.playerName, server).then(() => {}) //TODO: enable this for prod
     }
     if (line.type === "leave")
       this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} has left the game due to reason ${line.reason}`)
@@ -261,13 +262,13 @@ class serverHandler {
       );
     } else if (requestType == "message") {
       // send to all servers without saving
-      RconConnectionManager.rconCommandAll(
+      rcon.rconCommandAll(
         // args is now the rest of the stuff
         `/interface Datastore.ingest('message', '${collectionName}', '${playerName}', '${args}')`
       );
     } else if (requestType == "propagate") {
       // send to all servers except the server the request is coming from and send to database
-      RconConnectionManager.rconCommandAllExclude(
+      rcon.rconCommandAllExclude(
         // args is now the rest of the stuff
         `/interface Datastore.ingest('propagate', '${collectionName}', '${playerName}', '${args}')`,
         [`${serverObject.name}`]
@@ -319,8 +320,25 @@ class serverHandler {
     this.client.channels.cache.get(this.client.config.moderatorchannel)?.send((new MessageEmbed(embed)))
   }
   async allHandler(data) {
-    if (data.line.toLowerCase().includes("error"))
+    const serverStartRegExp = new RegExp(/Info ServerMultiplayerManager.cpp:\d\d\d: Matching server connection resumed/)
+    if (data.line.toLowerCase().includes("error") && !data.line.toLowerCase().includes("all files loaded with 0 errors"))
       this.client.channels.cache.get(this.client.config.errorchannel)?.send(`Error in <#${data.server.discordid}>\n${data.line}`)
+    if (this.client.factorioServers.find((server) => server.discordid == data.server.discordid)) {
+      let server = this.client.factorioServers.find((server) => server.discordid == data.server.discordid)
+      if (data.line.match(serverStartRegExp) && server.roleSync) {
+        console.log("SYNC!")
+        setTimeout(async () => {
+          let roles = await Users.find({}).select({ 'factorioName': 1, 'factorioRoles': 1 }).exec()
+          let toSend = {}
+          roles.forEach((player) => {
+            if (!player.factorioName) return
+            else toSend[player.factorioName] = player.factorioRoles
+          })
+          const res = await rcon.rconCommand(`/interface Roles.override_player_roles(game.json_to_table('${JSON.stringify(toSend)}'))`, server.discordid)
+          if (res.trim() == "Command Complete") this.client.channels.cache.get(data.server.discordid).send("Roles have synced")
+        }, 5000) // allow server to connect to rcon
+      }
+    }
   }
 }
 module.exports = serverHandler

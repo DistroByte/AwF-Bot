@@ -165,12 +165,22 @@ module.exports = {
     return null;
   },
   async runShellCommand(cmd) {
-  return new Promise((resolve, reject) => {
-    childprocess.exec(cmd, function (error, stdout, stderr) {
-      if (stdout) resolve(stdout);
-      if (stderr) reject(stderr);
-      if (error) reject(error);
+    return new Promise((resolve, reject) => {
+      childprocess.exec(cmd, function (error, stdout, stderr) {
+        if (stdout) resolve(stdout);
+        if (stderr) reject(stderr);
+        if (error) reject(error);
+      });
     });
-  });
-}
+  },
+  sortModifiedDate(pathArr) {
+    let files = pathArr.map((path) => {
+      return {
+        path: path,
+        mtime: fs.statSync(path).mtime.getTime()
+      }
+    })
+    return files.sort((a, b) => b.mtime - a.mtime).map((file) => file.path)
+  },
+  
 }
