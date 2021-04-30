@@ -105,8 +105,8 @@ class rconInterface {
 
     let overlap = [];
     let nameArr = this._rconConnections.map((connection) => { return connection.server.name });
-    let channelIDArr = this._rconConnections.map((connection) => { return connection.server.discordChannelID });
-    let channelNameArr = this._rconConnections.map((connection) => { return connection.server.discordChannelName });
+    let channelIDArr = this._rconConnections.map((connection) => { return connection.server.discordid });
+    let channelNameArr = this._rconConnections.map((connection) => { return connection.server.discordname });
     overlap.push(...getArrayOverlap(exclusionServerIdentifiers, nameArr));
     overlap.push(...getArrayOverlap(exclusionServerIdentifiers, channelIDArr));
     overlap.push(...getArrayOverlap(exclusionServerIdentifiers, channelNameArr));
@@ -114,8 +114,8 @@ class rconInterface {
     let toRun = [];
     this._rconConnections.forEach(connection => {
       if (overlap.includes(connection.server.name) ||
-        overlap.includes(connection.server.discordChannelID) ||
-        overlap.includes(connection.server.discordChannelName)) return
+        overlap.includes(connection.server.discordid) ||
+        overlap.includes(connection.server.discordname)) return
       else
         toRun.push(connection);
     });
@@ -124,10 +124,10 @@ class rconInterface {
       return new Promise((resolve, reject) => {
         const resultIdentifier = {
           name: connection.server.name,
-          discordChannelID: connection.server.discordChannelID,
-          discordChannelName: connection.server.discordChannelName,
+          discordid: connection.server.discordid,
+          discordname: connection.server.discordname,
         }
-        this.rconCommand(command, connection.server.discordChannelID)
+        this.rconCommand(command, connection.server.discordid)
           .then(res => resolve([res, resultIdentifier]))
           .catch(e => reject([e, resultIdentifier]))
       });
