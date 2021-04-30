@@ -31,7 +31,7 @@ class Github extends Command {
       .addField("Stars", json.stargazers_count, true)
       .addField("Forks", json.forks_count, true)
       .addField("Programming language", json.language, true)
-      .addField("Comfy's repository owner", "[" + json.owner.login + "](" + json.owner.html_url + ")")
+      .addField("Jammy's repository owner", "[" + json.owner.login + "](" + json.owner.html_url + ")")
       .setImage(json.owner.avatar_url)
       .setColor(data.config.embed.color)
       .setFooter(data.config.embed.footer);
