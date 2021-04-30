@@ -78,7 +78,6 @@ class rconInterface {
       let resp = await server.rcon.send(command);
       if (typeof resp == "string" && resp.length) return resp;
     } catch (error) {
-      console.error(error);
       return error;
     }
   }

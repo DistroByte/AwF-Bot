@@ -47,8 +47,8 @@ class _UPSHandler {
     this._processing = true
     let promiseArray = this._servers.map(async (server) => {
       if (server.playercount !== 0) {
-        let response = await rcon.rconCommand("/sc rcon.print(game.tick)", server.discordid).catch(() => {})
         try {
+          let response = await rcon.rconCommand("/sc rcon.print(game.tick)", server.discordid).catch(() => { })
           server.ups = Math.abs(server.previousTick - parseInt(response))
           server.previousTick = parseInt(response)
         } catch {}
