@@ -1,8 +1,13 @@
-const { ServerFifoManager } = require("../../utils/fifo-manager");
-const { testbotid } = require("../../botconfig.json")
+const fifo = require("../../helpers/fifo-handler")
 
-module.exports = (client, oldPresence, newPresence) => {
-    if (newPresence.userID == testbotid) {
-        ServerFifoManager.checkDevServer(newPresence);
-    }
-}
+
+module.exports = class {
+  constructor(client) {
+    this.client = client;
+  }
+
+  async run(_, newPresence) {
+    if (newPresence.userID === this.client.config.testbotid)
+      fifo.checkDevServer(newPresence)
+  }
+};
