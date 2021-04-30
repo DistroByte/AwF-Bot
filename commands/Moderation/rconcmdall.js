@@ -14,7 +14,7 @@ class Linkme extends Command {
       enabled: true,
       guildOnly: false,
       aliases: [],
-      memberPermissions: [],
+      memberPermissions: ["MANAGE_GUILD"],
       botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
       nsfw: false,
       ownerOnly: false,
