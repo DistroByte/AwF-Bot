@@ -6,7 +6,7 @@ class Linkme extends Command {
     super(client, {
       name: "getroles",
       description: "Get in-game roles of a user",
-      usage: "<UserID/Ping>",
+      usage: "(UserID/Ping)",
       examples: ["{{p}}getroles @oof2win2#3149", "{{p}}getroles 429696038266208258", "{{p}}getroles"],
       dirname: __dirname,
       enabled: true,

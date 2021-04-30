@@ -5,9 +5,9 @@ class Linkme extends Command {
   constructor(client) {
     super(client, {
       name: "amilinked",
-      description: "Check linking status of a user",
-      usage: "<UserID>",
-      examples: ["{{p}}islinked 429696038266208258"],
+      description: "Check if a user is linked with a Factorio account",
+      usage: "(UserID)",
+      examples: ["{{p}}amilinked", "{{p}}islinked 429696038266208258"],
       dirname: __dirname,
       enabled: true,
       guildOnly: false,

@@ -8,7 +8,6 @@ class OnlinePlayers extends Command {
       name: "onlineplayers",
       description: "Get online players on all servers",
       usage: "",
-      examples: ["{{p}}onlineplayers"],
       dirname: __dirname,
       enabled: true,
       guildOnly: false,

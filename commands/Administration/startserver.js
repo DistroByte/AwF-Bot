@@ -11,7 +11,7 @@ class Linkme extends Command {
     super(client, {
       name: "startserver",
       description: "Start a Factorio server",
-      usage: "<server channel ping>",
+      usage: "[#channel]",
       examples: ["{{p}}startserver #awf-regular"],
       dirname: __dirname,
       enabled: true,
@@ -48,7 +48,7 @@ class Linkme extends Command {
       });
       return message.channel.send(choiceEmbed);
     } else {
-      let serverFolder = serverJS.find((server) => server.discordid === message.mentions.channels.first().id || server.discordname === args[0])?.path
+      let serverFolder = serverJS.find((server) => server.discordid === message.mentions.channels.first().id)?.path
       if (!serverFolder) return message.reply("No server corresponds to that!")
       // if (message.mentions.channels.first())
       //   serverFolder = getServerFromChannelInput(message.mentions.channels.first().id).path;

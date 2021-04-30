@@ -5,8 +5,8 @@ class Linkme extends Command {
   constructor(client) {
     super(client, {
       name: "linkme",
-      description: "Link yourself",
-      usage: "<linking id>",
+      description: "Link your Factorio and Discord accounts!",
+      usage: "[linking id]",
       examples: ["{{p}}linkme 334957"],
       dirname: __dirname,
       enabled: true,

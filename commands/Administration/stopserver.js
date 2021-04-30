@@ -10,7 +10,7 @@ class Linkme extends Command {
     super(client, {
       name: "stopserver",
       description: "Stop a Factorio server",
-      usage: "<server channel ping>",
+      usage: "[#channel]",
       examples: ["{{p}}stopserver #awf-regular"],
       dirname: __dirname,
       enabled: true,

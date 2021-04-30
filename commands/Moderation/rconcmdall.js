@@ -7,9 +7,9 @@ class Linkme extends Command {
   constructor(client) {
     super(client, {
       name: "rconcmdall",
-      description: "Send a RCON command to all servers (prefixed with /)",
-      usage: "/<command>",
-      examples: ["{{p}}rconcmdall /ban DistroByte"],
+      description: "Send a RCON command to all servers (auto-prefixed with /)",
+      usage: "[command]",
+      examples: ["{{p}}rconcmdall ban DistroByte", "{{p}}rconcmdall /ban DistroByte"],
       dirname: __dirname,
       enabled: true,
       guildOnly: false,
