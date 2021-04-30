@@ -326,7 +326,6 @@ class serverHandler {
     if (this.client.factorioServers.find((server) => server.discordid == data.server.discordid)) {
       let server = this.client.factorioServers.find((server) => server.discordid == data.server.discordid)
       if (data.line.match(serverStartRegExp) && server.roleSync) {
-        console.log("SYNC!")
         setTimeout(async () => {
           let roles = await Users.find({}).select({ 'factorioName': 1, 'factorioRoles': 1 }).exec()
           let toSend = {}

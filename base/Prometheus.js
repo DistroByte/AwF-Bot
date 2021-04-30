@@ -2,8 +2,6 @@ const promClient = require('prom-client')
 const http = require('http')
 const serverUPS = require("../helpers/serverUPSHandler")
 
-// TODO: export this whole thing and somehow allow to add in other metrics, such as UPS
-
 const collectDefaultMetrics = promClient.collectDefaultMetrics;
 const Registry = promClient.Registry;
 const register = new Registry();

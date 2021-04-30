@@ -34,7 +34,6 @@ class Linkme extends Command {
     if (!server) return message.reply("Invalid channel, not tied to a server!")
 
     // stop server
-    // TODO: enable on prod to actually stop the server
     childprocess.spawnSync(`./factorio-init/factorio`, ['stop'], { cwd: `${this.client.config.serverpath}/${server.path}` })
 
     // back up saves
@@ -55,9 +54,8 @@ class Linkme extends Command {
       serverName: server.name,
     }).then(() => { })
 
-    // TODO: create a new map from command arguments
     let cmdArgs = minimist(args)
-    let command = `bin/x64/factorio`
+    let command = ""
     // add scenario / map to command
     if (cmdArgs["scenario"]) {
       command = `--start-server-load-scenario ${cmdArgs["scenario"]}`
@@ -72,7 +70,21 @@ class Linkme extends Command {
     })
     command = `${command} ${cmdArgs._}`.trim()
 
-    // TODO: check if command is okay like this
+    const reactionFilter = (reaction, user) => user.id === message.author.id
+    const confirm = await message.channel.send(`Are you sure you want to reset your server with this command?\n\`bin/x64/factorio ${command}\``)
+    confirm.react("✅")
+    confirm.react("❌")
+    let reactions
+    try {
+      reactions = (await confirm.awaitReactions(reactionFilter, { max: 1, time: 120000 }))
+    } catch {
+      return message.channel.send("Error getting reaction")
+    }
+    let reaction = reactions.first()
+    if (reaction.emoji.name === "❌")
+      return message.channel.send("Server reset cancelled")
+    if (reaction.emoji.name !== "✅")
+      return message.channel.send("Wrong emoji")
 
     let output = []
     const serverStartRegExp = new RegExp(/Info ServerMultiplayerManager.cpp:\d\d\d: Matching server connection resumed/)
