@@ -31,6 +31,7 @@ class rconInterface {
             try {
               rcon.connect().then(() => {
                 clearInterval(interval)
+                this.client?.channels.fetch(errorchannel).then((channel) => channel.send(`Server <#${server.server.discordid}> has connected to RCON`))
               }).catch(() => {})
               i++
               if (i === 60) { // 5 minutes
@@ -42,10 +43,24 @@ class rconInterface {
         })
       } catch (error) {
         console.error(error)
-        const interval = setInterval(() => {
+        const errorSend = setInterval(() => {
           this.client?.channels?.fetch(errorchannel).then((channel) => channel?.send(`Server <#${server.server.discordid}> is having RCON issues`))
-            .then(() => clearInterval(interval)).catch(() => {})
+            .then(() => clearInterval(errorSend)).catch(() => {})
         }, 1000)
+        let i = 0
+        const interval = setInterval(async () => {
+          try {
+            rcon.connect().then(() => {
+              clearInterval(interval)
+              this.client?.channels.fetch(errorchannel).then((channel) => channel.send(`Server <#${server.server.discordid}> has connected to RCON`))
+            }).catch(() => { })
+            i++
+            if (i === 60) { // 5 minutes
+              // clearInterval(interval) // just keep trying to reconnect
+              this.client?.channels.fetch(errorchannel).then((channel) => channel.send(`Server <#${server.server.discordid}> is having RCON issues`))
+            }
+          } catch (error) { }
+        }, 5000)
       }
     })
   }
@@ -57,7 +72,6 @@ class rconInterface {
         server = serverConnections;
     });
     if (server == undefined) {
-      console.error(`Server with identifier ${serverIdentifier} couldn't be found`);
       throw new Error("Server couldn't be found");
     }
     try {

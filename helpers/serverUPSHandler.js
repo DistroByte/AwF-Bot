@@ -47,13 +47,15 @@ class _UPSHandler {
     this._processing = true
     let promiseArray = this._servers.map(async (server) => {
       if (server.playercount !== 0) {
-        let response = await rcon.rconCommand("/sc rcon.print(game.tick)", server.discordid)
+        let response = await rcon.rconCommand("/sc rcon.print(game.tick)", server.discordid).catch(() => {})
         try {
           server.ups = Math.abs(server.previousTick - parseInt(response))
           server.previousTick = parseInt(response)
         } catch {}
       }
-      rcon.rconCommand(`/sc global.ext.var = game.json_to_table('${JSON.stringify({ server_ups: server.ups, ext: []})}')`, server.discordid).then(() => {}).catch(() => {})
+      try {
+        rcon.rconCommand(`/sc global.ext.var = game.json_to_table('${JSON.stringify({ server_ups: server.ups, ext: []})}')`, server.discordid).then(() => {}).catch(() => {})
+      } catch {}
       return server
     })
     let serversUpdated = await Promise.all(promiseArray)
