@@ -1,3 +1,7 @@
+/**
+ * @file Listens to all server events and works with them. Adds messages to client's queue to send them in batches
+ */
+
 const Tails = require("../base/Tails")
 const mongoose = require("mongoose")
 const ServerStatistics = require("../base/Serverstatistics")

@@ -1,10 +1,29 @@
+/**
+ * @file Handles UPS
+ */
 const rcon = require("./rcon")
 const Tails = require("../base/Tails")
 const serversJS = require("../servers")
+const discord = require("discord.js")
 
 // Known issue: servers will report a UPS of 0 if the bot starts and nobody is online on the server
 
+/**
+ * @typedef {Object} UPS
+ * @property {discord.Snowflake} discordid - Server's Discord channel ID
+ * @property {String} discordname - Server's Discord channel name
+ * @property {Number} ups - Server's last measured UPS
+ * @property {Number} previousTick - Server's last measured gametick
+ * @property {Number} playercount - Number of players on the server
+ */
+
+/**
+ * @classdesc UPS handler, generates data that can be fetched. Doesn't historically store it
+ */
 class _UPSHandler {
+  /**
+   * @param {Object[]} servers - Array of servers from servers.js
+   */
   constructor(servers) {
     this._processing = false
     this._servers = servers
@@ -24,7 +43,7 @@ class _UPSHandler {
     Tails.on("playerLeave", (log) => this._playerStuff(log))
     setInterval(() => {
       if (!this._processing)
-        this.getData()
+        this._getData()
     }, 1000)
   }
   _playerStuff(data) {
@@ -43,7 +62,7 @@ class _UPSHandler {
       })
     }
   }
-  async getData() {
+  async _getData() {
     this._processing = true
     let promiseArray = this._servers.map(async (server) => {
       if (server.playercount !== 0) {
@@ -62,6 +81,10 @@ class _UPSHandler {
     this._servers = serversUpdated
     this._processing = false
   }
+  /**
+   * Get current data for handling
+   * @returns {UPS[]} - Collected data
+   */
   exportData() { 
     return this._servers
   }
