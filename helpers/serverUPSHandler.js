@@ -15,7 +15,7 @@ class _UPSHandler {
       setTimeout(() => {
         rcon.rconCommand(`/sc global.ext = {}; rcon.print(#game.connected_players)`, this._servers[serverKey].discordid).then((output) => {
           try {
-            this._servers[serverKey].playercount = parseInt(output)
+            this._servers[serverKey].playercount = parseInt(output.resp)
           } catch { }
         }).catch(() => {})
       }, 2000) // wait for rcon to init
@@ -49,8 +49,8 @@ class _UPSHandler {
       if (server.playercount !== 0) {
         try {
           let response = await rcon.rconCommand("/sc rcon.print(game.tick)", server.discordid).catch(() => { })
-          server.ups = Math.abs(server.previousTick - parseInt(response))
-          server.previousTick = parseInt(response)
+          server.ups = Math.abs(server.previousTick - parseInt(response.resp))
+          server.previousTick = parseInt(response.resp)
         } catch {}
       }
       try {

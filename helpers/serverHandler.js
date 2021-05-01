@@ -94,7 +94,7 @@ class serverHandler {
   async _assignRoles(playername, server) {
     let user = await this.client.findUserFactorioName(playername)
     if (!user || !user.factorioRoles) return
-    let res = (await rcon.rconCommand(`/interface local names = {} for i, role in ipairs(Roles.get_player_roles("${playername}")) do names[i] = role.name end return names`, server.discordid))
+    let res = (await rcon.rconCommand(`/interface local names = {} for i, role in ipairs(Roles.get_player_roles("${playername}")) do names[i] = role.name end return names`, server.discordid)).resp
     if (!res.length)
       return console.error(res)
     const roles = res.slice(res.indexOf("{") + 2, res.indexOf("}") - 1).replace(/"/g, "").split(",  ")
@@ -333,7 +333,7 @@ class serverHandler {
             if (!player.factorioName) return
             else toSend[player.factorioName] = player.factorioRoles
           })
-          const res = await rcon.rconCommand(`/interface Roles.override_player_roles(game.json_to_table('${JSON.stringify(toSend)}'))`, server.discordid)
+          const res = await rcon.rconCommand(`/interface Roles.override_player_roles(game.json_to_table('${JSON.stringify(toSend)}'))`, server.discordid).then((output) => output.resp)
           if (res.trim() == "Command Complete") this.client.channels.cache.get(data.server.discordid).send("Roles have synced")
         }, 5000) // allow server to connect to rcon
       }
