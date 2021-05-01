@@ -1,10 +1,19 @@
+/**
+ * @file FIFO handler for Factorio servers. Sends messages from Discord to Factorio and the like of that
+ */
+
 const serversJS = require("../servers.js"); // tails, fifo, discord IDs etc.
 const FIFO = require("fifo-js");
 const { serverpath } = require("../config")
+const { Presence, Message } = require("discord.js")
 
-
-// TODO: check dev server in presenceUpdate, also add this to the message handler
-class _ServerFifoManager {
+/**
+ * @classdesc FIFO handler for Factorio servers
+ */
+class ServerFifoManager {
+  /**
+   * @class Gets it's servers from the serversJS variable required from the .js file
+   */
   constructor() {
     this.usedFifos = [];
     this.unusedFifos = [];
@@ -20,6 +29,11 @@ class _ServerFifoManager {
       }
     });
   }
+
+  /**
+    * Check if the logging for the development server should be turned off. The presence given already needs to be checked for the correct user ID
+    * @param {Presence} newPresence
+    */
   checkDevServer(newPresence) {
     // test bot turned online
     if (newPresence.status != "offline") {
@@ -46,6 +60,11 @@ class _ServerFifoManager {
     }
   }
 
+  /**
+   * Sends a message to a Factorio server which has the same channel ID as the message
+   * @param {Message} message - Discord message to send to server
+   * @param {boolean} [sendWithUsername=true] - Whether to send the message with username or not.
+   */
   sendToServer(message, sendWithUsername) {
     let toSend;
     if (sendWithUsername === true)
@@ -59,6 +78,11 @@ class _ServerFifoManager {
     return;
   }
   
+  /**
+   * Sends a message to all Factorio servers
+   * @param {Message} message - Discord message to send to server
+   * @param {boolean} [sendWithUsername=true] - Whether to send the message with username or not.
+   */
   sendToAll(message, sendWithUsername) {
     let toSend;
     if (sendWithUsername === true)
@@ -71,5 +95,5 @@ class _ServerFifoManager {
   }
 }
 
-let ServerFifoManager = new _ServerFifoManager()
-module.exports = ServerFifoManager
+let FifoManager = new ServerFifoManager()
+module.exports = FifoManager
