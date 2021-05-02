@@ -22,4 +22,4 @@ jobs:
         with:
           path: "docs"
         env:
-          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.ACTIONS_DEPLOY_KEY }}
