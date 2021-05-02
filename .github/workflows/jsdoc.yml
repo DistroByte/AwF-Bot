@@ -15,7 +15,7 @@ jobs:
       - name: Build
         uses: andstor/jsdoc-action@v1
         with:
-          source_dir: "."
+          source_dir: ".."
           output_dir: "docs"
           recurse: true
 #           config_file: jsdoc.config.js
@@ -29,6 +29,6 @@ jobs:
       - name: Upload Documentation to Wiki
         uses: SwiftDocOrg/github-wiki-publish-action@v1
         with:
-          path: "docs"
+          path: "."
         env:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.ACTIONS_DEPLOY_KEY }}
