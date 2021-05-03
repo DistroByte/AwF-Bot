@@ -12,6 +12,7 @@ module.exports = function (grunt) {
                     { src: 'helpers/rcon.js', dest: 'docs/md/rcon.md' },
                     { src: 'helpers/serverHandler.js', dest: 'docs/md/serverHandler.md' },
                     { src: 'helpers/serverUPSHandler.js', dest: 'docs/md/serverUPSHandler.md' },
+                    { src: 'helpers/functions.js', dest: 'docs/md/functions.md' },
                 ]
             },
             // withOptions: {
