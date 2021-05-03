@@ -14,14 +14,13 @@ jobs:
 
       - name: Install dependencies
         uses: bahmutov/npm-install@v1
-      - name: Install node (fs)
+      - name: Install node
         uses: actions/setup-node@v2
         with:
           node-version: '14'
-      - name: Make documentation
-        uses: Adzz/jest_test_action@v1.0.0
-        with:
-          command: run docs
+      
+      - name: Compile with Grunt
+        uses: elstudio/actions-js-build/build@v4
 
       - name: Upload Documentation to Wiki
         uses: SwiftDocOrg/github-wiki-publish-action@v1
