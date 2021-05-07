@@ -50,11 +50,13 @@
     "ytdl-core": "^4.5.0"
   },
   "devDependencies": {
+    "jsdoc": "^3.6.6",
     "nodemon": "^2.0.7"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon ."
+    "dev": "nodemon .",
+    "docs": "jsdoc -c ./jsdoc.config.js"
   },
   "repository": {
     "type": "git",
