@@ -27,8 +27,8 @@ class OnlinePlayers extends Command {
       .setColor(this.client.config.embed.color)
       .setFooter(this.client.config.embed.footer);
     res.forEach((response) => {
-      if (response[0].length > 1024) embed.addField(response[1].discordname, "Response Too Long")
-      else embed.addField(response[1].discordname, response[0])
+      if (response.resp.length > 1024) embed.addField(response.server.discordname, "Response Too Long")
+      else embed.addField(response.server.discordname, response.resp)
     })
     message.channel.send(embed)
   }

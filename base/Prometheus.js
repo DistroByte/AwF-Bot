@@ -1,3 +1,7 @@
+/**
+ * @file Prometheus server that can be listened to. Exports only UPS data currently
+ */
+
 const promClient = require('prom-client')
 const http = require('http')
 const serverUPS = require("../helpers/serverUPSHandler")

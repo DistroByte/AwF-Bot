@@ -1,8 +1,23 @@
-const {Rcon} = require("rcon-client")
+/**
+ * @file RCON client manager for servers
+ */
+const { Rcon } = require("rcon-client")
 const { rconport, rconpw, errorchannel } = require("../config")
 const servers = require("../servers")
-
+const discord = require("discord.js")
+/**
+ * @typedef {Object} RCONOutput
+ * @property {(String|Error)} resp - RCON output or error
+ * @property {Object} server - Server
+ */
 class rconInterface {
+  /**
+   * RCON interface for servers
+   * @param {Object[]} rconConfig - Array of RCON configs
+   * @param {number} rconConfig.rconport - Port of RCON
+   * @param {Object} rconConfig.server - Server object from {@link ../servers.js}
+   * @param {string} pw - RCON password - Same for all servers
+   */
   constructor(rconConfig, pw) {
     this._rconConfig = rconConfig
     this._rconConnections = []
@@ -23,7 +38,7 @@ class rconInterface {
           rcon: rcon,
           server: server.server
         })
-        
+
         // reconnection mechanism
         rcon.on("end", () => {
           let i = 0
@@ -32,20 +47,20 @@ class rconInterface {
               rcon.connect().then(() => {
                 clearInterval(interval)
                 this.client?.channels.fetch(errorchannel).then((channel) => channel.send(`Server <#${server.server.discordid}> has connected to RCON`))
-              }).catch(() => {})
+              }).catch(() => { })
               i++
               if (i === 60) { // 5 minutes
                 // clearInterval(interval) // just keep trying to reconnect
                 this.client?.channels.fetch(errorchannel).then((channel) => channel.send(`Server <#${server.server.discordid}> is having RCON issues`))
               }
-            } catch (error) {}
+            } catch (error) { }
           }, 5000)
         })
       } catch (error) {
         console.error(error)
         const errorSend = setInterval(() => {
           this.client?.channels?.fetch(errorchannel).then((channel) => channel?.send(`Server <#${server.server.discordid}> is having RCON issues`))
-            .then(() => clearInterval(errorSend)).catch(() => {})
+            .then(() => clearInterval(errorSend)).catch(() => { })
         }, 1000)
         let i = 0
         const interval = setInterval(async () => {
@@ -64,6 +79,12 @@ class rconInterface {
       }
     })
   }
+  /**
+   * Send a RCON command to a Factorio server
+   * @param {string} command - Command to send to the server. Automatically prefixed with /
+   * @param {(discord.Snowflake|String)} serverIdentifier - Identifier for server. Either server's Discord channel ID, Discord name or debug name
+   * @returns {Promise<RCONOutput>} RCON output or error. Can be "Server couldn't be found" if no server was found
+   */
   async rconCommand(command, serverIdentifier) {
     if (!command.startsWith("/")) command = `/${command}`;
     let server = undefined;
@@ -76,11 +97,16 @@ class rconInterface {
     }
     try {
       let resp = await server.rcon.send(command);
-      if (typeof resp == "string" && resp.length) return resp;
+      if (typeof resp == "string" && resp.length) return { resp: resp, server: server };
     } catch (error) {
-      return error;
+      return { resp: error, server: server }
     }
   }
+  /**
+   * Send a RCON command to all Factorio servers
+   * @param {string} command - Command to send to the servers. Automatically prefixed with /
+   * @returns {Promise<RCONOutput[]>} RCON output of all servers
+   */
   async rconCommandAll(command) {
     let promiseArray = this._rconConnections.map(async (server) => {
       return new Promise(async (resolve, reject) => {
@@ -90,12 +116,18 @@ class rconInterface {
           discordname: server.server.discordname,
         }
         this.rconCommand(command, server.server.discordid)
-          .then(res => resolve([res, resultIdentifier]))
-          .catch(e => reject([e, resultIdentifier]))
+          .then(res => resolve({ resp: res, server: resultIdentifier }))
+          .catch(e => reject({ resp: e, server: resultIdentifier }))
       })
     })
     return await Promise.all(promiseArray);
   }
+  /**
+   * Send a RCON command to all Factorio servers except the one you specify
+   * @param {string} command - Command to send to the servers. Automatically prefixed with /
+   * @param {(discord.Snowflake[]|String[])} exclusionServerIdentifiers - Identifier of server to exclude
+   * @returns {Promise<RCONOutput[]>} RCON output of servers
+   */
   async rconCommandAllExclude(command, exclusionServerIdentifiers) {
     if (!command.startsWith("/")) command = `/${command}`; //add a '/' if not present
 
@@ -128,8 +160,8 @@ class rconInterface {
           discordname: connection.server.discordname,
         }
         this.rconCommand(command, connection.server.discordid)
-          .then(res => resolve([res, resultIdentifier]))
-          .catch(e => reject([e, resultIdentifier]))
+          .then(res => resolve({ resp: res, server: resultIdentifier }))
+          .catch(e => reject({ resp: e, server: resultIdentifier }))
       });
     });
     return await Promise.all(promiseArray);
