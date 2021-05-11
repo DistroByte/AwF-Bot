@@ -71,10 +71,10 @@ class _UPSHandler {
           server.ups = Math.abs(server.previousTick - parseInt(response.resp))
           server.previousTick = parseInt(response.resp)
         } catch {}
+        try {
+          rcon.rconCommand(`/sc global.ext.var = game.json_to_table('${JSON.stringify({ server_ups: server.ups, ext: [] })}')`, server.discordid).then(() => { }).catch(() => { })
+        } catch { }
       }
-      try {
-        rcon.rconCommand(`/sc global.ext.var = game.json_to_table('${JSON.stringify({ server_ups: server.ups, ext: []})}')`, server.discordid).then(() => {}).catch(() => {})
-      } catch {}
       return server
     })
     let serversUpdated = await Promise.all(promiseArray)
