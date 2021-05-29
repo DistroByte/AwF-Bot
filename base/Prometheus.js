@@ -1,6 +1,7 @@
 const promClient = require('prom-client')
 const http = require('http')
 const serverUPS = require("../helpers/serverUPSHandler")
+const config = require("../config")
 
 const collectDefaultMetrics = promClient.collectDefaultMetrics;
 const Registry = promClient.Registry;
@@ -42,7 +43,7 @@ http.createServer(async (req, res) => {
   if (req.url.endsWith("/metrics")) {
     return res.end(await register.metrics())
   }
-}).listen(9110)
+}).listen(config.promPort)
 
 module.exports = {
   promClient,

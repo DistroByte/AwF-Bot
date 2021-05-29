@@ -42,10 +42,8 @@ class Comfy extends Client {
         server.sendingMessage = true
         let message = ""
         while (!server.messageQueue.isEmpty()) {
-          let content = server.messageQueue.first()
           if (message.length + server.messageQueue.first().length > this.consts.discordMessageLengthLimit) break
-          server.messageQueue.shift()
-          message += `${server.messageQueue.first()}\n`
+          message += `${server.messageQueue.shift()}\n`
         }
         if (message.length) {
           this.channels.cache.get(server.server.discordid)?.send(message).then(() => server.sendingMessage = false)

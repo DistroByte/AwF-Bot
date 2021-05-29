@@ -6,6 +6,18 @@ const util = require('util'),
 const Comfy = require('./base/Comfy'),
   client = new Comfy();
 
+// remove all files from ./temp/ dir to prevent random bs
+try {
+	if (!fs.existsSync('./temp/')) fs.mkdirSync('./temp')
+	let tempFiles = fs.readdirSync('./temp/')
+	tempFiles.forEach(file => {
+		fs.rmSync(`./temp/${file}`);
+		console.log(`File ./temp/${file} removed!`)
+	});
+} catch (error) {
+	console.error(error);
+}
+
 const init = async () => {
 
   // Loads commands
