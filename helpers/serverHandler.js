@@ -9,6 +9,7 @@ const rcon = require("../helpers/rcon")
 const lodash = require("lodash")
 const { MessageEmbed } = require("discord.js")
 const Users = require("../base/User")
+const { Util } = require("discord.js")
 
 class serverHandler {
   constructor(client) {
@@ -114,6 +115,9 @@ class serverHandler {
       this.client.channels.fetch(this.helpdesk).then((channel) => channel.send(`Griefer in <#${server.discordid}>!`))
     line = this._formatChatData(line)
     if (line == "") return
+    line = Util.escapeMarkdown(line)
+    console.log({line})
+    line = line.replace(/@/g, "@\u200b")
     this._appendMessage(server, `:speech_balloon: ${line}`)
   }
   async outHandler(out) {
@@ -138,7 +142,7 @@ class serverHandler {
     const server = data.server
     if (line.type === "join") {
       this._appendMessage(server, `${this.client.emotes?.playerjoin} ${line.playerName} has joined the game`)
-      // this._assignRoles(line.playerName, server).then(() => {}) //TODO: enable this for prod
+      this._assignRoles(line.playerName, server).then(() => {})
     }
     if (line.type === "leave")
       this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} has left the game due to reason ${line.reason}`)
