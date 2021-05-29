@@ -1,3 +1,7 @@
+/**
+ * @file Jammy's core. Based off of ComfyBot
+ */
+
 const { Client, Collection, MessageEmbed } = require('discord.js');
 const NodeCache = require("node-cache");
 const factorioServers = require("../servers");

@@ -1,10 +1,29 @@
+/**
+ * @file Handles UPS
+ */
 const rcon = require("./rcon")
 const Tails = require("../base/Tails")
 const serversJS = require("../servers")
+const discord = require("discord.js")
 
 // Known issue: servers will report a UPS of 0 if the bot starts and nobody is online on the server
 
+/**
+ * @typedef {Object} UPS
+ * @property {discord.Snowflake} discordid - Server's Discord channel ID
+ * @property {String} discordname - Server's Discord channel name
+ * @property {Number} ups - Server's last measured UPS
+ * @property {Number} previousTick - Server's last measured gametick
+ * @property {Number} playercount - Number of players on the server
+ */
+
+/**
+ * @classdesc UPS handler, generates data that can be fetched. Doesn't historically store it
+ */
 class _UPSHandler {
+  /**
+   * @param {Object[]} servers - Array of servers from servers.js
+   */
   constructor(servers) {
     this._processing = false
     this._servers = servers
@@ -15,7 +34,7 @@ class _UPSHandler {
       setTimeout(() => {
         rcon.rconCommand(`/sc global.ext = {}; rcon.print(#game.connected_players)`, this._servers[serverKey].discordid).then((output) => {
           try {
-            this._servers[serverKey].playercount = parseInt(output)
+            this._servers[serverKey].playercount = parseInt(output.resp)
           } catch { }
         }).catch(() => {})
       }, 2000) // wait for rcon to init
@@ -24,7 +43,7 @@ class _UPSHandler {
     Tails.on("playerLeave", (log) => this._playerStuff(log))
     setInterval(() => {
       if (!this._processing)
-        this.getData()
+        this._getData()
     }, 1000)
   }
   _playerStuff(data) {
@@ -43,25 +62,29 @@ class _UPSHandler {
       })
     }
   }
-  async getData() {
+  async _getData() {
     this._processing = true
     let promiseArray = this._servers.map(async (server) => {
       if (server.playercount !== 0) {
         try {
           let response = await rcon.rconCommand("/sc rcon.print(game.tick)", server.discordid).catch(() => { })
-          server.ups = Math.abs(server.previousTick - parseInt(response))
-          server.previousTick = parseInt(response)
+          server.ups = Math.abs(server.previousTick - parseInt(response.resp))
+          server.previousTick = parseInt(response.resp)
         } catch {}
+        try {
+          rcon.rconCommand(`/sc global.ext.var = game.json_to_table('${JSON.stringify({ server_ups: server.ups, ext: [] })}')`, server.discordid).then(() => { }).catch(() => { })
+        } catch { }
       }
-      try {
-        rcon.rconCommand(`/sc global.ext.var = game.json_to_table('${JSON.stringify({ server_ups: server.ups, ext: []})}')`, server.discordid).then(() => {}).catch(() => {})
-      } catch {}
       return server
     })
     let serversUpdated = await Promise.all(promiseArray)
     this._servers = serversUpdated
     this._processing = false
   }
+  /**
+   * Get current data for handling
+   * @returns {UPS[]} - Collected data
+   */
   exportData() { 
     return this._servers
   }

@@ -1,0 +1,30 @@
+name: GitHub Wiki
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        uses: bahmutov/npm-install@v1
+      - name: Install node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      
+      - name: Compile with Grunt
+        uses: elstudio/actions-js-build/build@v4
+
+      - name: Upload Documentation to Wiki
+        uses: SwiftDocOrg/github-wiki-publish-action@v1
+        with:
+          path: "docs/md"
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.ACTIONS_DEPLOY_KEY }}
