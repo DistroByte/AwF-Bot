@@ -72,11 +72,8 @@ class ServerFifoManager {
     else
       toSend = `${message.cleanContent}`
     this.usedFifos.forEach((server) => {
-			console.log(server.serverObject.discordid, message.channel.id)
-      if (server.serverObject.discordid === message.channel.id) {
+      if (server.serverObject.discordid === message.channel.id)
         server.serverFifo.write(toSend, () => {})
-				console.log("SENT")
-			}
     });
     return;
   }

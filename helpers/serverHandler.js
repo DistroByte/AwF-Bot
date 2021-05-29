@@ -131,8 +131,8 @@ class serverHandler {
     }
     if (line.includes("Saving game as")) // normal save
       return this._appendMessage(server, `${this.client.emotes?.serversave} \`${line.slice(line.lastIndexOf("/") + 1)}\``)
-		if (line.includes("Saving to ")) // autosave
-			return this._appendMessage(server, `${this.client.emotes?.serversave} \`${line.slice(line.lastIndexOf(" _") + 1, line.lastIndexOf("(blocking") - 1)}\``)
+    if (line.includes("Saving to ")) // autosave
+      return this._appendMessage(server, `${this.client.emotes?.serversave} \`${line.slice(line.lastIndexOf(" _") + 1, line.lastIndexOf("(blocking") - 1)}\``)
   }
   async playerStuff(data) {
     const line = data.line
