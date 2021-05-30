@@ -40,13 +40,13 @@ setInterval(() => {
   })
 }, 1000)
 
-
+const config = require("../config")
 // Server for data collection
 http.createServer(async (req, res) => {
   if (req.url.endsWith("/metrics")) {
     return res.end(await register.metrics())
   }
-}).listen(9110)
+}).listen(config.promPort)
 
 module.exports = {
   promClient,

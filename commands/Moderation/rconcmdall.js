@@ -40,11 +40,11 @@ class Linkme extends Command {
     const res = await rcon.rconCommandAll(command);
     res.forEach((out) => {
       try {
-        if (typeof (out[0]) == "object") throw out
-        if (out[0] && out[0].length > 1024) throw Error("Response too long!");
-        else outEmbed.addField(`${out[1].discordname}`, out[0]);
+        if (typeof (out.resp.resp) == "object") throw out
+        if (out.resp && out.resp.resp.length > 1024) throw Error("Response too long!");
+        else outEmbed.addField(`${out.server.discordname}`, out.resp.resp);
       } catch (error) {
-        outEmbed.addField(`${out[1].discordname}`, error);
+        outEmbed.addField(`${out.server.discordname}`, error);
         console.error(error);
       }
     });
