@@ -46,8 +46,14 @@ class Comfy extends Client {
         server.sendingMessage = true
         let message = ""
         while (!server.messageQueue.isEmpty()) {
-          if (message.length + server.messageQueue.first().length > this.consts.discordMessageLengthLimit) break
-          message += `${server.messageQueue.shift()}\n`
+					let fromQueue = server.messageQueue.first()
+					if (fromQueue.length > this.consts.discordMessageLengthLimit) {
+						// if the line from the server is over 2000 chars then just remove it and don't care about it
+						server.messageQueue.shift()
+					} else {
+						if (message.length + fromQueue.length > this.consts.discordMessageLengthLimit) break
+						message += `${server.messageQueue.shift()}\n`
+					}
         }
         if (message.length) {
           this.channels.cache.get(server.server.discordid)?.send(message).then(() => server.sendingMessage = false)
