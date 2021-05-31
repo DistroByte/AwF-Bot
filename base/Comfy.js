@@ -53,7 +53,6 @@ class Comfy extends Client {
 					} else {
 						if (message.length + fromQueue.length > this.consts.discordMessageLengthLimit) break
 						message += `${server.messageQueue.shift()}\n`
-					}
         }
         if (message.length) {
           this.channels.cache.get(server.server.discordid)?.send(message).then(() => server.sendingMessage = false)

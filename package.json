@@ -46,7 +46,7 @@
     "storage-to-json": "^1.0.34",
     "superscript-text": "^1.0.0",
     "tail": "^2.2.1",
-    "ws": "^7.4.1",
+    "ws": "^7.4.6",
     "xmlhttprequest": "^1.8.0",
     "ytdl-core": "^4.5.0"
   },
