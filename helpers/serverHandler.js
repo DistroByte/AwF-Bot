@@ -133,9 +133,10 @@ class serverHandler {
           .get("786603909489491988")
           .send(`Error in ${channel.name}: ${line}`);
     }
-    if (line.includes("Saving game as")) {
+    if (line.includes("Saving game as")) // normal save
       return this._appendMessage(server, `${this.client.emotes?.serversave} \`${line.slice(line.lastIndexOf("/") + 1)}\``)
-    }
+    if (line.includes("Saving to ")) // autosave
+      return this._appendMessage(server, `${this.client.emotes?.serversave} \`${line.slice(line.lastIndexOf(" _") + 1, line.lastIndexOf("(blocking") - 1)}\``)
   }
   async playerStuff(data) {
     const line = data.line

@@ -5,6 +5,7 @@
 const promClient = require('prom-client')
 const http = require('http')
 const serverUPS = require("../helpers/serverUPSHandler")
+const config = require("../config")
 
 const collectDefaultMetrics = promClient.collectDefaultMetrics;
 const Registry = promClient.Registry;

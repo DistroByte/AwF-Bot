@@ -105,9 +105,8 @@ module.exports = class {
       });
 
     }
-
-    const prefix = client.functions.getPrefix(message, data);
-    if (!prefix) {
+		const prefix = this.client.config.prefix
+    if (!message.content.startsWith(prefix)) {
       fifo.sendToServer(message, true)
       return;
     }

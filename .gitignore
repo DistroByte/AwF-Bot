@@ -1,8 +1,6 @@
 /banlist-full.json
-/config.json
 /ecosystem.config.js
 /node_modules
-config.*
 log-all
 .DS_Store
 servers.json
@@ -11,3 +9,4 @@ testing.js
 temp/*
 test.js
 servers.js
+config.js

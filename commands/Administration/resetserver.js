@@ -7,6 +7,8 @@ const fs = require("fs")
 const moment = require("moment")
 const ServerStatistics = require("../../base/Serverstatistics")
 const minimist = require("minimist")
+const Str = require("@supercharge/strings")
+const https = require("https")
 
 class Linkme extends Command {
   constructor(client) {
@@ -66,8 +68,24 @@ class Linkme extends Command {
     Object.keys(cmdArgs).forEach((key) => {
       if (key === "_") return
       if (typeof cmdArgs[key] === "boolean") command = `${command} --${key}`
-      else `${command} --${key} ${cmdArgs[key]}`
+      else command = `${command} --${key} ${cmdArgs[key]}`
     })
+		let tempFiles = []
+		if (message.attachments.first()) {
+			let file = message.attachments.first();
+			if (file.name.endsWith(".json")) {
+				let settingsFilename = Str.random();
+				tempFiles.push(`${process.env.PWD}/temp/${settingsFilename}.json`)
+				var outFile = fs.createWriteStream(`${process.env.PWD}/temp/${settingsFilename}.json`);
+				https.get(file.url, function (response) {
+					response.pipe(outFile);
+					outFile.on('finish', function () {
+						outFile.close();
+					});
+				});
+				command = `${command} --map-gen-settings ${process.env.PWD}/temp/${settingsFilename}.json`
+			}
+		}
     command = `${command} ${cmdArgs._}`.trim()
 
     const reactionFilter = (reaction, user) => user.id === message.author.id
@@ -88,13 +106,14 @@ class Linkme extends Command {
 
     let output = []
     const serverStartRegExp = new RegExp(/Info ServerMultiplayerManager.cpp:\d\d\d: Matching server connection resumed/)
-    let process = childprocess.spawn(`./bin/x64/factorio`, command.split(' '), { cwd: `${this.client.config.serverpath}/${server.path}` })
+    let factorio = childprocess.spawn(`./bin/x64/factorio`, command.split(' '), { cwd: `${this.client.config.serverpath}/${server.path}` })
     const handleMessage = (msg) => {
       let data = msg.toString().trim()
       console.log(data)
       output.push(data)
       if (data.match(serverStartRegExp)) {
-        process.kill()
+				tempFiles.forEach(filepath => fs.rmSync(filepath))
+				factorio.kill()
         // roles are synced in the server handler so there is no wait for them to load
         this.client.factorioServers.find((clientServer) => {
           if (clientServer.discordid === server.discordid) {
@@ -104,9 +123,9 @@ class Linkme extends Command {
         })
       }
     }
-    process.stdout.on('data', handleMessage)
-    process.stderr.on('data', handleMessage)
-    process.on('close', (code) => {
+    factorio.stdout.on('data', handleMessage)
+    factorio.stderr.on('data', handleMessage)
+    factorio.on('close', (code) => {
       let msg = output.join('\n')
       let file = new MessageAttachment(Buffer.from(msg), "output.txt")
       message.channel.send(`Process exited with code ${code}. Starting server back up. Roles will sync shortly`, {files: [file]})
@@ -122,7 +141,6 @@ class Linkme extends Command {
       }, 5000)
     })
   }
-
 }
 
 module.exports = Linkme;

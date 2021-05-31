@@ -7,6 +7,7 @@
     "@discordjs/opus": "^0.4.0",
     "@influxdata/influxdb-client": "^1.10.0",
     "@sindresorhus/slugify": "^1.1.0",
+    "@supercharge/strings": "^1.18.0",
     "amethyste-api": "^1.1.5",
     "async-eval": "^0.1.5",
     "btoa": "^1.2.1",
