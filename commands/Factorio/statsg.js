@@ -34,7 +34,7 @@ class Linkme extends Command {
       .setColor(this.client.config.embed.color)
       .setFooter(this.client.config.embed.footer);
     embed.setTitle("Global Factorio User Statistics")
-    embed.setDescription(`Statistics of ${userID}`)
+    embed.setDescription(`Statistics of <@${userID}> | ${userID}`)
     embed.addFields(
       {name: "Total Points", value: user.factorioStats.points},
       {name: "Deaths", value: user.factorioStats.deaths},
