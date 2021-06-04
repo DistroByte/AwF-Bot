@@ -8,6 +8,7 @@ const { emailUser, emailPass } = require('../config')
 const serversJS = require("../servers")
 const childprocess = require("child_process")
 const discord = require("discord.js")
+const fs = require("fs")
 
 module.exports = {
   getPrefix,
@@ -24,6 +25,8 @@ module.exports = {
   getServerFromChannelInput,
   runShellCommand,
   sortModifiedDate,
+	getConfirmationMessage,
+	createPagedEmbed,
 }
 function getPrefix(message, data) {
   if (message.channel.type !== 'dm') {
@@ -202,8 +205,8 @@ async function runShellCommand(cmd) {
 }
 /**
  * Sort a directory's contents by date modified
- * @param {string} pathArr - Path to the directory you want to get files from and sort by modified date
- * @returns {string=} Array of path names, sorted by last modified
+ * @param {string[]} pathArr - Path to the directory you want to get files from and sort by modified date
+ * @returns {Object[]} Array of path objects, sorted by last modified. has path and mtime (modified time)
  */
 function sortModifiedDate(pathArr) {
   let files = pathArr.map((path) => {
@@ -212,5 +215,74 @@ function sortModifiedDate(pathArr) {
       mtime: fs.statSync(path).mtime.getTime()
     }
   })
-  return files.sort((a, b) => b.mtime - a.mtime).map((file) => file.path)
+  return files.sort((a, b) => b.mtime - a.mtime)
+}
+
+async function getConfirmationMessage(message, content) {
+	const confirm = await message.channel.send(content)
+	confirm.react("✅")
+	confirm.react("❌")
+	const reactionFilter = (reaction, user) => user.id === message.author.id
+	let reactions
+	try {
+		reactions = await confirm.awaitReactions(reactionFilter, { max: 1, time: 120000, errors: ["time"] })
+	} catch (error) {
+		return false
+	}
+	const reaction = reactions.first()
+	if (reaction.emoji.name === "❌") return false
+	return true
+}
+
+/**
+ * 
+ * @param {Array} fields 
+ * @param {object} embedMsgOptions
+ * @param {embedMsgOptions.author} 
+ */
+async function createPagedEmbed(fields, embedMsgOptions, message) {
+	let embed = new discord.MessageEmbed(embedMsgOptions)
+	let page = 0
+	const maxPages = Math.floor(fields.length / 25)
+	embed.fields = fields.slice(0, 25)
+	let embedMsg = await message.channel.send(embed)
+	
+	const setData = async () => {
+		const start = page * 25
+		embed.fields = fields.slice(start, start + 25)
+		embedMsg = await embedMsg.edit(null, embed)
+	}
+	const removeReaction = async (emoteName) => {
+		embedMsg.reactions.cache.find(r => r.emoji.name === emoteName).users.remove(message.author.id)
+	}
+
+	embedMsg.react("⬅️")
+	embedMsg.react("➡️")
+	embedMsg.react("🗑️")
+
+
+	const backwardsFilter = (reaction, user) => reaction.emoji.name === "⬅️" && user.id === message.author.id
+	const forwardsFilter = (reaction, user) => reaction.emoji.name === "➡️" && user.id === message.author.id
+	const removeFilter = (reaction, user) => reaction.emoji.name === "🗑️" && user.id === message.author.id
+
+	const backwards = embedMsg.createReactionCollector(backwardsFilter, { timer: 60000 })
+	const forwards = embedMsg.createReactionCollector(forwardsFilter, { timer: 60000 })
+	const remove = embedMsg.createReactionCollector(removeFilter, { timer: 60000 })
+	
+	backwards.on("collect", (reaction) => {
+		page++;
+		if (page > maxPages) page = 0
+		removeReaction("⬅️")
+		setData()
+	})
+	forwards.on("collect", (reaction) => {
+		page--;
+		if (page == -1) page = maxPages
+		removeReaction("➡️")
+		setData()
+	})
+	
+	remove.on("collect", () => {
+		embedMsg.delete()
+	})
 }
