@@ -41,25 +41,28 @@ class Comfy extends Client {
       })
     })
     setInterval(() => {
-      this.serverQueues.forEach((server) => {
+      this.serverQueues.forEach(server => {
         if (server.sendingMessage === true) return
         server.sendingMessage = true
         let message = ""
-        while (!server.messageQueue.isEmpty()) {
-					let fromQueue = server.messageQueue.first()
+				while (!server.messageQueue.isEmpty()) {
+					const fromQueue = server.messageQueue.first()
 					if (fromQueue.length > this.consts.discordMessageLengthLimit) {
 						// if the line from the server is over 2000 chars then just remove it and don't care about it
 						server.messageQueue.shift()
 					} else {
+						// if the new line in addition is too long then don't send it
 						if (message.length + fromQueue.length > this.consts.discordMessageLengthLimit) break
-						message += `${server.messageQueue.shift()}\n`
-        }
-        if (message.length) {
-          this.channels.cache.get(server.server.discordid)?.send(message).then(() => server.sendingMessage = false)
-        } else server.sendingMessage = false
-        }
-	server.sendingMessage = false
-      })}, 50)
+						message += `${server.messageQueue.shift()}\n` // remove from queue if it is within limits
+					}
+				}
+				if (message.length) {
+					this.channels.cache.get(server.server.discordid)?.send(message).then(() => server.sendingMessage = false)
+				} else {
+					server.sendingMessage = false
+				}
+			})
+		}, 100)
     this.factorioServers = factorioServers
 
     this.states = {};

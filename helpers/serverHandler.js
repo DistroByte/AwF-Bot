@@ -139,12 +139,13 @@ class serverHandler {
 		if (line.includes("RESEARCH FINISHED:")) {
 			const research = line.slice(line.indexOf("RES") + ("RESEARCH FINISHED:").length).trim().split(" ")[0]
 			const level = line.slice(line.indexOf("RES") + ("RESEARCH FINISHED:").length).trim().split(" ")[1]
-			this._appendMessage(server, `${this.client.emotes?.sciencepack} ${research} at level ${level} has been researched!`)
 			if (research === "logistic-robotics")
 				this._appendMessage(server, `${this.client.emotes?.logibots} Is it a bird? Is it a plane...?`)
+			else 
+				this._appendMessage(server, `${this.client.emotes?.sciencepack} ${research} at level ${level} has been researched!`)
 			ServerStatistics.findOneAndUpdate({ serverID: server.discordid }, {
 				$push: { completedResearch: { name: research, level: level } }
-			}).then(() => { })
+			}).exec()
 		}
 		if (line.includes("DIED")) {
 			line = line.slice("DIED: ".length);
@@ -305,6 +306,7 @@ class serverHandler {
 		}
 	}
 	async discordHandler(data) {
+		if (data.server.dev) return // ignore dev server
 		const message = data.line.replace("${serverName}", `<#${data.server.discordid}>`)
 		const embed = JSON.parse(message)
 		this.client.channels.cache.get(data.server.discordid)?.send((new MessageEmbed(embed)))
