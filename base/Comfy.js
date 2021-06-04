@@ -57,8 +57,9 @@ class Comfy extends Client {
         if (message.length) {
           this.channels.cache.get(server.server.discordid)?.send(message).then(() => server.sendingMessage = false)
         } else server.sendingMessage = false
-      })
-    }, 50)
+        }
+	server.sendingMessage = false
+      })}, 50)
     this.factorioServers = factorioServers
 
     this.states = {};

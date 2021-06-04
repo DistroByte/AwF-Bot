@@ -92,6 +92,7 @@ class serverHandler {
   _appendMessage(fromServer, msg) {
     this.client.serverQueues.forEach((srv) => {
       if (srv.server.discordid === fromServer.discordid) {
+	console.log("pushing")
         srv.messageQueue.push(msg)
       }
     })

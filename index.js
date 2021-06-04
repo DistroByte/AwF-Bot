@@ -3,8 +3,8 @@ const util = require('util'),
   readdir = util.promisify(fs.readdir),
   mongoose = require('mongoose');
 
-const Comfy = require('./base/Comfy'),
-  client = new Comfy();
+const Comfy = require('./base/Comfy')
+const client = new Comfy()
 
 // remove all files from ./temp/ dir to prevent random bs
 try {

@@ -41,7 +41,6 @@ setInterval(() => {
   })
 }, 1000)
 
-const config = require("../config")
 // Server for data collection
 http.createServer(async (req, res) => {
   if (req.url.endsWith("/metrics")) {
