@@ -26,10 +26,9 @@ class Rollback extends Command {
 
 	async run(message, args) {
 		const serverid = message.mentions.channels.first()?.id || await this.client.channels.fetch(args[0]).then(c => c?.id)
-		if (!serverid) return message.channel.send(`\`${args[0]}\` is an invalid server!`)
-
 		const server = servers.find(server => server.discordid === serverid)
 		if (!server) return message.channel.send(`\`${args[0]}\` is an invalid server!`)
+		
 		if (!args[1]) {
 			// no save provided
 			const savefiles = sortModifiedDate(fs.readdirSync(`${this.client.config.serverpath}/${server.path}/saves`).map(path => `${this.client.config.serverpath}/${server.path}/saves/${path}`)).filter(save => save.path.endsWith(".zip"))

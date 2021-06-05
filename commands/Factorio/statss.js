@@ -13,7 +13,7 @@ class Linkme extends Command {
 			dirname: __dirname,
 			enabled: true,
 			guildOnly: false,
-			aliases: ["fstatsserver", "factorioserverstatistics"],
+			aliases: ["fstatsserver", "factorioserverstatistics", "serverstats"],
 			memberPermissions: [],
 			botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
 			nsfw: false,
