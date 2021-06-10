@@ -18,7 +18,8 @@ class Linkme extends Command {
       botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
       nsfw: false,
       ownerOnly: false,
-      cooldown: 5000
+			cooldown: 5000,
+			customPermissions: ["RCON_CMD"],
     });
   }
 

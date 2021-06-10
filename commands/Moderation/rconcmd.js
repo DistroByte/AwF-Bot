@@ -3,7 +3,7 @@ const Command = require("../../base/Command.js");
 const serverJS = require("../../servers")
 const rcon = require("../../helpers/rcon")
 
-class Linkme extends Command {
+class Rconcmd extends Command {
   constructor(client) {
     super(client, {
       name: "rconcmd",
@@ -18,12 +18,15 @@ class Linkme extends Command {
       botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
       nsfw: false,
       ownerOnly: false,
-      cooldown: 5000
+			cooldown: 5000,
+			customPermissions: ["RCON_CMD"],
     });
   }
 
   async run(message, args) {
     let toSendServer = {}
+		if (!args[0]) return message.channel.send("No server provided!")
+		if (!args[1]) return message.channel.send("No command provided!")
     if (message.mentions.channels.first()) {
       serverJS.forEach((server) => {
         if (server.path != "" && server.discordid == message.mentions.channels.first().id)
@@ -45,4 +48,4 @@ class Linkme extends Command {
 
 }
 
-module.exports = Linkme;
+module.exports = Rconcmd;

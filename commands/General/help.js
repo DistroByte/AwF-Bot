@@ -52,6 +52,12 @@ class Help extends Command {
         )
         .setColor(this.client.config.embed.color)
         .setFooter(this.client.config.embed.footer);
+			if (cmd.conf.customPermissions) {
+				const neededRoleIds = cmd.conf.customPermissions.map(permname => this.client.config.customPermissions.find(p => p.name === permname)).filter(r => r).map(p=>p.roleid)
+				const neededRoles = await Promise.all(neededRoleIds.map(roleid => message.guild.roles.fetch(roleid))).then(r=>r.filter(r=>r))
+				if (neededRoles.length)
+					groupEmbed.addField("You can also use these roles instead", neededRoles.join("`, `"))
+			}
 
       // and send the embed in the current channel
       return message.channel.send(groupEmbed);
