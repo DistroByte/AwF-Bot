@@ -14,6 +14,7 @@ class tailListener extends EventEmitter {
     this._tailLocations.forEach((tailStuff) => {
       let tail = new Tail(tailStuff.path)
       tail.on('line', (line) => {
+				const serverStartRegExp = new RegExp(/Info ServerMultiplayerManager.cpp:\d\d\d: Matching server connection resumed/)
         if (line.includes("[CHAT]"))
           this.client?.ws ? this.client.logger.log(`${tailStuff.server.name}: ${line}`) : console.log(`${tailStuff.server.name}: ${line}`)
         this.emit("ALL", { line: line, server: tailStuff.server })
@@ -25,6 +26,8 @@ class tailListener extends EventEmitter {
           return this.emit("playerJoin", { line: JSON.parse(line), server: tailStuff.server })
         else if (line.includes(`"leave"`))
           return this.emit("playerLeave", { line: JSON.parse(line), server: tailStuff.server })
+				else if (serverStartRegExp.test(line))
+					return this.emit("start", { line: line, server: tailStuff.server })
         else this.emit(tailStuff.type || "line", { line: line, server: tailStuff.server })
       })
     })

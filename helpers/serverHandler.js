@@ -25,6 +25,7 @@ class serverHandler {
 		Tails.on("datastore", (log) => this.datastoreHandler(log))
 		Tails.on("discord", (log) => this.discordHandler(log))
 		Tails.on("ALL", (log) => this.allHandler(log))
+		Tails.on("start", (log) => this.startHandler(log))
 	}
 	_formatDate(line) {
 		return line.trim().slice(line.indexOf("0.000") + 6, 25);
@@ -312,24 +313,26 @@ class serverHandler {
 		this.client.channels.cache.get(data.server.discordid)?.send((new MessageEmbed(embed)))
 		this.client.channels.cache.get(this.client.config.moderatorchannel)?.send((new MessageEmbed(embed)))
 	}
-	async allHandler(data) {
-		const serverStartRegExp = new RegExp(/Info ServerMultiplayerManager.cpp:\d\d\d: Matching server connection resumed/)
-		if (data.line.toLowerCase().includes("error") && !data.line.toLowerCase().includes("all files loaded with 0 errors"))
-			this.client.channels.cache.get(this.client.config.errorchannel)?.send(`Error in <#${data.server.discordid}>\n${data.line}`)
-		if (this.client.factorioServers.find((server) => server.discordid == data.server.discordid)) {
-			let server = this.client.factorioServers.find((server) => server.discordid == data.server.discordid)
-			if (data.line.match(serverStartRegExp) && server.roleSync) {
-				setTimeout(async () => {
-					let roles = await Users.find({}).select({ 'factorioName': 1, 'factorioRoles': 1 }).exec()
-					let toSend = {}
-					roles.forEach((player) => {
-						if (!player.factorioName) return
-						else toSend[player.factorioName] = player.factorioRoles
-					})
-					const res = await rcon.rconCommand(`/interface Roles.override_player_roles(game.json_to_table('${JSON.stringify(toSend)}'))`, server.discordid).then((output) => output.resp)
-					if (res.trim() == "Command Complete") this.client.channels.cache.get(data.server.discordid).send("Roles have synced")
-				}, 5000) // allow server to connect to rcon
-			}
+	async startHandler(data) {
+		let server = data.server
+		if (server.roleSync) {
+			setTimeout(async () => {
+				let roles = await Users.find({}).select({ 'factorioName': 1, 'factorioRoles': 1 }).exec()
+				let toSend = {}
+				roles.forEach((player) => {
+					if (!player.factorioName) return
+					else toSend[player.factorioName] = player.factorioRoles
+				})
+				const res = await rcon.rconCommand(`/interface Roles.override_player_roles(game.json_to_table('${JSON.stringify(toSend)}'))`, server.discordid).then((output) => output.resp)
+				if (res.trim() == "Command Complete") this.client.channels.cache.get(data.server.discordid).send("Roles have synced")
+			}, 5000) // allow server to connect to rcon
+		}
+		const stats = await ServerStatistics.findOne({ serverID: server.discordid})
+		if (!stats) {
+			await ServerStatistics.create({
+				serverID: server.discordid,
+				serverName: server.discordName
+			})
 		}
 	}
 }
