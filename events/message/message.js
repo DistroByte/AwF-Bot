@@ -148,7 +148,7 @@ module.exports = class {
     }
 
     if (message.guild) {
-      let neededPermissions = [];
+      let neededPermissions = []
       if (!cmd.conf.botPermissions.includes('EMBED_LINKS')) {
         cmd.conf.botPermissions.push('EMBED_LINKS');
       }
@@ -169,10 +169,27 @@ module.exports = class {
           neededPermissions.push(perm);
         }
       });
+			let customPermissions = []
+			cmd.conf.customPermissions.forEach(permname => {
+				const perm = this.client.config.customPermissions.find(p => p.name === permname)
+				if (!perm) return
+				if (!message.member.roles.cache.has(perm.roleid))
+					customPermissions.push(perm)
+			})
 
-      if (neededPermissions.length > 0) {
-        return message.channel.send(`You need the following permissions to execute this command: ${neededPermissions.map((p) => `\`${p}\``).join(', ')}`);
-      }
+			// custom command perms. if there are custom permissions, they take priority over normal perms
+			if (customPermissions.length) {
+				const neededRoleIds = cmd.conf.customPermissions.map(permname => this.client.config.customPermissions.find(p => p.name === permname)).filter(r => r).map(p => p.roleid)
+				const neededRoles = await Promise.all(neededRoleIds.map(roleid => message.guild.roles.fetch(roleid))).then(r => r.filter(r => r))
+				return message.channel.send(`You need the following permissions to execute this command: ${neededPermissions.map((p) => `\`${p}\``).join(', ')}. You can also have the following roles: \`${neededRoles.map(r => r.name).join("`, `")}\``);
+			}
+			else {
+				const neededRoleIds = cmd.conf.customPermissions.map(permname => this.client.config.customPermissions.find(p => p.name === permname)).filter(r => r).map(p => p.roleid)
+				const neededRoles = await Promise.all(neededRoleIds.map(roleid => message.guild.roles.fetch(roleid))).then(r => r.filter(r => r))
+				if ((customPermissions.length !== 0 && cmd.conf.customPermissions.length) && neededPermissions.length > 0) {
+					return message.channel.send(`You need the following permissions to execute this command: ${neededPermissions.map((p) => `\`${p}\``).join(', ')}. You can also have the following roles: \`${neededRoles.map(r => r.name).join("`, `")}\``);
+				}
+			}
 
       if (!message.channel.permissionsFor(message.member).has('MENTION_EVERYONE') && (message.content.includes('@everyone') || message.content.includes('@here'))) {
         return message.channel.send('You are not allowed to mention `@everyone` or `@here` in commands');
