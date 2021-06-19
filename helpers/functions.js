@@ -237,19 +237,21 @@ async function getConfirmationMessage(message, content) {
 /**
  * 
  * @param {Array} fields 
- * @param {object} embedMsgOptions
- * @param {embedMsgOptions.author} 
+ * @param {object} embedMsgOptions - Standard
+ * @param {object} options
+ * @param {options.maxPageCount} maxPageCount - maximum number of things on the page
  */
-async function createPagedEmbed(fields, embedMsgOptions, message) {
-	let embed = new discord.MessageEmbed(embedMsgOptions)
+async function createPagedEmbed(fields, embedMsgOptions, message, options = {}) {
+	if (!options.maxPageCount) options.maxPageCount = 25
+	let embed = new MessageEmbed(embedMsgOptions)
 	let page = 0
-	const maxPages = Math.floor(fields.length / 25)
-	embed.fields = fields.slice(0, 25)
+	const maxPages = Math.floor(fields.length / options.maxPageCount)
+	embed.fields = fields.slice(0, options.maxPageCount)
 	let embedMsg = await message.channel.send(embed)
-	
+
 	const setData = async () => {
-		const start = page * 25
-		embed.fields = fields.slice(start, start + 25)
+		const start = page * options.maxPageCount
+		embed.fields = fields.slice(start, start + options.maxPageCount)
 		embedMsg = await embedMsg.edit(null, embed)
 	}
 	const removeReaction = async (emoteName) => {
@@ -265,23 +267,23 @@ async function createPagedEmbed(fields, embedMsgOptions, message) {
 	const forwardsFilter = (reaction, user) => reaction.emoji.name === "➡️" && user.id === message.author.id
 	const removeFilter = (reaction, user) => reaction.emoji.name === "🗑️" && user.id === message.author.id
 
-	const backwards = embedMsg.createReactionCollector(backwardsFilter, { timer: 60000 })
-	const forwards = embedMsg.createReactionCollector(forwardsFilter, { timer: 60000 })
-	const remove = embedMsg.createReactionCollector(removeFilter, { timer: 60000 })
-	
+	const backwards = embedMsg.createReactionCollector(backwardsFilter, { timer: 120000 })
+	const forwards = embedMsg.createReactionCollector(forwardsFilter, { timer: 120000 })
+	const remove = embedMsg.createReactionCollector(removeFilter, { timer: 120000 })
+
 	backwards.on("collect", (reaction) => {
-		page++;
-		if (page > maxPages) page = 0
-		removeReaction("⬅️")
-		setData()
+		page--
+		removeReaction("⬅️") // remove the user's reaction no matter what
+		if (page == -1) page = 0
+		else setData()
 	})
 	forwards.on("collect", (reaction) => {
-		page--;
-		if (page == -1) page = maxPages
-		removeReaction("➡️")
-		setData()
+		page++
+		removeReaction("➡️") // remove the user's reaction no matter what
+		if (page > maxPages) page = maxPages
+		else setData()
 	})
-	
+
 	remove.on("collect", () => {
 		embedMsg.delete()
 	})
