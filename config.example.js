@@ -18,7 +18,7 @@ module.exports = {
     id: "429696038266208258",
     name: "oof2win2#3149"
   },
-  apiKeys: { // Some API keys
+  apiKeys: { // Some API keys. Not used
     amethyste: "",
     dbl: ""
   },
