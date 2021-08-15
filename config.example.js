@@ -18,7 +18,7 @@ module.exports = {
     id: "429696038266208258",
     name: "oof2win2#3149"
   },
-  apiKeys: { // Some API keys
+  apiKeys: { // Some API keys. Not used
     amethyste: "",
     dbl: ""
   },
@@ -42,8 +42,8 @@ module.exports = {
     discord: "script-output/ext/discord.out"
   },
   errorchannel: "", // Channel to send errors and other messages to
-  moderatorchannel: "", // Moderator channel ID
-  testbotid: "", // ID of the test bot
+  moderatorchannel: "", // Moderator channel ID. Sends messages when a player uses /c etc.
+  testbotid: "", // ID of the test bot. Can be blank.
   factorioRoles: {
     admin: { id: "", name: "" },      // unlimited amount of these available
     moderator: { id: "", name: "" },  // Factorio-Discord role sync. Discord role ID:Factorio role name. Example below
@@ -51,5 +51,5 @@ module.exports = {
     trusted: { id: "", name: "" },
   },
   archivePath: "", // path to your archive folder
-	promPort: 9111, // port for prometheus to run on
+  promPort: 9111, // port for prometheus to run on
 };

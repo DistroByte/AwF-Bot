@@ -24,7 +24,7 @@ class serverHandler {
 		Tails.on("logging", (log) => this.awfLogging(log))
 		Tails.on("datastore", (log) => this.datastoreHandler(log))
 		Tails.on("discord", (log) => this.discordHandler(log))
-		Tails.on("ALL", (log) => this.allHandler(log))
+		// Tails.on("ALL", (log) => this.allHandler(log))
 		Tails.on("start", (log) => this.startHandler(log))
 	}
 	_formatDate(line) {
@@ -130,8 +130,45 @@ class serverHandler {
 			this._appendMessage(server, `${this.client.emotes?.playerjoin} ${line.playerName} has joined the game`)
 			this._assignRoles(line.playerName, server).then(() => { })
 		}
-		if (line.type === "leave")
-			this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} has left the game due to reason ${line.reason}`)
+		if (line.type === "leave") {
+			switch (line.reason) {
+				case "quit":
+					this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} has left the game`)
+					break;
+				case "dropped":
+					this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} was dropped from the game`)
+					break;
+				case "reconnect":
+					this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} has left to reconnected to the game`)
+					break;
+				case "wrong_input":
+					this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} has left due to wrong input`)
+					break;
+				case "desync_limit_reached":
+					this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} has desynced`)
+					break;
+				case "cannot_keep_up":
+					this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} could not keep up with the game`)
+					break;
+				case "afk":
+					this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} is AFK or asleep`)
+					break;
+				case "kicked":
+					this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} was yeeted`)
+					break;
+				case "kicked_and_deleted":
+					this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} was vaporized`)
+					break;
+				case "banned":
+					this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} heard the banhammer speak`)
+					break;
+				case "switching_servers":
+					this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} is switching servers`)
+					break;
+				default:
+					this._appendMessage(server, `${this.client.emotes?.playerleave} ${line.playerName} quit due to reason ${line.reason}`)
+			}
+		}
 	}
 	async jloggerHandler(data) {
 		let line = data.line
