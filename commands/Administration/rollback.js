@@ -26,6 +26,7 @@ class Rollback extends Command {
 	}
 
 	async run(message, args) {
+    if (!args[0]) return message.channel.send("Ping a server!")
 		const serverid = message.mentions.channels.first()?.id || await this.client.channels.fetch(args[0]).then(c => c?.id)
 		const server = servers.find(server => server.discordid === serverid)
 		if (!server) return message.channel.send(`\`${args[0]}\` is an invalid server!`)
@@ -41,7 +42,7 @@ class Rollback extends Command {
 			const content = savefiles.map(savefile => {
 				return {
 					name: `\`${savefile.path.slice(savefile.path.lastIndexOf("/") + 1, -(".zip".length))}\``,
-					value: (new Date(savefile.mtime)).toISOString()
+					value: `<t:${Math.round((new Date(savefile.mtime)).valueOf()/1000)}>`
 				}
 			})
 
@@ -52,7 +53,7 @@ class Rollback extends Command {
 			try {
 				save = fs.statSync(`${this.client.config.serverpath}/${server.path}/saves/${args[1]}.zip`)
 			} catch (e) {
-				return message.channel.send(`\`${args[1]}\` is an invalid save!`)
+				return message.channel.send(`${args[1]} is an invalid save!`)
 			}
 			const confirm = await getConfirmationMessage(message, `Are you sure you want to reset the save to \`${args[1]}\` from ${(new Date(save.mtime).toISOString())}?`)
 			if (!confirm) return message.channel.send("Rollback cancelled")
@@ -62,7 +63,7 @@ class Rollback extends Command {
 				`${this.client.config.serverpath}/${server.path}/factorio-init/factorio load-save ${args[1]}`,
 				`${this.client.config.serverpath}/${server.path}/factorio-init/factorio start`
 			].join(" && ")
-			console.log(command)
+
 			// return
 			await runShellCommand(command).catch((e) => {
 				return message.channel.send(`Error restoring: \`${e}\``);
