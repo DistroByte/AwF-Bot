@@ -6,6 +6,7 @@
   "dependencies": {
     "@discordjs/opus": "^0.4.0",
     "@influxdata/influxdb-client": "^1.10.0",
+    "@prisma/client": "^3.0.1",
     "@sindresorhus/slugify": "^1.1.0",
     "@supercharge/strings": "^1.18.0",
     "amethyste-api": "^1.1.5",
@@ -39,6 +40,7 @@
     "node-fetch": "^2.6.1",
     "nodemailer": "^6.4.17",
     "nodemailer-smtp-transport": "^2.7.4",
+    "prisma": "^3.0.1",
     "prom-client": "^13.1.0",
     "rcon-client": "^4.2.3",
     "request": "^2.88.2",

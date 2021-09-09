@@ -10,6 +10,7 @@ const serversJS = require("../servers")
 const childprocess = require("child_process")
 const discord = require("discord.js")
 const fs = require("fs")
+const prismadb = require("./prismadb")
 
 module.exports = {
   getPrefix,
@@ -20,14 +21,17 @@ module.exports = {
   convertTime,
   getLevel,
   getCommunitiveXp,
-  getLevelXp, 
+  getLevelXp,
   sendEmail,
   bubbleSort,
   getServerFromChannelInput,
   runShellCommand,
   sortModifiedDate,
-	getConfirmationMessage,
-	createPagedEmbed,
+  getConfirmationMessage,
+  createPagedEmbed,
+  addban,
+  removeban,
+  checkBan
 }
 function getPrefix(message, data) {
   if (message.channel.type !== 'dm') {
@@ -129,7 +133,7 @@ function getCommunitiveXp(lvl) {
 function getLevelXp(lvl) {
   return levelXp = 5 * Math.floor(lvl / 1) ** 2 + 50 * Math.floor(lvl / 1) + 100
 }
-function sendEmail (emailAddress, contents, callback) {
+function sendEmail(emailAddress, contents, callback) {
   let transporter = nodemailer.createTransport(smtpTransport({
     service: "gmail",
     host: "smtp.gmail.com",
@@ -288,4 +292,69 @@ async function createPagedEmbed(fields, embedMsgOptions, message, options = {}) 
   remove.on("collect", () => {
     embedMsg.delete()
   })
+}
+
+/**
+ * Check whether or not a player is on the banlist
+ * @param {String} playername
+ */
+async function checkBan(playername) {
+  const extra = await prismadb.extraBans.findFirst({
+    where: {
+      playername: playername
+    }
+  })
+  if (extra) return extra
+
+  const banned = await prismadb.bannedPlayers.findFirst({
+    where: {
+      playername: playername
+    }
+  })
+  if (banned && banned.id) return banned
+  return false
+}
+
+/**
+ * Add a player to the banlist
+ * @param {String} playername
+ * @param {String} reason
+ */
+async function addban(playername, reason) {
+  const player = await prismadb.extraBans.create({
+    data: {
+      playername: playername,
+      reason: reason
+    }
+  })
+  return player
+}
+
+/**
+ * Remove a player from the banlist
+ * @param {String} playername 
+ */
+async function removeban(playername) {
+  const extraBans = await prismadb.extraBans.findFirst({where: {
+    playername: playername
+  }})
+  if (extraBans) 
+  await prismadb.extraBans.delete({
+    where: {
+      playername: playername
+    }
+  })
+
+  const bannedPlayers = await prismadb.bannedPlayers.findFirst({where: {
+    playername: playername
+  }})
+
+  if (bannedPlayers)
+  await prismadb.bannedPlayers.delete({
+    where: {
+      playername: playername
+    }
+  })
+
+  return true
 }

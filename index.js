@@ -5,6 +5,10 @@ const util = require('util'),
 
 const Comfy = require('./base/Comfy')
 const client = new Comfy()
+require("./helpers/prismadb")
+
+setTimeout(require("./helpers/migratebans"), 10000)
+
 
 // remove all files from ./temp/ dir to prevent random bs
 try {

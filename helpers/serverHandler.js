@@ -10,6 +10,7 @@ const lodash = require("lodash")
 const { MessageEmbed } = require("discord.js")
 const Users = require("../base/User")
 const { Util } = require("discord.js")
+const prismadb = require("./prismadb")
 
 class serverHandler {
 	constructor(client) {
@@ -129,6 +130,14 @@ class serverHandler {
 		if (line.type === "join") {
 			this._appendMessage(server, `${this.client.emotes?.playerjoin} ${line.playerName} has joined the game`)
 			this._assignRoles(line.playerName, server).then(() => { })
+
+      // check if player is banned
+      const banned = await prismadb.bannedPlayers.findFirst({
+        where: {
+          playername: line.playerName
+        }
+      })
+      if (banned) rcon.rconCommandAll(`/ban ${line.playerName} Please defer your ban on http://awf.yt`)
 		}
 		if (line.type === "leave") {
 			switch (line.reason) {
