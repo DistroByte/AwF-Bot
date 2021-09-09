@@ -11,4 +11,4 @@ test.js
 servers.js
 config.js
 .env
-prisma/database.sqlite
+database.sqlite

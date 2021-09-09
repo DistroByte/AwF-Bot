@@ -1,21 +1,31 @@
-const prisma = require("./prismadb")
+const {BannedPlayers} = require("./sqlitedb")
 const bannedPlayers = require("../banlist-full.json")
 
 const run = async () => {
   // this is "truncating"
-  await prisma.$executeRaw`Delete from bannedPlayers;`
-  await prisma.$executeRaw`DELETE FROM SQLITE_SEQUENCE WHERE name='bannedPlayers';`
+  await BannedPlayers.truncate()
+
   const players = new Map()
   bannedPlayers.forEach(player => players.set(player.username, true))
-  await Promise.all(Array.from(players.keys()).map(async (player, i) => 
-    {
-      await prisma.bannedPlayers.create({
-        data: {
-          playername: player
-        }
-      })
+
+  const bans = Array.from(players.keys()).map(player => {
+    return {
+      playername: player,
+      reason: "Defer your ban at http://awf.yt"
     }
-  ))
+  })
+
+  await BannedPlayers.bulkCreate(bans)
+  
+  // await Promise.all(Array.from(players.keys()).map(async (player, i) => 
+  //   {
+      // await prisma.bannedPlayers.create({
+  //       data: {
+  //         playername: player
+  //       },
+  //     })
+  //   }
+  // ))
   return true
 }
 

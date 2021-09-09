@@ -27,7 +27,7 @@ class Checkban extends Command {
     const status = await checkBan(playername)
     if (!status) return message.channel.send(`${playername} is currently not banned`)
 
-    return message.channel.send(`${playername} is banned for ${status.reason}`)
+    return message.channel.send(`${playername} is banned for \`${status.reason}\``)
   }
 
 }

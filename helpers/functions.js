@@ -10,7 +10,7 @@ const serversJS = require("../servers")
 const childprocess = require("child_process")
 const discord = require("discord.js")
 const fs = require("fs")
-const prismadb = require("./prismadb")
+const {BannedPlayers, ExtraBans} = require("./sqlitedb")
 
 module.exports = {
   getPrefix,
@@ -299,19 +299,19 @@ async function createPagedEmbed(fields, embedMsgOptions, message, options = {}) 
  * @param {String} playername
  */
 async function checkBan(playername) {
-  const extra = await prismadb.extraBans.findFirst({
+  const extra = await ExtraBans.findOne({
     where: {
       playername: playername
     }
   })
-  if (extra) return extra
+  if (extra) return extra.dataValues
 
-  const banned = await prismadb.bannedPlayers.findFirst({
+  const banned = await BannedPlayers.findOne({
     where: {
       playername: playername
     }
   })
-  if (banned && banned.id) return banned
+  if (banned && banned.id) return banned.dataValues
   return false
 }
 
@@ -321,12 +321,11 @@ async function checkBan(playername) {
  * @param {String} reason
  */
 async function addban(playername, reason) {
-  const player = await prismadb.extraBans.create({
-    data: {
-      playername: playername,
-      reason: reason
-    }
+  const player = await ExtraBans.create({
+    playername: playername,
+    reason: reason || "No reason given"
   })
+  
   return player
 }
 
@@ -335,26 +334,19 @@ async function addban(playername, reason) {
  * @param {String} playername 
  */
 async function removeban(playername) {
-  const extraBans = await prismadb.extraBans.findFirst({where: {
-    playername: playername
-  }})
-  if (extraBans) 
-  await prismadb.extraBans.delete({
+  const extrabans = await ExtraBans.findOne({
     where: {
       playername: playername
     }
   })
+  if (extrabans) extrabans.destroy()
 
-  const bannedPlayers = await prismadb.bannedPlayers.findFirst({where: {
-    playername: playername
-  }})
-
-  if (bannedPlayers)
-  await prismadb.bannedPlayers.delete({
+  const banned = await BannedPlayers.findOne({
     where: {
       playername: playername
     }
   })
+  if (banned) banned.destroy()
 
   return true
 }

@@ -28,11 +28,11 @@ class BanPlayer extends Command {
     const reason = args.join(" ")
 
     const isbanned = await checkBan(playername)
-    if (isbanned) return message.channel.send(`${playername} is already banned for ${reason}!`)
+    if (isbanned) return message.channel.send(`${playername} is already banned for \`${isbanned.reason}!\``)
 
     await rcon.rconCommandAll(`/ban ${playername} ${reason}`)
     await addban(playername, reason)
-    return message.channel.send(`${playername} was banned for ${reason}`)
+    return message.channel.send(`${playername} was banned for \`${reason}\``)
   }
 
 }

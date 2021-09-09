@@ -10,7 +10,8 @@ const lodash = require("lodash")
 const { MessageEmbed } = require("discord.js")
 const Users = require("../base/User")
 const { Util } = require("discord.js")
-const prismadb = require("./prismadb")
+const config = require("../config")
+const { checkBan } = require("./functions")
 
 class serverHandler {
 	constructor(client) {
@@ -132,11 +133,7 @@ class serverHandler {
 			this._assignRoles(line.playerName, server).then(() => { })
 
       // check if player is banned
-      const banned = await prismadb.bannedPlayers.findFirst({
-        where: {
-          playername: line.playerName
-        }
-      })
+      const banned = await checkBan(line.playerName)
       if (banned) rcon.rconCommandAll(`/ban ${line.playerName} Please defer your ban on http://awf.yt`)
 		}
 		if (line.type === "leave") {
@@ -356,8 +353,14 @@ class serverHandler {
 		if (data.server.dev) return // ignore dev server
 		const message = data.line.replace("${serverName}", `<#${data.server.discordid}>`)
 		const embed = JSON.parse(message)
-		this.client.channels.cache.get(data.server.discordid)?.send((new MessageEmbed(embed)))
-		this.client.channels.cache.get(this.client.config.moderatorchannel)?.send((new MessageEmbed(embed)))
+		this.client.channels.cache.get(data.server.discordid)?.send({
+      embed: (new MessageEmbed(embed)),
+      message: `<@&${config.moderatorroleid}>`
+    })
+		this.client.channels.cache.get(this.client.config.moderatorchannel)?.send({
+      embed: (new MessageEmbed(embed)),
+      message: `<@&${config.moderatorroleid}>`
+    })
 	}
 	async startHandler(data) {
 		let server = data.server
