@@ -355,11 +355,11 @@ class serverHandler {
 		const embed = JSON.parse(message)
 		this.client.channels.cache.get(data.server.discordid)?.send({
       embed: (new MessageEmbed(embed)),
-      message: `<@&${config.moderatorroleid}>`
+      content: `<@&${config.moderatorroleid}>`
     })
 		this.client.channels.cache.get(this.client.config.moderatorchannel)?.send({
       embed: (new MessageEmbed(embed)),
-      message: `<@&${config.moderatorroleid}>`
+      content: `<@&${config.moderatorroleid}>`,
     })
 	}
 	async startHandler(data) {
