@@ -5,10 +5,12 @@
 const nodemailer = require('nodemailer');
 const smtpTransport = require('nodemailer-smtp-transport');
 const { emailUser, emailPass } = require('../config')
+const {MessageEmbed} = require("discord.js")
 const serversJS = require("../servers")
 const childprocess = require("child_process")
 const discord = require("discord.js")
 const fs = require("fs")
+const {BannedPlayers, ExtraBans} = require("./sqlitedb")
 
 module.exports = {
   getPrefix,
@@ -19,14 +21,17 @@ module.exports = {
   convertTime,
   getLevel,
   getCommunitiveXp,
-  getLevelXp, 
+  getLevelXp,
   sendEmail,
   bubbleSort,
   getServerFromChannelInput,
   runShellCommand,
   sortModifiedDate,
-	getConfirmationMessage,
-	createPagedEmbed,
+  getConfirmationMessage,
+  createPagedEmbed,
+  addban,
+  removeban,
+  checkBan
 }
 function getPrefix(message, data) {
   if (message.channel.type !== 'dm') {
@@ -128,7 +133,7 @@ function getCommunitiveXp(lvl) {
 function getLevelXp(lvl) {
   return levelXp = 5 * Math.floor(lvl / 1) ** 2 + 50 * Math.floor(lvl / 1) + 100
 }
-function sendEmail (emailAddress, contents, callback) {
+function sendEmail(emailAddress, contents, callback) {
   let transporter = nodemailer.createTransport(smtpTransport({
     service: "gmail",
     host: "smtp.gmail.com",
@@ -219,19 +224,19 @@ function sortModifiedDate(pathArr) {
 }
 
 async function getConfirmationMessage(message, content) {
-	const confirm = await message.channel.send(content)
-	confirm.react("✅")
-	confirm.react("❌")
-	const reactionFilter = (reaction, user) => user.id === message.author.id
-	let reactions
-	try {
-		reactions = await confirm.awaitReactions(reactionFilter, { max: 1, time: 120000, errors: ["time"] })
-	} catch (error) {
-		return false
-	}
-	const reaction = reactions.first()
-	if (reaction.emoji.name === "❌") return false
-	return true
+  const confirm = await message.channel.send(content)
+  confirm.react("✅")
+  confirm.react("❌")
+  const reactionFilter = (reaction, user) => user.id === message.author.id
+  let reactions
+  try {
+    reactions = await confirm.awaitReactions(reactionFilter, { max: 1, time: 120000, errors: ["time"] })
+  } catch (error) {
+    return false
+  }
+  const reaction = reactions.first()
+  if (reaction.emoji.name === "❌") return false
+  return true
 }
 
 /**
@@ -242,49 +247,106 @@ async function getConfirmationMessage(message, content) {
  * @param {options.maxPageCount} maxPageCount - maximum number of things on the page
  */
 async function createPagedEmbed(fields, embedMsgOptions, message, options = {}) {
-	if (!options.maxPageCount) options.maxPageCount = 25
-	let embed = new MessageEmbed(embedMsgOptions)
-	let page = 0
-	const maxPages = Math.floor(fields.length / options.maxPageCount)
-	embed.fields = fields.slice(0, options.maxPageCount)
-	let embedMsg = await message.channel.send(embed)
+  if (!options.maxPageCount) options.maxPageCount = 25
+  let embed = new MessageEmbed(embedMsgOptions)
+  let page = 0
+  const maxPages = Math.floor(fields.length / options.maxPageCount)
+  embed.fields = fields.slice(0, options.maxPageCount)
+  let embedMsg = await message.channel.send(embed)
 
-	const setData = async () => {
-		const start = page * options.maxPageCount
-		embed.fields = fields.slice(start, start + options.maxPageCount)
-		embedMsg = await embedMsg.edit(null, embed)
-	}
-	const removeReaction = async (emoteName) => {
-		embedMsg.reactions.cache.find(r => r.emoji.name === emoteName).users.remove(message.author.id)
-	}
+  const setData = async () => {
+    const start = page * options.maxPageCount
+    embed.fields = fields.slice(start, start + options.maxPageCount)
+    embedMsg = await embedMsg.edit(null, embed)
+  }
+  const removeReaction = async (emoteName) => {
+    embedMsg.reactions.cache.find(r => r.emoji.name === emoteName).users.remove(message.author.id)
+  }
 
-	embedMsg.react("⬅️")
-	embedMsg.react("➡️")
-	embedMsg.react("🗑️")
+  embedMsg.react("⬅️")
+  embedMsg.react("➡️")
+  embedMsg.react("🗑️")
 
 
-	const backwardsFilter = (reaction, user) => reaction.emoji.name === "⬅️" && user.id === message.author.id
-	const forwardsFilter = (reaction, user) => reaction.emoji.name === "➡️" && user.id === message.author.id
-	const removeFilter = (reaction, user) => reaction.emoji.name === "🗑️" && user.id === message.author.id
+  const backwardsFilter = (reaction, user) => reaction.emoji.name === "⬅️" && user.id === message.author.id
+  const forwardsFilter = (reaction, user) => reaction.emoji.name === "➡️" && user.id === message.author.id
+  const removeFilter = (reaction, user) => reaction.emoji.name === "🗑️" && user.id === message.author.id
 
-	const backwards = embedMsg.createReactionCollector(backwardsFilter, { timer: 120000 })
-	const forwards = embedMsg.createReactionCollector(forwardsFilter, { timer: 120000 })
-	const remove = embedMsg.createReactionCollector(removeFilter, { timer: 120000 })
+  const backwards = embedMsg.createReactionCollector(backwardsFilter, { timer: 120000 })
+  const forwards = embedMsg.createReactionCollector(forwardsFilter, { timer: 120000 })
+  const remove = embedMsg.createReactionCollector(removeFilter, { timer: 120000 })
 
-	backwards.on("collect", (reaction) => {
-		page--
-		removeReaction("⬅️") // remove the user's reaction no matter what
-		if (page == -1) page = 0
-		else setData()
-	})
-	forwards.on("collect", (reaction) => {
-		page++
-		removeReaction("➡️") // remove the user's reaction no matter what
-		if (page > maxPages) page = maxPages
-		else setData()
-	})
+  backwards.on("collect", (reaction) => {
+    page--
+    removeReaction("⬅️") // remove the user's reaction no matter what
+    if (page == -1) page = 0
+    else setData()
+  })
+  forwards.on("collect", (reaction) => {
+    page++
+    removeReaction("➡️") // remove the user's reaction no matter what
+    if (page > maxPages) page = maxPages
+    else setData()
+  })
 
-	remove.on("collect", () => {
-		embedMsg.delete()
-	})
+  remove.on("collect", () => {
+    embedMsg.delete()
+  })
+}
+
+/**
+ * Check whether or not a player is on the banlist
+ * @param {String} playername
+ */
+async function checkBan(playername) {
+  const extra = await ExtraBans.findOne({
+    where: {
+      playername: playername
+    }
+  })
+  if (extra) return extra.dataValues
+
+  const banned = await BannedPlayers.findOne({
+    where: {
+      playername: playername
+    }
+  })
+  if (banned && banned.id) return banned.dataValues
+  return false
+}
+
+/**
+ * Add a player to the banlist
+ * @param {String} playername
+ * @param {String} reason
+ */
+async function addban(playername, reason) {
+  const player = await ExtraBans.create({
+    playername: playername,
+    reason: reason || "No reason given"
+  })
+  
+  return player
+}
+
+/**
+ * Remove a player from the banlist
+ * @param {String} playername 
+ */
+async function removeban(playername) {
+  const extrabans = await ExtraBans.findOne({
+    where: {
+      playername: playername
+    }
+  })
+  if (extrabans) extrabans.destroy()
+
+  const banned = await BannedPlayers.findOne({
+    where: {
+      playername: playername
+    }
+  })
+  if (banned) banned.destroy()
+
+  return true
 }
