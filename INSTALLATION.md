@@ -11,4 +11,5 @@
 3. Populate your `servers.js` file from the example (`servers.example.js`)
 4. If files like `script-output/ext/awflogging.out` don't exist in your Factorio server folders, make sure they exist. All of the file names are in [config.example.js](config.example.js#L38). They can be blank.
 5. Optimally, install the [Discord integration mod](https://mods.factorio.com/mod/Factorio-Discord-BotIntegration/discussion/60e4b5bf4b7e496a4faed8d1) for an easy setup, or for more features, install the [scenario for Factorio](https://github.com/explosivegaming/scenario/) onto each server as a scenario, as it has more features
-6. Enjoy!
+6. Set the database up with `npx prisma generate && npx prisma db push`
+7. Run with `node .` or using PM2
