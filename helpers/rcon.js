@@ -1,10 +1,10 @@
 /**
  * @file RCON client manager for servers
  */
-const { Rcon } = require("rcon-client")
-const { rconport, rconpw, errorchannel } = require("../config")
-const servers = require("../servers")
-const discord = require("discord.js")
+const { Rcon } = require("rcon-client");
+const { rconport, rconpw, errorchannel } = require("../config");
+const servers = require("../servers");
+const discord = require("discord.js");
 /**
  * @typedef {Object} RCONOutput
  * @property {(String|Error)} resp - RCON output or error
@@ -19,65 +19,109 @@ class rconInterface {
    * @param {string} pw - RCON password - Same for all servers
    */
   constructor(rconConfig, pw) {
-    this._rconConfig = rconConfig
-    this._rconConnections = []
-    this._init()
-    this._client = undefined
+    this._rconConfig = rconConfig;
+    this.rconConnections = [];
+    this._init();
+    this._client = undefined;
   }
   _init() {
-    if (!this._rconConfig) return console.log("no config")
+    if (!this._rconConfig) return console.log("no config");
     this._rconConfig.forEach(async (server) => {
       let rcon = new Rcon({
         host: "localhost",
         port: server.rconport,
-        password: rconpw
-      })
+        password: rconpw,
+      });
       try {
-        await rcon.connect()
-        this._rconConnections.push({
+        await rcon.connect();
+        const getServerUps = await rcon.send("/interface 1");
+        const hasScenario = getServerUps.includes("Command Complete")
+          ? true
+          : false;
+        this.rconConnections.push({
           rcon: rcon,
-          server: server.server
-        })
+          server: server.server,
+          hasScenario: hasScenario,
+        });
 
         // reconnection mechanism
         rcon.on("end", () => {
-          let i = 0
+          let i = 0;
           const interval = setInterval(async () => {
             try {
-              rcon.connect().then(() => {
-                clearInterval(interval)
-                this.client?.channels.fetch(errorchannel).then((channel) => channel.send(`Server <#${server.server.discordid}> has connected to RCON`))
-              }).catch(() => { })
-              i++
-              if (i === 60) { // 5 minutes
+              rcon
+                .connect()
+                .then(() => {
+                  clearInterval(interval);
+                  this.client?.channels
+                    .fetch(errorchannel)
+                    .then((channel) =>
+                      channel.send(
+                        `Server <#${server.server.discordid}> has connected to RCON`
+                      )
+                    );
+                })
+                .catch(() => {});
+              i++;
+              if (i === 60) {
+                // 5 minutes
                 // clearInterval(interval) // just keep trying to reconnect
-                this.client?.channels.fetch(errorchannel).then((channel) => channel.send(`Server <#${server.server.discordid}> is having RCON issues`))
+                this.client?.channels
+                  .fetch(errorchannel)
+                  .then((channel) =>
+                    channel.send(
+                      `Server <#${server.server.discordid}> is having RCON issues`
+                    )
+                  );
               }
-            } catch (error) { }
-          }, 5000)
-        })
+            } catch (error) {}
+          }, 5000);
+        });
       } catch (error) {
-        console.error(error)
+        console.error(error);
         const errorSend = setInterval(() => {
-          this.client?.channels?.fetch(errorchannel).then((channel) => channel?.send(`Server <#${server.server.discordid}> is having RCON issues`))
-            .then(() => clearInterval(errorSend)).catch(() => { })
-        }, 1000)
-        let i = 0
+          this.client?.channels
+            ?.fetch(errorchannel)
+            .then((channel) =>
+              channel?.send(
+                `Server <#${server.server.discordid}> is having RCON issues`
+              )
+            )
+            .then(() => clearInterval(errorSend))
+            .catch(() => {});
+        }, 1000);
+        let i = 0;
         const interval = setInterval(async () => {
           try {
-            rcon.connect().then(() => {
-              clearInterval(interval)
-              this.client?.channels.fetch(errorchannel).then((channel) => channel.send(`Server <#${server.server.discordid}> has connected to RCON`))
-            }).catch(() => { })
-            i++
-            if (i === 60) { // 5 minutes
+            rcon
+              .connect()
+              .then(() => {
+                clearInterval(interval);
+                this.client?.channels
+                  .fetch(errorchannel)
+                  .then((channel) =>
+                    channel.send(
+                      `Server <#${server.server.discordid}> has connected to RCON`
+                    )
+                  );
+              })
+              .catch(() => {});
+            i++;
+            if (i === 60) {
+              // 5 minutes
               // clearInterval(interval) // just keep trying to reconnect
-              this.client?.channels.fetch(errorchannel).then((channel) => channel.send(`Server <#${server.server.discordid}> is having RCON issues`))
+              this.client?.channels
+                .fetch(errorchannel)
+                .then((channel) =>
+                  channel.send(
+                    `Server <#${server.server.discordid}> is having RCON issues`
+                  )
+                );
             }
-          } catch (error) { }
-        }, 5000)
+          } catch (error) {}
+        }, 5000);
       }
-    })
+    });
   }
   /**
    * Send a RCON command to a Factorio server
@@ -88,8 +132,14 @@ class rconInterface {
   async rconCommand(command, serverIdentifier) {
     if (!command.startsWith("/")) command = `/${command}`;
     let server = undefined;
-    this._rconConnections.forEach(serverConnections => {
-      if ([serverConnections.server.name, serverConnections.server.discordid, serverConnections.server.discordname].some((identifier) => identifier === serverIdentifier))
+    this.rconConnections.forEach((serverConnections) => {
+      if (
+        [
+          serverConnections.server.name,
+          serverConnections.server.discordid,
+          serverConnections.server.discordname,
+        ].some((identifier) => identifier === serverIdentifier)
+      )
         server = serverConnections;
     });
     if (server == undefined) {
@@ -97,9 +147,10 @@ class rconInterface {
     }
     try {
       let resp = await server.rcon.send(command);
-      if (typeof resp == "string" && resp.length) return { resp: resp, server: server };
+      if (typeof resp == "string" && resp.length)
+        return { resp: resp, server: server };
     } catch (error) {
-      return { resp: error, server: server }
+      return { resp: error, server: server };
     }
   }
   /**
@@ -108,18 +159,18 @@ class rconInterface {
    * @returns {Promise<RCONOutput[]>} RCON output of all servers
    */
   async rconCommandAll(command) {
-    let promiseArray = this._rconConnections.map(async (server) => {
+    let promiseArray = this.rconConnections.map(async (server) => {
       return new Promise(async (resolve, reject) => {
         const resultIdentifier = {
           name: server.server.name,
           discordid: server.server.discordid,
           discordname: server.server.discordname,
-        }
+        };
         this.rconCommand(command, server.server.discordid)
-          .then(res => resolve({ resp: res, server: resultIdentifier }))
-          .catch(e => reject({ resp: e, server: resultIdentifier }))
-      })
-    })
+          .then((res) => resolve({ resp: res, server: resultIdentifier }))
+          .catch((e) => reject({ resp: e, server: resultIdentifier }));
+      });
+    });
     return await Promise.all(promiseArray);
   }
   /**
@@ -132,24 +183,34 @@ class rconInterface {
     if (!command.startsWith("/")) command = `/${command}`; //add a '/' if not present
 
     const getArrayOverlap = (array1, array2) => {
-      return array1.filter(x => array2.indexOf(x) !== -1);
-    }
+      return array1.filter((x) => array2.indexOf(x) !== -1);
+    };
 
     let overlap = [];
-    let nameArr = this._rconConnections.map((connection) => { return connection.server.name });
-    let channelIDArr = this._rconConnections.map((connection) => { return connection.server.discordid });
-    let channelNameArr = this._rconConnections.map((connection) => { return connection.server.discordname });
+    let nameArr = this.rconConnections.map((connection) => {
+      return connection.server.name;
+    });
+    let channelIDArr = this.rconConnections.map((connection) => {
+      return connection.server.discordid;
+    });
+    let channelNameArr = this.rconConnections.map((connection) => {
+      return connection.server.discordname;
+    });
     overlap.push(...getArrayOverlap(exclusionServerIdentifiers, nameArr));
     overlap.push(...getArrayOverlap(exclusionServerIdentifiers, channelIDArr));
-    overlap.push(...getArrayOverlap(exclusionServerIdentifiers, channelNameArr));
+    overlap.push(
+      ...getArrayOverlap(exclusionServerIdentifiers, channelNameArr)
+    );
 
     let toRun = [];
-    this._rconConnections.forEach(connection => {
-      if (overlap.includes(connection.server.name) ||
+    this.rconConnections.forEach((connection) => {
+      if (
+        overlap.includes(connection.server.name) ||
         overlap.includes(connection.server.discordid) ||
-        overlap.includes(connection.server.discordname)) return
-      else
-        toRun.push(connection);
+        overlap.includes(connection.server.discordname)
+      )
+        return;
+      else toRun.push(connection);
     });
 
     let promiseArray = toRun.map((connection) => {
@@ -158,10 +219,10 @@ class rconInterface {
           name: connection.server.name,
           discordid: connection.server.discordid,
           discordname: connection.server.discordname,
-        }
+        };
         this.rconCommand(command, connection.server.discordid)
-          .then(res => resolve({ resp: res, server: resultIdentifier }))
-          .catch(e => reject({ resp: e, server: resultIdentifier }))
+          .then((res) => resolve({ resp: res, server: resultIdentifier }))
+          .catch((e) => reject({ resp: e, server: resultIdentifier }));
       });
     });
     return await Promise.all(promiseArray);
@@ -170,8 +231,8 @@ class rconInterface {
 const rconPorts = servers.map((server) => {
   return {
     rconport: server.rconoffset + rconport,
-    server: server
-  }
-})
-const rcon = new rconInterface(rconPorts, rconpw)
-module.exports = rcon
+    server: server,
+  };
+});
+const rcon = new rconInterface(rconPorts, rconpw);
+module.exports = rcon;
