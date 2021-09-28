@@ -5,6 +5,10 @@ module.exports = [
     discordid: "723280139982471247", // id of the discord channel where server messages will be sent
     path: "test", // where the server is located relative to "serverpath" in ./config.js
     rconoffset: 0, // rcon port offset from "rconport" in ./config.js
+    
+    // whether https://mods.factorio.com/mod/awf-graftorioMod
+    // or an alternative with the same formatis installed
+    enabledGraftorio: true,
     toWatch: { // things to watch in the server's directory
       serverOut: true,  // vanilla, chat log
       awfLogging: true, // requires just the mod
