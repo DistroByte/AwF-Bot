@@ -46,7 +46,11 @@ class OnlinePlayers extends Command {
     const withoutScenarioOutput = await Promise.all(withoutScenarioOutputProm);
 
     scenarioOutput.forEach((response) => {
-      console.log(response.resp.slice(0, response.resp.indexOf("\n")));
+      if (!response.resp)
+        return embed.addField(
+          response.server.server.discordname,
+          "Server is unreachable"
+        );
       const playerRoles = JSON.parse(
         response.resp.slice(0, response.resp.indexOf("\n"))
       );
@@ -61,6 +65,11 @@ class OnlinePlayers extends Command {
         embed.addField(response.server.server.discordname, "Nobody is online");
     });
     withoutScenarioOutput.forEach((response) => {
+      if (!response.resp)
+        return embed.addField(
+          response.server.server.discordname,
+          "Server is unreachable"
+        );
       embed.addField(response.server.server.discordname, response.resp);
     });
     message.channel.send(embed);

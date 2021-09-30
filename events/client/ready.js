@@ -5,12 +5,15 @@ module.exports = class {
 
   async run() {
     const client = this.client;
-    client.logger.log(`${client.user.tag} is online, serving ${client.users.cache.size} users in ${client.guilds.cache.size} servers.`, 'ready');
+    client.logger.log(
+      `${client.user.tag} is online, serving ${client.users.cache.size} users in ${client.guilds.cache.size} servers.`,
+      "ready"
+    );
 
     // const checkUnmutes = require('../helpers/checkUnmutes.js');
     // checkUnmutes.init(client);
 
-    const checkReminds = require('../../helpers/checkReminds.js');
+    const checkReminds = require("../../helpers/checkReminds.js");
     checkReminds.init(client);
 
     // const discordbotsorg = require('../helpers/discordbots.org.js');
@@ -20,14 +23,28 @@ module.exports = class {
       client.dashboard.load(client);
     }
 
+    // auto guild leave for protection
+    if (this.client.config.safeGuilds.length) {
+      this.client.guilds.cache.forEach((guild) => {
+        if (!this.client.config.safeGuilds.includes(guild.id)) {
+          this.client.emergencylog(
+            `Bot has been invited to guild ID \`${guild.id}\``
+          );
+          guild.leave();
+        }
+      });
+    }
+
     let activities = [
-      `${client.guilds.cache.size} servers!`,
-      `${client.channels.cache.size} channels!`,
-      `${client.users.cache.size} users!`,
-    ],
+        `${client.guilds.cache.size} servers!`,
+        `${client.channels.cache.size} channels!`,
+        `${client.users.cache.size} users!`,
+      ],
       i = 0;
     setInterval(() => {
-      client.user.setActivity(`${activities[i++ % activities.length]}`, { type: 'WATCHING' })
+      client.user.setActivity(`${activities[i++ % activities.length]}`, {
+        type: "WATCHING",
+      });
     }, 15000);
   }
-}
+};
