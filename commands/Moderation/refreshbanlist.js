@@ -1,5 +1,5 @@
 const Command = require("../../base/Command.js");
-const migratebans = require("../../helpers/migratebans")
+const migratebans = require("../../helpers/migratebans");
 
 class Refreshbanlist extends Command {
   constructor(client) {
@@ -14,15 +14,14 @@ class Refreshbanlist extends Command {
       botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
       nsfw: false,
       ownerOnly: false,
-			cooldown: 5000,
+      cooldown: 5000,
     });
   }
 
   async run(message) {
-    await migratebans()
-    return message.channel.send("Bans have been migrated.")
+    await migratebans();
+    return message.channel.send("Bans have been migrated.");
   }
-
 }
 
 module.exports = Refreshbanlist;

@@ -1,1 +1,34 @@
-[{"messageID":"823604774930743346","channelID":"769404248378048512","guildID":"762742746405535774","startAt":1616433077922,"endAt":1616433677922,"ended":true,"winnerCount":2,"winners":["649017001334800385"],"prize":"5$ PayPal!","messages":{"giveaway":"🎉🎉 **GIVEAWAY** 🎉🎉","giveawayEnded":"🎉🎉 **GIVEAWAY ENDED** 🎉🎉","inviteToParticipate":"React with 🎉 to participate!","timeRemaining":"Time remaining: **10m**!","winMessage":"Congratulations, {winners}! You won **5$ PayPal!**!","embedFooter":"Giveaways","noWinner":"Giveaway cancelled, no valid participation.","winners":"winner(s)","endedAt":"End at","hostedBy":"Hosted by: {user}","units":{"seconds":"Seconds","minutes":"Minutes","hours":"Hours","days":"Days","pluralS":false}},"hostedBy":null,"winnerIDs":["649017001334800385"]}]
+[
+  {
+    "messageID": "823604774930743346",
+    "channelID": "769404248378048512",
+    "guildID": "762742746405535774",
+    "startAt": 1616433077922,
+    "endAt": 1616433677922,
+    "ended": true,
+    "winnerCount": 2,
+    "winners": ["649017001334800385"],
+    "prize": "5$ PayPal!",
+    "messages": {
+      "giveaway": "🎉🎉 **GIVEAWAY** 🎉🎉",
+      "giveawayEnded": "🎉🎉 **GIVEAWAY ENDED** 🎉🎉",
+      "inviteToParticipate": "React with 🎉 to participate!",
+      "timeRemaining": "Time remaining: **10m**!",
+      "winMessage": "Congratulations, {winners}! You won **5$ PayPal!**!",
+      "embedFooter": "Giveaways",
+      "noWinner": "Giveaway cancelled, no valid participation.",
+      "winners": "winner(s)",
+      "endedAt": "End at",
+      "hostedBy": "Hosted by: {user}",
+      "units": {
+        "seconds": "Seconds",
+        "minutes": "Minutes",
+        "hours": "Hours",
+        "days": "Days",
+        "pluralS": false
+      }
+    },
+    "hostedBy": null,
+    "winnerIDs": ["649017001334800385"]
+  }
+]

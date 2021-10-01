@@ -1,9 +1,13 @@
 const { MessageEmbed } = require("discord.js");
 const Command = require("../../base/Command.js");
-const serverJS = require("../../servers")
-const { serverpath } = require("../../config")
-const { bubbleSort, getServerFromChannelInput, runShellCommand } = require("../../helpers/functions")
-const fs = require("fs")
+const serverJS = require("../../servers");
+const { serverpath } = require("../../config");
+const {
+  bubbleSort,
+  getServerFromChannelInput,
+  runShellCommand,
+} = require("../../helpers/functions");
+const fs = require("fs");
 
 class Linkme extends Command {
   constructor(client) {
@@ -20,8 +24,8 @@ class Linkme extends Command {
       botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
       nsfw: false,
       ownerOnly: false,
-			cooldown: 5000,
-			customPermissions: ["MANAGE_SERVER"],
+      cooldown: 5000,
+      customPermissions: ["MANAGE_SERVER"],
     });
   }
 
@@ -37,10 +41,10 @@ class Linkme extends Command {
         .setAuthor(
           `${message.guild.me.displayName} Help`,
           message.guild.iconURL
-        )
+        );
       let dirData = serverJS.map((server) => {
-        return { dir: `${serverpath}/${server.path}`, server: server }
-      })
+        return { dir: `${serverpath}/${server.path}`, server: server };
+      });
       dirData = bubbleSort(dirData);
       dirData.forEach((dir) => {
         if (fs.statSync(dir).isDirectory())
@@ -50,10 +54,11 @@ class Linkme extends Command {
     } else {
       let serverFolder;
       if (message.mentions.channels.first())
-        serverFolder = getServerFromChannelInput(message.mentions.channels.first().id).path;
-      else
-        serverFolder = args[0];
-      console.log(serverFolder)
+        serverFolder = getServerFromChannelInput(
+          message.mentions.channels.first().id
+        ).path;
+      else serverFolder = args[0];
+      console.log(serverFolder);
       runShellCommand(
         `${serverpath}/${serverFolder}/factorio-init/factorio stop`
       ).catch((e) => {
@@ -61,7 +66,9 @@ class Linkme extends Command {
       });
 
       setTimeout(() => {
-        runShellCommand(`${serverpath}/${serverFolder}/factorio-init/factorio status`)
+        runShellCommand(
+          `${serverpath}/${serverFolder}/factorio-init/factorio status`
+        )
           .catch((e) => {
             return message.channel.send(`Error statusing: \`${e}\``);
           })
@@ -71,7 +78,6 @@ class Linkme extends Command {
       }, 5000);
     }
   }
-
 }
 
 module.exports = Linkme;

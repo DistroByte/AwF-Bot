@@ -1,5 +1,5 @@
 const Command = require("../../base/Command.js");
-const { checkBan } = require("../../helpers/functions")
+const { checkBan } = require("../../helpers/functions");
 
 class Checkban extends Command {
   constructor(client) {
@@ -21,15 +21,17 @@ class Checkban extends Command {
   }
 
   async run(message, args) {
-    if (!args[0]) return message.channel.send("Provide a playername!")
+    if (!args[0]) return message.channel.send("Provide a playername!");
 
-    const playername = args.shift()
-    const status = await checkBan(playername)
-    if (!status) return message.channel.send(`${playername} is currently not banned`)
+    const playername = args.shift();
+    const status = await checkBan(playername);
+    if (!status)
+      return message.channel.send(`${playername} is currently not banned`);
 
-    return message.channel.send(`${playername} is banned for \`${status.reason}\``)
+    return message.channel.send(
+      `${playername} is banned for \`${status.reason}\``
+    );
   }
-
 }
 
 module.exports = Checkban;

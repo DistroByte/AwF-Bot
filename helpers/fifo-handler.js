@@ -4,8 +4,8 @@
 
 const serversJS = require("../servers.js"); // tails, fifo, discord IDs etc.
 const FIFO = require("fifo-js");
-const { serverpath } = require("../config")
-const { Presence, Message } = require("discord.js")
+const { serverpath } = require("../config");
+const { Presence, Message } = require("discord.js");
 
 /**
  * @classdesc FIFO handler for Factorio servers
@@ -31,7 +31,7 @@ class ServerFifoManager {
   }
   /**
    * Check if the logging for the development server should be turned off. The presence given already needs to be checked for the correct user ID
-   * @param {Presence} newPresence 
+   * @param {Presence} newPresence
    */
   checkDevServer(newPresence) {
     // test bot turned online
@@ -39,11 +39,13 @@ class ServerFifoManager {
       this.usedFifos.forEach((server) => {
         if (server.serverObject.dev == true) {
           this.usedFifos = this.usedFifos.filter((currentFifo) => {
-            if (!currentFifo.serverObject.dev)
-              return currentFifo;
+            if (!currentFifo.serverObject.dev) return currentFifo;
             if (currentFifo.serverObject.dev) {
               this.unusedFifos.push(currentFifo);
-              this.client?.logger.log("Turning dev server logging offline. Dev bot online", 'debug')
+              this.client?.logger.log(
+                "Turning dev server logging offline. Dev bot online",
+                "debug"
+              );
             }
           });
         }
@@ -52,10 +54,13 @@ class ServerFifoManager {
 
     // test bot is now offline
     if (newPresence.status == "offline") {
-      this.client?.logger.log("Turning dev server logging online. Dev bot offline", 'debug')
+      this.client?.logger.log(
+        "Turning dev server logging online. Dev bot offline",
+        "debug"
+      );
       this.unusedFifos = this.unusedFifos.filter((currentFifo) => {
         this.usedFifos.push(currentFifo);
-      })
+      });
     }
   }
 
@@ -64,18 +69,17 @@ class ServerFifoManager {
    * @param {Message} message - Discord message to send to server
    * @param {boolean} [sendWithUsername=true] - Whether to send the message with username or not.
    */
-  sendToServer(message, sendWithUsername=true) {
+  sendToServer(message, sendWithUsername = true) {
     let toSend;
     if (sendWithUsername === true)
-      toSend = `${message.author.username}: ${message.cleanContent}`
-    else
-      toSend = `${message.cleanContent}`
+      toSend = `${message.author.username}: ${message.cleanContent}`;
+    else toSend = `${message.cleanContent}`;
     this.usedFifos.forEach((server) => {
       if (server.serverObject.discordid === message.channel.id)
-        server.serverFifo.write(toSend, () => {})
+        server.serverFifo.write(toSend, () => {});
     });
   }
-  
+
   /**
    * Sends a message to all Factorio servers
    * @param {Message} message - Discord message to send to server
@@ -84,14 +88,13 @@ class ServerFifoManager {
   sendToAll(message, sendWithUsername) {
     let toSend;
     if (sendWithUsername === true)
-      toSend = `${message.author.username}: ${message.cleanContent}`
-    else
-      toSend = `${message.cleanContent}`
+      toSend = `${message.author.username}: ${message.cleanContent}`;
+    else toSend = `${message.cleanContent}`;
     this.usedFifos.forEach((server) => {
-      server.serverFifo.write(toSend, () => { });
+      server.serverFifo.write(toSend, () => {});
     });
   }
 }
 
-let FifoManager = new ServerFifoManager()
-module.exports = FifoManager
+let FifoManager = new ServerFifoManager();
+module.exports = FifoManager;

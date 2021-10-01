@@ -1,6 +1,6 @@
 const Command = require("../../base/Command.js");
-const { removeban } = require("../../helpers/functions")
-const rcon = require("../../helpers/rcon")
+const { removeban } = require("../../helpers/functions");
+const rcon = require("../../helpers/rcon");
 
 class Unbanplayer extends Command {
   constructor(client) {
@@ -23,14 +23,13 @@ class Unbanplayer extends Command {
   }
 
   async run(message, args) {
-    if (!args[0]) return message.channel.send("Provide a playername!")
+    if (!args[0]) return message.channel.send("Provide a playername!");
 
-    const playername = args.shift()
-    await rcon.rconCommandAll(`/unban ${playername}`)
-    await removeban(playername)
-    return message.channel.send(`${playername} was unbanned`)
+    const playername = args.shift();
+    await rcon.rconCommandAll(`/unban ${playername}`);
+    await removeban(playername);
+    return message.channel.send(`${playername} was unbanned`);
   }
-
 }
 
 module.exports = Unbanplayer;

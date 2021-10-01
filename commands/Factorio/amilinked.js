@@ -16,16 +16,20 @@ class Linkme extends Command {
       botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
       nsfw: false,
       ownerOnly: false,
-      cooldown: 5000
+      cooldown: 5000,
     });
   }
 
   async run(message, args) {
-    const id = message.mentions.users.first()?.id || args[0] || message.author.id;
-    const user = await this.client.findOrCreateUser({id: id})
+    const id =
+      message.mentions.users.first()?.id || args[0] || message.author.id;
+    const user = await this.client.findOrCreateUser({ id: id });
     if (!user.factorioName)
-      return message.channel.send(`User is not linked yet`)
-    else message.channel.send(`User is linked with Factorio account \`${user.factorioName}\``)
+      return message.channel.send(`User is not linked yet`);
+    else
+      message.channel.send(
+        `User is linked with Factorio account \`${user.factorioName}\``
+      );
   }
 }
 

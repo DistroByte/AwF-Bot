@@ -5,6 +5,6 @@ module.exports = class {
 
   async run(oldMessage, newMessage) {
     if (!newMessage.editedAt) return;
-    this.client.emit('message', newMessage);
+    this.client.emit("message", newMessage);
   }
 };

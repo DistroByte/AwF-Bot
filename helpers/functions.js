@@ -2,15 +2,15 @@
  * @file File for functions that didn't deserve their own helper file. Generally small functions
  */
 
-const nodemailer = require('nodemailer');
-const smtpTransport = require('nodemailer-smtp-transport');
-const { emailUser, emailPass } = require('../config')
-const {MessageEmbed} = require("discord.js")
-const serversJS = require("../servers")
-const childprocess = require("child_process")
-const discord = require("discord.js")
-const fs = require("fs")
-const {BannedPlayers, ExtraBans} = require("./sqlitedb")
+const nodemailer = require("nodemailer");
+const smtpTransport = require("nodemailer-smtp-transport");
+const { emailUser, emailPass } = require("../config");
+const { MessageEmbed } = require("discord.js");
+const serversJS = require("../servers");
+const childprocess = require("child_process");
+const discord = require("discord.js");
+const fs = require("fs");
+const { BannedPlayers, ExtraBans } = require("./sqlitedb");
 
 module.exports = {
   getPrefix,
@@ -31,21 +31,24 @@ module.exports = {
   createPagedEmbed,
   addban,
   removeban,
-  checkBan
-}
+  checkBan,
+};
 function getPrefix(message, data) {
-  if (message.channel.type !== 'dm') {
+  if (message.channel.type !== "dm") {
     const prefixes = [
       `<@!${message.client.user.id}> `,
       `<@${message.client.user.id}> `,
       message.client.user.username.toLowerCase(),
-      data.guild.prefix
+      data.guild.prefix,
     ];
     let prefix = null;
-    prefixes.forEach(p => {
-      if (message.content.startsWith(p) || message.content.toLowerCase().startsWith(p)) {
+    prefixes.forEach((p) => {
+      if (
+        message.content.startsWith(p) ||
+        message.content.toLowerCase().startsWith(p)
+      ) {
         prefix = p;
-      };
+      }
     });
     return prefix;
   } else {
@@ -55,25 +58,29 @@ function getPrefix(message, data) {
 async function supportLink(client) {
   const guild = client.guilds.cache.get(client.config.support.id);
   const member = guild.me;
-  const channel = guild.channels.cache.find((ch) => ch.permissionsFor(member.id).has('CREATE_INSTANT_INVITE'));
+  const channel = guild.channels.cache.find((ch) =>
+    ch.permissionsFor(member.id).has("CREATE_INSTANT_INVITE")
+  );
   if (channel) {
-    const invite = await channel.createInvite({ maxAge: 0 }).catch(() => { });
+    const invite = await channel.createInvite({ maxAge: 0 }).catch(() => {});
     return invite ? invite.url : null;
   } else {
-    return 'https://dbyte.xyz';
+    return "https://dbyte.xyz";
   }
 }
 function sortByKey(array, key) {
   return array.sort(function (a, b) {
     const x = a[key];
     const y = b[key];
-    return ((x < y) ? 1 : ((x > y) ? -1 : 0));
+    return x < y ? 1 : x > y ? -1 : 0;
   });
 }
 function shuffle(pArray) {
   const array = [];
-  pArray.forEach(element => array.push(element));
-  let currentIndex = array.length, temporaryValue, randomIndex;
+  pArray.forEach((element) => array.push(element));
+  let currentIndex = array.length,
+    temporaryValue,
+    randomIndex;
   // While there remain elements to shuffle...
   while (0 !== currentIndex) {
     // Pick a remaining element...
@@ -97,22 +104,22 @@ function convertTime(guild, time) {
 
   const d = absoluteDays
     ? absoluteDays === 1
-      ? '1 day'
+      ? "1 day"
       : `${absoluteDays} days`
     : null;
   const h = absoluteHours
     ? absoluteHours === 1
-      ? '1 hour'
+      ? "1 hour"
       : `${absoluteHours} hours`
     : null;
   const m = absoluteMinutes
     ? absoluteMinutes === 1
-      ? '1 minute'
+      ? "1 minute"
       : `${absoluteMinutes} minutes`
     : null;
   const s = absoluteSeconds
     ? absoluteSeconds === 1
-      ? '1 second'
+      ? "1 second"
       : `${absoluteSeconds} seconds`
     : null;
 
@@ -122,43 +129,61 @@ function convertTime(guild, time) {
   if (m) absoluteTime.push(m);
   if (s) absoluteTime.push(s);
 
-  return absoluteTime.join(', ');
+  return absoluteTime.join(", ");
 }
 function getLevel(xp) {
-  return level = Math.floor((((3888 * xp ** 2 + 291600 * xp - 207025) ** (0.5) / (40 * 3 ** (3 / 2)) + ((3 * (3 * xp)) / 5 + 2457 / 4) / 6 - 729 / 8) ** (1 / 3) + 61 / (12 * ((3888 * xp ** 2 + 291600 * xp - 207025) ** (0.5) / (40 * 3 ** (3 / 2)) + ((3 * (3 * xp)) / 5 + 2457 / 4) / 6 - 729 / 8) ** (1 / 3)) - 9 / 2))
+  return (level = Math.floor(
+    ((3888 * xp ** 2 + 291600 * xp - 207025) ** 0.5 / (40 * 3 ** (3 / 2)) +
+      ((3 * (3 * xp)) / 5 + 2457 / 4) / 6 -
+      729 / 8) **
+      (1 / 3) +
+      61 /
+        (12 *
+          ((3888 * xp ** 2 + 291600 * xp - 207025) ** 0.5 /
+            (40 * 3 ** (3 / 2)) +
+            ((3 * (3 * xp)) / 5 + 2457 / 4) / 6 -
+            729 / 8) **
+            (1 / 3)) -
+      9 / 2
+  ));
 }
 function getCommunitiveXp(lvl) {
-  return communitive = Math.floor(((5 * lvl * lvl * lvl) / 3) + ((45 * lvl * lvl) / 2) + ((455 * lvl) / 6))
+  return (communitive = Math.floor(
+    (5 * lvl * lvl * lvl) / 3 + (45 * lvl * lvl) / 2 + (455 * lvl) / 6
+  ));
 }
 function getLevelXp(lvl) {
-  return levelXp = 5 * Math.floor(lvl / 1) ** 2 + 50 * Math.floor(lvl / 1) + 100
+  return (levelXp =
+    5 * Math.floor(lvl / 1) ** 2 + 50 * Math.floor(lvl / 1) + 100);
 }
 function sendEmail(emailAddress, contents, callback) {
-  let transporter = nodemailer.createTransport(smtpTransport({
-    service: "gmail",
-    host: "smtp.gmail.com",
-    auth: {
-      user: `${emailUser}`,
-      pass: `${emailPass}`
-    }
-  }));
+  let transporter = nodemailer.createTransport(
+    smtpTransport({
+      service: "gmail",
+      host: "smtp.gmail.com",
+      auth: {
+        user: `${emailUser}`,
+        pass: `${emailPass}`,
+      },
+    })
+  );
 
   const mailOptions = {
     from: "comfybotemail@gmail.com",
     to: `${emailAddress}`,
     subject: "Verification Code",
-    text: `${contents}`
+    text: `${contents}`,
   };
 
   transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
       console.log(error);
-      callback(error)
+      callback(error);
     } else {
-      console.log('Email sent: ' + info.response);
-      callback(info)
+      console.log("Email sent: " + info.response);
+      callback(info);
     }
-  })
+  });
 }
 
 /**
@@ -181,7 +206,7 @@ function bubbleSort(arr) {
   return arr;
 }
 /**
- * 
+ *
  * @param {discord.Snowflake} channelID - ID of the Discord channel that you are trying to get
  * @returns {(object|null)} A server object from the servers.js file
  */
@@ -217,81 +242,100 @@ function sortModifiedDate(pathArr) {
   let files = pathArr.map((path) => {
     return {
       path: path,
-      mtime: fs.statSync(path).mtime.getTime()
-    }
-  })
-  return files.sort((a, b) => b.mtime - a.mtime)
+      mtime: fs.statSync(path).mtime.getTime(),
+    };
+  });
+  return files.sort((a, b) => b.mtime - a.mtime);
 }
 
 async function getConfirmationMessage(message, content) {
-  const confirm = await message.channel.send(content)
-  confirm.react("✅")
-  confirm.react("❌")
-  const reactionFilter = (reaction, user) => user.id === message.author.id
-  let reactions
+  const confirm = await message.channel.send(content);
+  confirm.react("✅");
+  confirm.react("❌");
+  const reactionFilter = (reaction, user) => user.id === message.author.id;
+  let reactions;
   try {
-    reactions = await confirm.awaitReactions(reactionFilter, { max: 1, time: 120000, errors: ["time"] })
+    reactions = await confirm.awaitReactions(reactionFilter, {
+      max: 1,
+      time: 120000,
+      errors: ["time"],
+    });
   } catch (error) {
-    return false
+    return false;
   }
-  const reaction = reactions.first()
-  if (reaction.emoji.name === "❌") return false
-  return true
+  const reaction = reactions.first();
+  if (reaction.emoji.name === "❌") return false;
+  return true;
 }
 
 /**
- * 
- * @param {Array} fields 
+ *
+ * @param {Array} fields
  * @param {object} embedMsgOptions - Standard
  * @param {object} options
  * @param {options.maxPageCount} maxPageCount - maximum number of things on the page
  */
-async function createPagedEmbed(fields, embedMsgOptions, message, options = {}) {
-  if (!options.maxPageCount) options.maxPageCount = 25
-  let embed = new MessageEmbed(embedMsgOptions)
-  let page = 0
-  const maxPages = Math.floor(fields.length / options.maxPageCount)
-  embed.fields = fields.slice(0, options.maxPageCount)
-  let embedMsg = await message.channel.send(embed)
+async function createPagedEmbed(
+  fields,
+  embedMsgOptions,
+  message,
+  options = {}
+) {
+  if (!options.maxPageCount) options.maxPageCount = 25;
+  let embed = new MessageEmbed(embedMsgOptions);
+  let page = 0;
+  const maxPages = Math.floor(fields.length / options.maxPageCount);
+  embed.fields = fields.slice(0, options.maxPageCount);
+  let embedMsg = await message.channel.send(embed);
 
   const setData = async () => {
-    const start = page * options.maxPageCount
-    embed.fields = fields.slice(start, start + options.maxPageCount)
-    embedMsg = await embedMsg.edit(null, embed)
-  }
+    const start = page * options.maxPageCount;
+    embed.fields = fields.slice(start, start + options.maxPageCount);
+    embedMsg = await embedMsg.edit(null, embed);
+  };
   const removeReaction = async (emoteName) => {
-    embedMsg.reactions.cache.find(r => r.emoji.name === emoteName).users.remove(message.author.id)
-  }
+    embedMsg.reactions.cache
+      .find((r) => r.emoji.name === emoteName)
+      .users.remove(message.author.id);
+  };
 
-  embedMsg.react("⬅️")
-  embedMsg.react("➡️")
-  embedMsg.react("🗑️")
+  embedMsg.react("⬅️");
+  embedMsg.react("➡️");
+  embedMsg.react("🗑️");
 
+  const backwardsFilter = (reaction, user) =>
+    reaction.emoji.name === "⬅️" && user.id === message.author.id;
+  const forwardsFilter = (reaction, user) =>
+    reaction.emoji.name === "➡️" && user.id === message.author.id;
+  const removeFilter = (reaction, user) =>
+    reaction.emoji.name === "🗑️" && user.id === message.author.id;
 
-  const backwardsFilter = (reaction, user) => reaction.emoji.name === "⬅️" && user.id === message.author.id
-  const forwardsFilter = (reaction, user) => reaction.emoji.name === "➡️" && user.id === message.author.id
-  const removeFilter = (reaction, user) => reaction.emoji.name === "🗑️" && user.id === message.author.id
-
-  const backwards = embedMsg.createReactionCollector(backwardsFilter, { timer: 120000 })
-  const forwards = embedMsg.createReactionCollector(forwardsFilter, { timer: 120000 })
-  const remove = embedMsg.createReactionCollector(removeFilter, { timer: 120000 })
+  const backwards = embedMsg.createReactionCollector(backwardsFilter, {
+    timer: 120000,
+  });
+  const forwards = embedMsg.createReactionCollector(forwardsFilter, {
+    timer: 120000,
+  });
+  const remove = embedMsg.createReactionCollector(removeFilter, {
+    timer: 120000,
+  });
 
   backwards.on("collect", (reaction) => {
-    page--
-    removeReaction("⬅️") // remove the user's reaction no matter what
-    if (page == -1) page = 0
-    else setData()
-  })
+    page--;
+    removeReaction("⬅️"); // remove the user's reaction no matter what
+    if (page == -1) page = 0;
+    else setData();
+  });
   forwards.on("collect", (reaction) => {
-    page++
-    removeReaction("➡️") // remove the user's reaction no matter what
-    if (page > maxPages) page = maxPages
-    else setData()
-  })
+    page++;
+    removeReaction("➡️"); // remove the user's reaction no matter what
+    if (page > maxPages) page = maxPages;
+    else setData();
+  });
 
   remove.on("collect", () => {
-    embedMsg.delete()
-  })
+    embedMsg.delete();
+  });
 }
 
 /**
@@ -301,18 +345,18 @@ async function createPagedEmbed(fields, embedMsgOptions, message, options = {}) 
 async function checkBan(playername) {
   const extra = await ExtraBans.findOne({
     where: {
-      playername: playername
-    }
-  })
-  if (extra) return extra.dataValues
+      playername: playername,
+    },
+  });
+  if (extra) return extra.dataValues;
 
   const banned = await BannedPlayers.findOne({
     where: {
-      playername: playername
-    }
-  })
-  if (banned && banned.id) return banned.dataValues
-  return false
+      playername: playername,
+    },
+  });
+  if (banned && banned.id) return banned.dataValues;
+  return false;
 }
 
 /**
@@ -323,30 +367,30 @@ async function checkBan(playername) {
 async function addban(playername, reason) {
   const player = await ExtraBans.create({
     playername: playername,
-    reason: reason || "No reason given"
-  })
-  
-  return player
+    reason: reason || "No reason given",
+  });
+
+  return player;
 }
 
 /**
  * Remove a player from the banlist
- * @param {String} playername 
+ * @param {String} playername
  */
 async function removeban(playername) {
   const extrabans = await ExtraBans.findOne({
     where: {
-      playername: playername
-    }
-  })
-  if (extrabans) extrabans.destroy()
+      playername: playername,
+    },
+  });
+  if (extrabans) extrabans.destroy();
 
   const banned = await BannedPlayers.findOne({
     where: {
-      playername: playername
-    }
-  })
-  if (banned) banned.destroy()
+      playername: playername,
+    },
+  });
+  if (banned) banned.destroy();
 
-  return true
+  return true;
 }
