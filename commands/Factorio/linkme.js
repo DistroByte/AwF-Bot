@@ -1,5 +1,6 @@
 const { MessageEmbed } = require("discord.js");
 const Command = require("../../base/Command.js");
+const rcon = require("../../helpers/rcon");
 
 class Linkme extends Command {
   constructor(client) {
@@ -66,11 +67,22 @@ class Linkme extends Command {
         guildID: message.guild.id,
       });
       user.factorioName = linkID;
-      console.log(user.factorioName);
       if (!user.factorioRoles) user.factorioRoles = [];
       user.factorioRoles.push("Member");
       user.save();
       message.channel.send("You have been successfully linked");
+
+      // this may be a bit unnecessary to send it to all servers but it's easier than to
+      // figure out from which server the linking process was initiated
+      const serversWithScenario = rcon.rconConnections
+        .filter((connection) => connection.hasScenario)
+        .map((connection) => connection.server.discordname);
+      serversWithScenario.map((discordname) =>
+        rcon.rconCommand(
+          `/interface Roles.assign_player("${linkID}", "Member", "${this.client.user.username}")`,
+          discordname
+        )
+      );
     } catch (error) {
       console.error(error);
       return message.channel.send("Error linking. Please check logs.");
