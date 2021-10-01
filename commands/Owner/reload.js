@@ -1,7 +1,6 @@
 const Command = require("../../base/Command.js");
 
 class Reload extends Command {
-
   constructor(client) {
     super(client, {
       name: "reload",
@@ -16,21 +15,22 @@ class Reload extends Command {
       botPermissions: [],
       nsfw: false,
       ownerOnly: true,
-      cooldown: 3000
+      cooldown: 3000,
     });
   }
 
   async run(message, args) {
     const command = args[0];
-    const cmd = this.client.commands.get(command) || this.client.commands.get(this.client.aliases.get(command));
+    const cmd =
+      this.client.commands.get(command) ||
+      this.client.commands.get(this.client.aliases.get(command));
     if (!cmd) {
-      message.channel.send(`${command} is not an available command`)
+      message.channel.send(`${command} is not an available command`);
     }
     await this.client.unloadCommand(cmd.conf.location, cmd.help.name);
     await this.client.loadCommand(cmd.conf.location, cmd.help.name);
-    message.channel.send(`${cmd.help.name} successfully reloaded!`)
+    message.channel.send(`${cmd.help.name} successfully reloaded!`);
   }
-
 }
 
 module.exports = Reload;

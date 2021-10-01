@@ -1,27 +1,32 @@
-const { Sequelize, Model, DataTypes } = require('sequelize');
+const { Sequelize, Model, DataTypes } = require("sequelize");
 const sequelize = new Sequelize({
   dialect: "sqlite",
   storage: "./database.sqlite",
-  logging: () => {}
+  logging: () => {},
 });
 
-
 class ExtraBans extends Model {}
-ExtraBans.init({
-  playername: DataTypes.STRING,
-  reason: DataTypes.STRING,
-}, {sequelize, modelName: "extraBans"})
+ExtraBans.init(
+  {
+    playername: DataTypes.STRING,
+    reason: DataTypes.STRING,
+  },
+  { sequelize, modelName: "extraBans" }
+);
 
 class BannedPlayers extends Model {}
-BannedPlayers.init({
-  playername: DataTypes.STRING,
-  reason: DataTypes.STRING,
-}, {sequelize, modelName: "bannedPlayers"})
+BannedPlayers.init(
+  {
+    playername: DataTypes.STRING,
+    reason: DataTypes.STRING,
+  },
+  { sequelize, modelName: "bannedPlayers" }
+);
 
 module.exports = {
   sequelize,
   ExtraBans,
-  BannedPlayers
-}
+  BannedPlayers,
+};
 
-sequelize.sync()
+sequelize.sync();

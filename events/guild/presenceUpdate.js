@@ -1,5 +1,4 @@
-const fifo = require("../../helpers/fifo-handler")
-
+const fifo = require("../../helpers/fifo-handler");
 
 module.exports = class {
   constructor(client) {
@@ -8,6 +7,6 @@ module.exports = class {
 
   async run(_, newPresence) {
     if (newPresence.userID === this.client.config.testbotid)
-      fifo.checkDevServer(newPresence)
+      fifo.checkDevServer(newPresence);
   }
 };

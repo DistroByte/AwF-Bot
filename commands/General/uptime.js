@@ -12,7 +12,7 @@ class Uptime extends Command {
       memberPermissions: [],
       botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
       nsfw: false,
-      ownerOnly: false
+      ownerOnly: false,
     });
   }
 
@@ -22,11 +22,17 @@ class Uptime extends Command {
       const min = Math.floor((ms / (1000 * 60)) % 60).toString();
       const hrs = Math.floor((ms / (1000 * 60 * 60)) % 24).toString();
       const days = Math.floor((ms / (1000 * 60 * 60 * 24)) % 60).toString();
-      const weeks = Math.floor((ms / (1000 * 60 * 60 * 24 * 7))).toString();
-      return `${weeks != 0 ? weeks + " weeks," : ""} ${days != 0 ? days + " days," : ""} ${hrs != 0 ? hrs + " hours," : ""} ${min != 0 ? min + " mins," : ""} ${sec} secs`;
+      const weeks = Math.floor(ms / (1000 * 60 * 60 * 24 * 7)).toString();
+      return `${weeks != 0 ? weeks + " weeks," : ""} ${
+        days != 0 ? days + " days," : ""
+      } ${hrs != 0 ? hrs + " hours," : ""} ${
+        min != 0 ? min + " mins," : ""
+      } ${sec} secs`;
     }
 
-    message.channel.send(`I have been online for \`${duration(this.client.uptime).trim()}\``)
+    message.channel.send(
+      `I have been online for \`${duration(this.client.uptime).trim()}\``
+    );
   }
 }
 

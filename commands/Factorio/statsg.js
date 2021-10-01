@@ -1,7 +1,7 @@
 const { MessageEmbed } = require("discord.js");
 const Command = require("../../base/Command.js");
-const serverJS = require("../../servers")
-const rcon = require("../../helpers/rcon")
+const serverJS = require("../../servers");
+const rcon = require("../../helpers/rcon");
 
 class Linkme extends Command {
   constructor(client) {
@@ -23,27 +23,30 @@ class Linkme extends Command {
   }
 
   async run(message, args) {
-    let userID = message.mentions.users.first()?.id || args[0]
-    if (!userID) return message.reply("No user ping provided!")
-    if (!this.client.users.cache.get(userID)) return message.reply(`User <@${userID}> doesn't exist!`)
-    let user = await this.client.findOrCreateUser({id: userID})
-    if (!user.factorioName) return message.reply("User is not linked!")
+    let userID = message.mentions.users.first()?.id || args[0];
+    if (!userID) return message.reply("No user ping provided!");
+    if (!this.client.users.cache.get(userID))
+      return message.reply(`User <@${userID}> doesn't exist!`);
+    let user = await this.client.findOrCreateUser({ id: userID });
+    if (!user.factorioName) return message.reply("User is not linked!");
 
     let embed = new MessageEmbed()
       .setAuthor(message.guild.name, message.guild.iconURL())
       .setColor(this.client.config.embed.color)
       .setFooter(this.client.config.embed.footer);
-    embed.setTitle("Global Factorio User Statistics")
-    embed.setDescription(`Statistics of <@${userID}> | ${userID}`)
+    embed.setTitle("Global Factorio User Statistics");
+    embed.setDescription(`Statistics of <@${userID}> | ${userID}`);
     embed.addFields(
-      {name: "Total Points", value: user.factorioStats.points},
-      {name: "Deaths", value: user.factorioStats.deaths},
-      {name: "Built Entities", value: user.factorioStats.builtEntities},
-      {name: "Time played (minutes)", value: user.factorioStats.timePlayed/54000*15}
-    )
-    message.channel.send(embed)
+      { name: "Total Points", value: user.factorioStats.points },
+      { name: "Deaths", value: user.factorioStats.deaths },
+      { name: "Built Entities", value: user.factorioStats.builtEntities },
+      {
+        name: "Time played (minutes)",
+        value: (user.factorioStats.timePlayed / 54000) * 15,
+      }
+    );
+    message.channel.send(embed);
   }
-
 }
 
 module.exports = Linkme;
