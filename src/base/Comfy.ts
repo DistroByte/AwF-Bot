@@ -15,7 +15,7 @@ import BotLogger from "../helpers/logger"
 import BotUsersData, { UserClass } from "./User"
 import ServerStatisticsModel from "./Serverstatistics";
 
-type ArgumentTypes<F extends Function> = F extends (...args: infer A) => any ? A : never;
+type ArgumentTypes<F extends Function> = F extends (args: infer A) => any ? A : never;
 
 interface ComfyOptions extends ClientOptions {
 }
@@ -29,7 +29,7 @@ class Comfy extends Client {
   usersData: typeof BotUsersData
   serverQueues: Map<string, {
     server: FactorioServer,
-    messageQueue: FIFO,
+    messageQueue: FIFO<string>,
     sendingMessage: boolean
   }>
   factorioServers: FactorioServer[]
@@ -106,18 +106,13 @@ class Comfy extends Client {
     return moment(new Date(date)).locale("UTC").format("hh:mm a, DD-MM-YYYY");
   }
 
-  loadCommand(commandPath: string, commandName: string) {
+  async loadCommand(commandPath: string, commandName: string) {
     try {
-      const props = new (require(`.${commandPath}${path.sep}${commandName}`))(
-        this
-      );
-      props.conf.location = commandPath;
-      if (props.init) {
-        props.init(this);
-      }
-      this.commands.set(props.help.name, props);
-      props.help.aliases.forEach((alias) => {
-        this.aliases.set(alias, props.help.name);
+      const props: Command = await import(`.${commandPath}${path.sep}${commandName}`).then(c=>c.default)
+      
+      this.commands.set(props.name, props);
+      props.aliases.forEach((alias) => {
+        this.aliases.set(alias, props.name);
       });
       return false;
     } catch (e) {

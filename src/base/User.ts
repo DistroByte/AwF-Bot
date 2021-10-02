@@ -9,7 +9,7 @@ export class UserClass {
 
   @prop({default: ""})
   factorioName: string
-  @prop({default: []})
+  @prop({default: [], type: [String]})
   factorioRoles: string[]
 
   @prop({type: () => new Passthrough({

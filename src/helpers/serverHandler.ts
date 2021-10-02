@@ -2,19 +2,23 @@
  * @file Listens to all server events and works with them. Adds messages to client's queue to send them in batches
  */
 
-const Tails = require("../base/Tails");
-const mongoose = require("mongoose");
-const ServerStatistics = require("../base/Serverstatistics");
-const rcon = require("./rcon");
-const lodash = require("lodash");
-const { MessageEmbed } = require("discord.js");
-const Users = require("../base/User");
-const { Util } = require("discord.js");
-const config = require("../../config");
-const { checkBan } = require("./functions");
+import Comfy from "../base/Comfy";
+import Tails, { OutputData, playerJoinData, playerLeaveData } from "../base/Tails";
+import mongoose from "mongoose";
+import ServerStatistics from "../base/Serverstatistics";
+import rcon from "./rcon";
+import lodash from "lodash";
+import { MessageEmbed } from "discord.js";
+import Users from "../base/User";
+import { Util } from "discord.js";
+import config from "../config";
+import { checkBan } from "./functions";
+import { FactorioServer } from "../servers";
 
 class serverHandler {
-  constructor(client) {
+  client: Comfy
+  helpdesk: string
+  constructor(client: Comfy) {
     this.client = client;
     this.helpdesk = "723280139982471247"; // helpdesk channel
 
@@ -29,13 +33,13 @@ class serverHandler {
     // Tails.on("ALL", (log) => this.allHandler(log))
     Tails.on("start", (log) => this.startHandler(log));
   }
-  _formatDate(line) {
+  private formatDate(line: string) {
     return line.trim().slice(line.indexOf("0.000") + 6, 25);
   }
-  _formatVersion(line) {
+  private formatVersion(line: string) {
     return line.slice(line.indexOf("Factorio"), line.indexOf("(build")).trim();
   }
-  _formatChatData(data) {
+  private formatChatData(data: string) {
     data = data.slice(data.indexOf("]") + 2); //removing the [CHAT] from sending to Discord
     if (data.includes("[")) {
       if (data.replace(/(.*:)\s*\[.*=.*\]\s*/g, "") == "") {
@@ -75,14 +79,14 @@ class serverHandler {
     }
     return data;
   }
-  _appendMessage(fromServer, msg) {
+  private appendMessage(fromServer: FactorioServer, msg: string) {
     this.client.serverQueues.forEach((srv) => {
       if (srv.server.discordid === fromServer.discordid) {
         srv.messageQueue.push(msg);
       }
     });
   }
-  async _assignRoles(playername, server) {
+  private async assignRoles(playername: string, server: FactorioServer) {
     let user = await this.client.findUserFactorioName(playername);
     if (!user || !user.factorioRoles) return;
     let res = (
@@ -106,37 +110,38 @@ class serverHandler {
           .catch(console.error);
     });
   }
-  async chatHandler(chat) {
+  async chatHandler(chat: OutputData) {
     let line = chat.line;
     const server = chat.server;
     if (line.includes("?griefer"))
       this.client.channels
         .fetch(this.helpdesk)
-        .then((channel) => channel.send(`Griefer in <#${server.discordid}>!`));
-    line = this._formatChatData(line);
+        .then((channel) => channel.isText() && channel.send(`Griefer in <#${server.discordid}>!`));
+    line = this.formatChatData(line);
     if (line == "") return;
     line = Util.escapeMarkdown(line);
     line = line.replace(/@/g, "@\u200b");
-    this._appendMessage(server, `:speech_balloon: ${line}`);
+    this.appendMessage(server, `:speech_balloon: ${line}`);
   }
-  async outHandler(out) {
+  async outHandler(out: OutputData) {
     let line = out.line;
     const server = out.server;
     let channel = this.client.channels.cache.get(server.discordid);
+    if (!channel.isText() || channel.type === "dm") return
     if (line.includes("; Factorio")) {
       return channel.setTopic(
-        `Running ${this._formatVersion(line)} since ${this._formatDate(line)}`
+        `Running ${this.formatVersion(line)} since ${this.formatDate(line)}`
       );
     }
     if (line.includes("Error")) {
-      if (channel.name !== "dev-dump")
-        client.channels.cache
-          .get("786603909489491988")
-          .send(`Error in ${channel.name}: ${line}`);
+      if (channel.name !== "dev-dump") {
+        const errorChannel = this.client.channels.cache.get("786603909489491988")
+        if (errorChannel.isText()) errorChannel.send(`Error in ${channel.name}: ${line}`);
+      }
     }
     if (line.includes("Saving game as"))
       // normal save
-      return this._appendMessage(
+      return this.appendMessage(
         server,
         `${this.client.emotes?.serversave} \`${line.slice(
           line.lastIndexOf("/") + 1
@@ -144,7 +149,7 @@ class serverHandler {
       );
     if (line.includes("Saving to "))
       // autosave
-      return this._appendMessage(
+      return this.appendMessage(
         server,
         `${this.client.emotes?.serversave} \`${line.slice(
           line.lastIndexOf(" _") + 1,
@@ -152,15 +157,15 @@ class serverHandler {
         )}\``
       );
   }
-  async playerStuff(data) {
+  async playerStuff(data: playerJoinData|playerLeaveData) {
     const line = data.line;
     const server = data.server;
     if (line.type === "join") {
-      this._appendMessage(
+      this.appendMessage(
         server,
         `${this.client.emotes?.playerjoin} ${line.playerName} has joined the game`
       );
-      this._assignRoles(line.playerName, server).then(() => {});
+      this.assignRoles(line.playerName, server).then(() => {});
 
       // check if player is banned
       const banned = await checkBan(line.playerName);
@@ -172,80 +177,80 @@ class serverHandler {
     if (line.type === "leave") {
       switch (line.reason) {
         case "quit":
-          this._appendMessage(
+          this.appendMessage(
             server,
             `${this.client.emotes?.playerleave} ${line.playerName} has left the game`
           );
           break;
         case "dropped":
-          this._appendMessage(
+          this.appendMessage(
             server,
             `${this.client.emotes?.playerleave} ${line.playerName} was dropped from the game`
           );
           break;
         case "reconnect":
-          this._appendMessage(
+          this.appendMessage(
             server,
             `${this.client.emotes?.playerleave} ${line.playerName} has left to reconnected to the game`
           );
           break;
         case "wrong_input":
-          this._appendMessage(
+          this.appendMessage(
             server,
             `${this.client.emotes?.playerleave} ${line.playerName} has left due to wrong input`
           );
           break;
         case "desync_limit_reached":
-          this._appendMessage(
+          this.appendMessage(
             server,
             `${this.client.emotes?.playerleave} ${line.playerName} has desynced`
           );
           break;
         case "cannot_keep_up":
-          this._appendMessage(
+          this.appendMessage(
             server,
             `${this.client.emotes?.playerleave} ${line.playerName} could not keep up with the game`
           );
           break;
         case "afk":
-          this._appendMessage(
+          this.appendMessage(
             server,
             `${this.client.emotes?.playerleave} ${line.playerName} is AFK or asleep`
           );
           break;
         case "kicked":
-          this._appendMessage(
+          this.appendMessage(
             server,
             `${this.client.emotes?.playerleave} ${line.playerName} was yeeted`
           );
           break;
         case "kicked_and_deleted":
-          this._appendMessage(
+          this.appendMessage(
             server,
             `${this.client.emotes?.playerleave} ${line.playerName} was vaporized`
           );
           break;
         case "banned":
-          this._appendMessage(
+          this.appendMessage(
             server,
             `${this.client.emotes?.playerleave} ${line.playerName} heard the banhammer speak`
           );
           break;
         case "switching_servers":
-          this._appendMessage(
+          this.appendMessage(
             server,
             `${this.client.emotes?.playerleave} ${line.playerName} is switching servers`
           );
           break;
         default:
-          this._appendMessage(
+          this.appendMessage(
             server,
             `${this.client.emotes?.playerleave} ${line.playerName} quit due to reason ${line.reason}`
           );
       }
     }
   }
-  async jloggerHandler(data) {
+  async jloggerHandler(data: OutputData) {
     let line = data.line;
     const server = data.server;
     let channel = this.client.channels.cache.get(server.discordid);
@@ -259,12 +264,12 @@ class serverHandler {
         .trim()
         .split(" ")[1];
       if (research === "logistic-robotics")
-        this._appendMessage(
+        this.appendMessage(
           server,
           `${this.client.emotes?.logibots} Is it a bird? Is it a plane...?`
         );
       else
-        this._appendMessage(
+        this.appendMessage(
           server,
           `${this.client.emotes?.sciencepack} ${research} at level ${level} has been researched!`
         );
@@ -277,13 +282,13 @@ class serverHandler {
     }
     if (line.includes("DIED")) {
       line = line.slice("DIED: ".length);
-      line = line.split(" "); //split at separation between username and death reson
-      if (line[0].includes("PLAYER: ")) {
-        line[0] = line[0].slice("PLAYER: ".length);
-        line[1] = `Player ${line[1]}`;
+      const newline = line.split(" "); //split at separation between username and death reson
+      if (newline[0].includes("PLAYER: ")) {
+        newline[0] = line[0].slice("PLAYER: ".length);
+        newline[1] = `Player ${line[1]}`;
       }
-      if (line[0] == "PLAYER:") line.shift();
-      this._appendMessage(
+      if (line[0] == "PLAYER:") newline.shift();
+      this.appendMessage(
         server,
         `${this.client.emotes?.playerdeath} ${line[0]} died due to ${line[1]}`
       );
@@ -309,14 +314,14 @@ class serverHandler {
           completedResearch: [],
         });
       if (serverStats.rocketLaunches === 1)
-        return this._appendMessage(
+        return this.appendMessage(
           server,
           `:rocket: Hooray! This server's first rocket has been sent!`
         );
       let rockets = 10;
       for (let i = 0; i < 50; i++) {
         if (serverStats.rocketLaunches === rockets) {
-          return this._appendMessage(
+          return this.appendMessage(
             server,
             `:rocket: Hooray! This server has sent ${rockets} rockets!`
           );
@@ -331,8 +336,8 @@ class serverHandler {
       let serverstats = await ServerStatistics.findOne({
         serverID: server.discordid,
       });
-      if (evolution.toFixed(2) == 0.33 && !serverstats.evolution.big) {
-        this._appendMessage(
+      if (evolution.toFixed(2) === "0.33" && !serverstats.evolution.big) {
+        this.appendMessage(
           server,
           `${this.client.emotes?.bigspitter} Evolution is now 0.33!`
         );
@@ -343,8 +348,8 @@ class serverHandler {
           }
         ).then(() => {});
       }
-      if (evolution.toFixed(2) == 0.66 && !serverstats.evolution.behemoth) {
-        this._appendMessage(
+      if (evolution.toFixed(2) === "0.66" && !serverstats.evolution.behemoth) {
+        this.appendMessage(
           server,
           `${this.client.emotes?.behemothspitter} Evolution is now 0.66! Green boys inc!`
         );
@@ -365,9 +370,9 @@ class serverHandler {
       let playTime = parseInt(tmp.shift());
       let user = await this.client.findUserFactorioName(playername);
       if (!user) return; // don't run on people who don't have stuff
-      const addHoursPlayed = parseInt(playTime) / 54000 / 4; // 54000 ticks in 15 mins, 15*60*60, 60 minutes in an hour
+      const addHoursPlayed = playTime / 54000 / 4; // 54000 ticks in 15 mins, 15*60*60, 60 minutes in an hour
       const totHoursPlayed =
-        (parseInt(playTime) + user.factorioStats.timePlayed) / 54000 / 4;
+        (playTime + user.factorioStats.timePlayed) / 54000 / 4;
       user.factorioStats.builtEntities += builtEntities;
       user.factorioStats.timePlayed += playTime;
       user.factorioStats.points += builtEntities;
@@ -390,12 +395,12 @@ class serverHandler {
           ); // add role to DB
           user
             .save()
-            .then(() => this._assignRoles(playername, server).then(() => {})); // assign roles in-game
+            .then(() => this.assignRoles(playername, server).then(() => {})); // assign roles in-game
         }
       } else user.save().then(() => {}); // normal save
     }
   }
-  async awfLogging(data) {
+  async awfLogging(data: OutputData) {
     let line = JSON.parse(data.line);
     if (line.type === "link") {
       this.client.cache.linkingCache.set(
@@ -404,18 +409,19 @@ class serverHandler {
       );
     }
   }
-  async datastoreHandler(data) {
+  async datastoreHandler(data: OutputData) {
     let request = data.line.split(" ");
     const requestType = request.shift();
     const collectionName = request.shift();
     const playerName = request.shift();
+    const args = request
     let line = data.line.slice(
       // +3 for spaces
       requestType.length + collectionName.length + playerName.length + 3
     );
     if (requestType == "request") {
       // request from database and send back to server
-      let find = await mongoose.connections[1].client
+      let find = await mongoose.connections[1].getClient()
         .db("scenario")
         .collection(collectionName)
         .findOne({
@@ -438,9 +444,9 @@ class serverHandler {
       rcon.rconCommandAllExclude(
         // args is now the rest of the stuff
         `/interface Datastore.ingest('propagate', '${collectionName}', '${playerName}', '${args}')`,
-        [`${serverObject.name}`]
+        data.server.name
       );
-      let find = await mongoose.connections[1].client
+      let find = await mongoose.connections[1].getClient()
         .db("scenario")
         .collection(collectionName)
         .findOne({
@@ -449,24 +455,24 @@ class serverHandler {
       if (find == null) {
         let send = {
           playername: playerName,
-          data: JSON.parse(args),
+          data: JSON.parse(args.toString()),
         };
-        await mongoose.connections[1].client
+        await mongoose.connections[1].getClient()
           .db("scenario")
           .collection(collectionName)
           .insertOne(send);
       } else {
         let send = lodash.cloneDeep(find);
-        send.data = JSON.parse(args);
+        send.data = JSON.parse(args.toString());
 
-        await mongoose.connections[1].client
+        await mongoose.connections[1].getClient()
           .db("scenario")
           .collection(collectionName)
           .findOneAndReplace(find, send);
       }
     } else if (requestType == "save") {
       // save to database
-      let find = await mongoose.connections[1].client
+      let find = await mongoose.connections[1].getClient()
         .db("scenario")
         .collection(collectionName)
         .findOne({
@@ -477,14 +483,14 @@ class serverHandler {
           playername: playerName,
           data: JSON.parse(line),
         };
-        await mongoose.connections[1].client
+        await mongoose.connections[1].getClient()
           .db("scenario")
           .collection(collectionName)
           .insertOne(send);
       } else {
         let send = lodash.cloneDeep(find);
         send.data = JSON.parse(line);
-        await mongoose.connections[1].client
+        await mongoose.connections[1].getClient()
           .db("scenario")
           .collection(collectionName)
           .findOneAndReplace(find, send);
@@ -493,9 +499,9 @@ class serverHandler {
       // remove from database
       let toDelete = {
         playername: playerName,
-        data: JSON.parse(args),
+        data: JSON.parse(args.toString()),
       };
-      await mongoose.connections[1].client
+      await mongoose.connections[1].getClient()
         .db("scenario")
         .collection(collectionName)
         .deleteOne(toDelete);
@@ -508,48 +514,49 @@ class serverHandler {
       `<#${data.server.discordid}>`
     );
     const embed = JSON.parse(message);
-    this.client.channels.cache.get(data.server.discordid)?.send({
+    const channel = this.client.channels.cache.get(data.server.discordid)
+    channel.isText() && channel.send({
       embed: new MessageEmbed(embed),
       content: `<@&${config.moderatorroleid}>`,
     });
-    this.client.channels.cache.get(this.client.config.moderatorchannel)?.send({
+    const modchannel = this.client.channels.cache.get(this.client.config.moderatorchannel)
+    modchannel.isText() && modchannel.send({
       embed: new MessageEmbed(embed),
       content: `<@&${config.moderatorroleid}>`,
     });
   }
-  async startHandler(data) {
+  async startHandler(data: OutputData) {
     let server = data.server;
-    if (server.roleSync) {
-      setTimeout(async () => {
-        let roles = await Users.find({})
-          .select({ factorioName: 1, factorioRoles: 1 })
-          .exec();
-        let toSend = {};
-        roles.forEach((player) => {
-          if (!player.factorioName) return;
-          else toSend[player.factorioName] = player.factorioRoles;
-        });
-        const res = await rcon
-          .rconCommand(
-            `/interface Roles.override_player_roles(game.json_to_table('${JSON.stringify(
-              toSend
-            )}'))`,
-            server.discordid
-          )
-          .then((output) => output.resp);
-        if (res.trim() == "Command Complete")
-          this.client.channels.cache
-            .get(data.server.discordid)
-            .send("Roles have synced");
-      }, 5000); // allow server to connect to rcon
-    }
+    setTimeout(async () => {
+      let roles = await Users.find({})
+        .select({ factorioName: 1, factorioRoles: 1 })
+        .exec();
+      let toSend = {};
+      roles.forEach((player) => {
+        if (!player.factorioName) return;
+        else toSend[player.factorioName] = player.factorioRoles;
+      });
+      const res = await rcon
+        .rconCommand(
+          `/interface Roles.override_player_roles(game.json_to_table('${JSON.stringify(
+            toSend
+          )}'))`,
+          server.discordid
+        )
+        .then((output) => output.resp);
+      if (res.trim() == "Command Complete") {
+        const channel = this.client.channels.cache
+          .get(data.server.discordid)
+        channel.isText() && channel.send("Roles have synced");
+      }
+    }, 5000); // allow server to connect to rcon
     const stats = await ServerStatistics.findOne({
       serverID: server.discordid,
     });
     if (!stats) {
       await ServerStatistics.create({
         serverID: server.discordid,
-        serverName: server.discordName,
+        serverName: server.discordname,
       });
     }
   }

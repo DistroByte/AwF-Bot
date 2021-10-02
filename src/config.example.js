@@ -60,7 +60,7 @@ module.exports = {
   promPort: 9111, // port for prometheus to run on
 
   //
-  adminRoleId: "548545406653431810",
+  adminroleid: "548545406653431810",
   grafanaInterval: 15 * 1000, // scrape data every 15s
   safeGuilds: ["548410604679856151"],
 };

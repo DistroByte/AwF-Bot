@@ -6,6 +6,8 @@ import mongoose from "mongoose"
 import Comfy from "./base/Comfy"
 const client = new Comfy({});
 
+process.chdir(__dirname)
+
 require("./helpers/sqlitedb");
 
 setTimeout(require("./helpers/migratebans"), 10000);
@@ -30,8 +32,8 @@ const init = async () => {
     cmds
       .filter((cmd) => cmd.split(".").pop() === "js")
       .forEach((cmd) => {
-        const res = client.loadCommand(`./commands/${dir}`, cmd);
-        if (res) client.logger(res, "error");
+        client.loadCommand(`./commands/${dir}`, cmd)
+          .then(r=>r&&client.logger(r, "error"))
       });
   });
 
@@ -39,10 +41,10 @@ const init = async () => {
   const evtDirs = await readdir("./events/");
   evtDirs.forEach(async (dir) => {
     const evts = await readdir(`./events/${dir}/`);
-    evts.forEach((evt) => {
+    evts.forEach(async (evt) => {
       const evtName = evt.split(".")[0];
-      const event = new (require(`./events/${dir}/${evt}`))(client);
-      client.on(evtName, (...args) => event.run(...args));
+      const event = await import(`./events/${dir}/${evt}`)
+      client.on(evtName, (...args) => event.default(client, ...args));
       delete require.cache[require.resolve(`./events/${dir}/${evt}`)];
     });
   });
@@ -86,6 +88,7 @@ process.on("unhandledRejection", async (err) => {
 });
 
 // add client to classes for logging
+import "./helpers/logger"
 import fifoHandler from "./helpers/fifo-handler"
 import Tails from "./base/Tails"
 fifoHandler.client = client;

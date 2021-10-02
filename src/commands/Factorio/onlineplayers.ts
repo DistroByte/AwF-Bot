@@ -1,30 +1,25 @@
-const { MessageEmbed } = require("discord.js");
-const Command = require("../../base/Command.js");
-const rcon = require("../../helpers/rcon");
+import { Message, MessageEmbed } from "discord.js";
+import { Command } from "../../base/Command";
+import rcon from "../../helpers/rcon";
 
-class OnlinePlayers extends Command {
-  constructor(client) {
-    super(client, {
-      name: "onlineplayers",
-      description: "Get online players on all servers",
-      usage: "",
-      dirname: __dirname,
-      enabled: true,
-      guildOnly: false,
-      aliases: ["po", "playersonline"],
-      memberPermissions: [],
-      botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
-      nsfw: false,
-      ownerOnly: false,
-      cooldown: 10000,
-    });
-  }
-
-  async run(message) {
+const OnlinePlayers: Command<Message> = {
+  name: "onlineplayers",
+  description: "Get online players on all servers",
+  usage: "",
+  category: "Factorio",
+  dirname: __dirname,
+  enabled: true,
+  guildOnly: false,
+  aliases: ["po", "playersonline"],
+  memberPermissions: [],
+  botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
+  nsfw: false,
+  ownerOnly: false,
+  run: async ({ client, message }) => {
     let embed = new MessageEmbed()
       .setAuthor(message.guild.name, message.guild.iconURL())
-      .setColor(this.client.config.embed.color)
-      .setFooter(this.client.config.embed.footer);
+      .setColor(client.config.embed.color)
+      .setFooter(client.config.embed.footer);
 
     const serversWithScenario = rcon.rconConnections
       .filter((connection) => connection.hasScenario)
@@ -48,32 +43,32 @@ class OnlinePlayers extends Command {
     scenarioOutput.forEach((response) => {
       if (!response.resp)
         return embed.addField(
-          response.server.server.discordname,
+          response.server.discordname,
           "Server is unreachable"
         );
       const playerRoles = JSON.parse(
         response.resp.slice(0, response.resp.indexOf("\n"))
       );
+      console.log(response.server, response.server.discordname);
       if (Object.keys(playerRoles).length)
         embed.addField(
-          response.server.server.discordname,
+          response.server.discordname,
           Object.keys(playerRoles)
             .map((playername) => `${playername}: ${playerRoles[playername]}`)
             .join("\n")
         );
-      else
-        embed.addField(response.server.server.discordname, "Nobody is online");
+      else embed.addField(response.server.discordname, "Nobody is online");
     });
     withoutScenarioOutput.forEach((response) => {
       if (!response.resp)
         return embed.addField(
-          response.server.server.discordname,
+          response.server.discordname,
           "Server is unreachable"
         );
-      embed.addField(response.server.server.discordname, response.resp);
+      embed.addField(response.server.discordname, response.resp);
     });
-    message.channel.send(embed);
-  }
-}
+    return message.channel.send(embed);
+  },
+};
 
-module.exports = OnlinePlayers;
+export default OnlinePlayers;

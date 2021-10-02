@@ -2,14 +2,16 @@
  * @file Prometheus server that can be listened to. Exports only UPS data currently
  */
 
-const promClient = require("prom-client");
-const http = require("http");
-const serverUPS = require("../helpers/serverUPSHandler");
-const config = require("../config");
+import promClient from "prom-client";
+import http from "http";
+import serverUPS from "../helpers/serverUPSHandler";
+import config from "../config";
+
+export * as promClient from "prom-client"
 
 const collectDefaultMetrics = promClient.collectDefaultMetrics;
 const Registry = promClient.Registry;
-const register = new Registry();
+export const register = new Registry();
 collectDefaultMetrics({ register });
 
 const upsGauge = new promClient.Gauge({
@@ -49,8 +51,3 @@ http
     }
   })
   .listen(config.promPort);
-
-module.exports = {
-  promClient,
-  register,
-};

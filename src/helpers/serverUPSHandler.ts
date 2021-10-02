@@ -1,82 +1,92 @@
 /**
  * @file Handles UPS
  */
-const rcon = require("./rcon");
-const Tails = require("../base/Tails");
-const serversJS = require("../servers");
-const discord = require("discord.js");
+import rcon from "./rcon";
+import Tails, { playerJoinData, playerLeaveData } from "../base/Tails";
+import serversJS, { FactorioServer } from "../servers";
+import discord from "discord.js";
 
 // Known issue: servers will report a UPS of 0 if the bot starts and nobody is online on the server
 
-/**
- * @typedef {Object} UPS
- * @property {discord.Snowflake} discordid - Server's Discord channel ID
- * @property {String} discordname - Server's Discord channel name
- * @property {Number} ups - Server's last measured UPS
- * @property {Number} previousTick - Server's last measured gametick
- * @property {Number} playercount - Number of players on the server
- */
+interface UPSServer extends FactorioServer {
+  ups: number
+  previousTick: number
+  playercount: number
+}
 
 /**
  * @classdesc UPS handler, generates data that can be fetched. Doesn't historically store it
  */
-class _UPSHandler {
-  /**
-   * @param {Object[]} servers - Array of servers from servers.js
-   */
-  constructor(servers) {
+class UPSManager {
+  private servers: UPSServer[]
+  private _processing: boolean
+  constructor(servers: FactorioServer[]) {
     this._processing = false;
-    this._servers = servers;
+    this.servers = servers.map(server => {
+      return {
+        ...server,
+        playercount: 0,
+        ups: 0,
+        previousTick: 0,
+      }
+    });
     Object.keys(servers).forEach((serverKey) => {
-      this._servers[serverKey].ups = 0;
-      this._servers[serverKey].playercount = 0;
-      this._servers[serverKey].previousTick = 0;
+      this.servers[serverKey].ups = 0;
+      this.servers[serverKey].playercount = 0;
+      this.servers[serverKey].previousTick = 0;
       setTimeout(() => {
         rcon
           .rconCommand(
             `/sc global.ext = {}; rcon.print(#game.connected_players)`,
-            this._servers[serverKey].discordid
+            this.servers[serverKey].discordid
           )
           .then((output) => {
             try {
-              this._servers[serverKey].playercount = parseInt(output.resp);
+              this.servers[serverKey].playercount = parseInt(output.resp);
             } catch {}
           })
           .catch(() => {});
       }, 2000); // wait for rcon to init
     });
-    Tails.on("playerJoin", (log) => this._playerStuff(log));
-    Tails.on("playerLeave", (log) => this._playerStuff(log));
+    Tails.on("playerJoin", (log) => this.playerStuff(log));
+    Tails.on("playerLeave", (log) => this.playerStuff(log));
     setInterval(() => {
-      if (!this._processing) this._getData();
+      if (!this._processing) this.getData();
     }, 1000);
   }
-  _playerStuff(data) {
+
+  get processing() {
+    return this._processing
+  }
+
+  playerStuff(data: playerJoinData|playerLeaveData) {
     const line = data.line;
     const server = data.server;
     if (line.type === "join") {
-      Object.keys(this._servers).forEach((serverKey) => {
-        if (this._servers[serverKey]?.discordid === server.discordid)
-          this._servers[serverKey].playercount++;
+      Object.keys(this.servers).forEach((serverKey) => {
+        if (this.servers[serverKey]?.discordid === server.discordid)
+          this.servers[serverKey].playercount++;
       });
     }
     if (line.type === "leave") {
-      Object.keys(this._servers).forEach((serverKey) => {
-        if (this._servers[serverKey]?.discordid === server.discordid)
-          this._servers[serverKey].playercount--;
+      Object.keys(this.servers).forEach((serverKey) => {
+        if (this.servers[serverKey]?.discordid === server.discordid)
+          this.servers[serverKey].playercount--;
       });
     }
   }
-  async _getData() {
+  private async getData() {
     this._processing = true;
-    let promiseArray = this._servers.map(async (server) => {
+    let promiseArray = this.servers.map(async (server) => {
       if (server.playercount !== 0) {
         try {
           let response = await rcon
             .rconCommand("/sc rcon.print(game.tick)", server.discordid)
             .catch(() => {});
-          server.ups = Math.abs(server.previousTick - parseInt(response.resp));
-          server.previousTick = parseInt(response.resp);
+          if (response) {
+            server.ups = Math.abs(server.previousTick - parseInt(response.resp));
+            server.previousTick = parseInt(response.resp);
+          }
         } catch {}
         try {
           rcon
@@ -105,17 +115,17 @@ class _UPSHandler {
       return server;
     });
     let serversUpdated = await Promise.all(promiseArray);
-    this._servers = serversUpdated;
+    this.servers = serversUpdated;
     this._processing = false;
   }
   /**
    * Get current data for handling
    * @returns {UPS[]} - Collected data
    */
-  exportData() {
-    return this._servers;
+  exportData(): UPSServer[] {
+    return this.servers;
   }
 }
 
-const UPSHandler = new _UPSHandler(serversJS);
-module.exports = UPSHandler;
+const UPSHandler = new UPSManager(serversJS);
+export default UPSHandler

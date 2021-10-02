@@ -1,8 +1,7 @@
-const config = require("../config");
-const rcon = require("../helpers/rcon");
-const servers = require("../servers");
-const { readFile } = require("fs/promises");
-const { promClient, register } = require("./Prometheus");
+import config from "../config";
+import rcon from "../helpers/rcon";
+import servers, { FactorioServer } from "../servers";
+import { promClient, register } from "./Prometheus";
 
 // this may conflict with stuff in ./Prometheus.js
 const playercountGauge = new promClient.Gauge({
@@ -162,6 +161,8 @@ const logisticDeliveryItem = new promClient.Gauge({
 register.registerMetric(logisticDeliveryItem);
 
 class GrafanaHandler {
+  servers: FactorioServer[]
+  timeout: NodeJS.Timeout
   constructor() {
     this.servers = servers
       .map((server) => {
@@ -362,4 +363,4 @@ class GrafanaHandler {
   }
 }
 
-new GrafanaHandler(servers);
+new GrafanaHandler();

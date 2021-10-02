@@ -12,10 +12,10 @@ export class ServerStatistics {
   @prop({default: 0})
   rocketLaunches: number
 
-  @prop({type: () => new Passthrough([{
+  @prop({type: () => new Passthrough({
     name: String,
     level: 1
-  }])})
+  })})
   completedResearch: {name: string, level: number}[]
 
   @prop({type: () => new Passthrough({

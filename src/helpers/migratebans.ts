@@ -1,12 +1,18 @@
 import { BannedPlayers } from "./sqlitedb";
-import bannedPlayers from "../../banlist-full.json";
+import { readFile } from "fs/promises";
+
+interface BannedPlayer {
+  username: string
+  reason: string
+}
 
 const run = async () => {
   // this is "truncating"
   await BannedPlayers.truncate();
 
   const players = new Map();
-  bannedPlayers.forEach((player) => players.set(player.username, true));
+  const bannedPlayersFile: BannedPlayer[] = await readFile("../banlist-full.json", "utf-8").then(r=>JSON.parse(r))
+  bannedPlayersFile.forEach((player) => players.set(player.username, true));
 
   const bans = Array.from(players.keys()).map((player) => {
     return {
