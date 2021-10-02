@@ -1,36 +1,28 @@
-const { MessageEmbed } = require("discord.js");
-const Command = require("../../base/Command.js");
-const serverJS = require("../../servers");
-const { serverpath } = require("../../config");
-const {
-  bubbleSort,
-  getServerFromChannelInput,
-  runShellCommand,
-} = require("../../helpers/functions");
-const fs = require("fs");
-const childprocess = require("child_process");
+import { Message, MessageEmbed } from "discord.js";
+import { Command } from "../../base/Command.js";
+import serverJS from "../../servers";
+import config from "../../config";
+import { bubbleSort, runShellCommand } from "../../helpers/functions";
+import fs from "fs";
+import childprocess from "child_process";
+const { serverpath } = config;
 
-class Linkme extends Command {
-  constructor(client) {
-    super(client, {
-      name: "startserver",
-      description: "Start a Factorio server",
-      usage: "[#channel]",
-      examples: ["{{p}}startserver #awf-regular"],
-      dirname: __dirname,
-      enabled: true,
-      guildOnly: false,
-      aliases: [],
-      memberPermissions: ["MANAGE_GUILD"],
-      botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
-      nsfw: false,
-      ownerOnly: false,
-      cooldown: 5000,
-      customPermissions: ["MANAGE_SERVER"],
-    });
-  }
-
-  async run(message, args) {
+const Startserver: Command<Message> = {
+  name: "startserver",
+  description: "Start a Factorio server",
+  usage: "[#channel]",
+  category: "Administration",
+  examples: ["{{p}}startserver #awf-regular"],
+  dirname: __dirname,
+  enabled: true,
+  guildOnly: false,
+  aliases: [],
+  memberPermissions: ["MANAGE_GUILD"],
+  botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
+  nsfw: false,
+  ownerOnly: false,
+  customPermissions: ["MANAGE_SERVER"],
+  run: async ({ message, args }) => {
     if (!args[0]) {
       // no argument at all
       let choiceEmbed = new MessageEmbed()
@@ -41,14 +33,14 @@ class Linkme extends Command {
         .setColor("GREEN")
         .setAuthor(
           `${message.guild.me.displayName} Help`,
-          message.guild.iconURL
+          message.guild.iconURL()
         );
       let dirData = serverJS.map((server) => {
         return { dir: `${serverpath}/${server.path}`, server: server };
       });
       dirData = bubbleSort(dirData);
       dirData.forEach((dir) => {
-        if (fs.statSync(dir).isDirectory())
+        if (fs.statSync(dir.dir).isDirectory())
           choiceEmbed.addField(`\`${dir}\``, "\u200B"); //check if it is a directory and if yes add it to the embed
       });
       return message.channel.send(choiceEmbed);
@@ -62,7 +54,7 @@ class Linkme extends Command {
       // else
       //   serverFolder = args[0];
       let process = childprocess.spawn(`./factorio-init/factorio`, ["start"], {
-        detatched: true,
+        detached: true,
         cwd: `${serverpath}/${serverFolder}`,
       });
       // TODO: fix this. factorio-init is tied to this process so i somehow have to stop kill the connection but let factorio-init continue
@@ -83,7 +75,6 @@ class Linkme extends Command {
           });
       }, 5000);
     }
-  }
-}
-
-module.exports = Linkme;
+  },
+};
+export default Startserver;

@@ -49,7 +49,6 @@ const OnlinePlayers: Command<Message> = {
       const playerRoles = JSON.parse(
         response.resp.slice(0, response.resp.indexOf("\n"))
       );
-      console.log(response.server, response.server.discordname);
       if (Object.keys(playerRoles).length)
         embed.addField(
           response.server.discordname,

@@ -1,31 +1,44 @@
-import { getModelForClass, Passthrough, prop } from "@typegoose/typegoose"
-import BotConfig from "../config"
+import {
+  getModelForClass,
+  modelOptions,
+  Passthrough,
+  prop,
+} from "@typegoose/typegoose";
 
-export class ServerStatistics {
+@modelOptions({
+  schemaOptions: {
+    collection: "serverstatistics",
+  },
+})
+export class ServerStatisticsClass {
   @prop()
-  id: string
+  id: string;
   @prop()
-  serverName: string
+  serverName: string;
   @prop()
-  serverID: string
+  serverID: string;
 
-  @prop({default: 0})
-  rocketLaunches: number
+  @prop({ default: 0 })
+  rocketLaunches: number;
 
-  @prop({type: () => new Passthrough({
-    name: String,
-    level: 1
-  })})
-  completedResearch: {name: string, level: number}[]
+  // this is disabled until https://github.com/typegoose/typegoose/pull/619 is merged
+  // @prop({type: () => new Passthrough({
+  //   name: String,
+  //   level: 1
+  // })})
+  // completedResearch: {name: string, level: number}[]
 
-  @prop({type: () => new Passthrough({
-    big: false,
-    behemoth: false
-  })})
+  @prop({
+    type: () =>
+      new Passthrough({
+        big: false,
+        behemoth: false,
+      }),
+  })
   evolution: {
-    big: boolean
-    behemoth: boolean
-  }
+    big: boolean;
+    behemoth: boolean;
+  };
 }
-const ServerStatisticsModel = getModelForClass(ServerStatistics)
-export default ServerStatisticsModel
+const ServerStatistics = getModelForClass(ServerStatisticsClass);
+export default ServerStatistics;

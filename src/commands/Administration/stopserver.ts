@@ -1,35 +1,31 @@
-const { MessageEmbed } = require("discord.js");
-const Command = require("../../base/Command.js");
-const serverJS = require("../../servers");
-const { serverpath } = require("../../config");
-const {
+import { Message, MessageEmbed } from "discord.js";
+import { Command } from "../../base/Command.js";
+import serverJS from "../../servers";
+import config from "../../config";
+import {
   bubbleSort,
   getServerFromChannelInput,
   runShellCommand,
-} = require("../../helpers/functions");
-const fs = require("fs");
+} from "../../helpers/functions";
+import fs from "fs";
+const { serverpath } = config;
 
-class Linkme extends Command {
-  constructor(client) {
-    super(client, {
-      name: "stopserver",
-      description: "Stop a Factorio server",
-      usage: "[#channel]",
-      examples: ["{{p}}stopserver #awf-regular"],
-      dirname: __dirname,
-      enabled: true,
-      guildOnly: false,
-      aliases: [],
-      memberPermissions: ["MANAGE_GUILD"],
-      botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
-      nsfw: false,
-      ownerOnly: false,
-      cooldown: 5000,
-      customPermissions: ["MANAGE_SERVER"],
-    });
-  }
-
-  async run(message, args) {
+const Stopserver: Command<Message> = {
+  name: "stopserver",
+  description: "Stop a Factorio server",
+  category: "Administration",
+  usage: "[#channel]",
+  examples: ["{{p}}stopserver #awf-regular"],
+  dirname: __dirname,
+  enabled: true,
+  guildOnly: false,
+  aliases: [],
+  memberPermissions: ["MANAGE_GUILD"],
+  botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
+  nsfw: false,
+  ownerOnly: false,
+  customPermissions: ["MANAGE_SERVER"],
+  run: async ({ message, args }) => {
     if (!args[0]) {
       // no argument at all
       let choiceEmbed = new MessageEmbed()
@@ -40,14 +36,14 @@ class Linkme extends Command {
         .setColor("GREEN")
         .setAuthor(
           `${message.guild.me.displayName} Help`,
-          message.guild.iconURL
+          message.guild.iconURL()
         );
       let dirData = serverJS.map((server) => {
         return { dir: `${serverpath}/${server.path}`, server: server };
       });
       dirData = bubbleSort(dirData);
       dirData.forEach((dir) => {
-        if (fs.statSync(dir).isDirectory())
+        if (fs.statSync(dir.dir).isDirectory())
           choiceEmbed.addField(`\`${dir}\``, "\u200B"); //check if it is a directory and if yes add it to the embed
       });
       return message.channel.send(choiceEmbed);
@@ -77,7 +73,7 @@ class Linkme extends Command {
           });
       }, 5000);
     }
-  }
-}
+  },
+};
 
-module.exports = Linkme;
+export default Stopserver;

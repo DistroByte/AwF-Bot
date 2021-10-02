@@ -9,17 +9,19 @@ import serversJS from "../servers";
 import childprocess from "child_process";
 import discord from "discord.js";
 import fs from "fs";
-import { BannedPlayers, ExtraBans, ExtraBansAttributes } from "./sqlitedb";
+import { BannedPlayers, ExtraBans } from "./sqlitedb";
 import { FactorioServer } from "../servers";
 
-type ArgumentTypes<F extends Function> = F extends (...args: infer A) => any ? A : never;
+type ArgumentTypes<F extends Function> = F extends (...args: infer A) => any
+  ? A
+  : never;
 
 /**
  * Sorts an array with BubbleSort. Tested with strings and numbers.
  * @param {Array} arr - Unsorted array
  * @returns {Array} Sorted array
  */
-export function bubbleSort<T>(arr: T[]): T[]  {
+export function bubbleSort<T>(arr: T[]): T[] {
   var len = arr.length;
   for (var i = 0; i < len; i++) {
     for (var j = 0; j < len - i - 1; j++) {
@@ -38,7 +40,9 @@ export function bubbleSort<T>(arr: T[]): T[]  {
  * @param {discord.Snowflake} channelID - ID of the Discord channel that you are trying to get
  * @returns {(object|null)} A server object from the servers.js file
  */
-export function getServerFromChannelInput(channelID: string): FactorioServer|null {
+export function getServerFromChannelInput(
+  channelID: string
+): FactorioServer | null {
   let serverKeys = Object.keys(serversJS);
   for (let i = 0; i < serverKeys.length; i++) {
     if (serversJS[serverKeys[i]].discordid == channelID) {
@@ -76,11 +80,15 @@ export function sortModifiedDate(pathArr: string[]) {
   return files.sort((a, b) => b.mtime - a.mtime);
 }
 
-export async function getConfirmationMessage(message: Message, content: ArgumentTypes<TextChannel["send"]>) {
+export async function getConfirmationMessage(
+  message: Message,
+  content: ArgumentTypes<TextChannel["send"]>
+) {
   const confirm = await message.channel.send(content);
   confirm.react("✅");
   confirm.react("❌");
-  const reactionFilter: discord.CollectorFilter = (reaction, user) => user.id === message.author.id;
+  const reactionFilter: discord.CollectorFilter = (reaction, user) =>
+    user.id === message.author.id;
   let reactions;
   try {
     reactions = await confirm.awaitReactions(reactionFilter, {
@@ -106,8 +114,8 @@ export async function getConfirmationMessage(message: Message, content: Argument
 export async function createPagedEmbed(
   fields: MessageEmbed["fields"],
   message: Message,
-  options: {maxPageCount: number} = {maxPageCount:25},
-  embedMsgOptions?: MessageEmbed|MessageEmbedOptions,
+  options: { maxPageCount: number } = { maxPageCount: 25 },
+  embedMsgOptions?: MessageEmbed | MessageEmbedOptions
 ): Promise<void> {
   let embed = new MessageEmbed(embedMsgOptions);
   let page = 0;
@@ -169,20 +177,23 @@ export async function createPagedEmbed(
  * Check whether or not a player is on the banlist
  * @param {String} playername
  */
-export async function checkBan(playername: string): Promise<false|ExtraBansAttributes> {
+export async function checkBan(
+  playername: string
+): Promise<false | ExtraBans | BannedPlayers> {
   const extra = await ExtraBans.findOne({
     where: {
       playername: playername,
     },
-  }).then(r=>r.get());
+  });
+
   if (extra) return extra;
 
   const banned = await BannedPlayers.findOne({
     where: {
       playername: playername,
     },
-  }).then(r=>r.get());
-  if (banned && banned.id) return banned;
+  });
+  if (banned) return banned;
   return false;
 }
 
@@ -191,7 +202,7 @@ export async function checkBan(playername: string): Promise<false|ExtraBansAttri
  * @param {String} playername
  * @param {String} reason
  */
-async function addban(playername, reason) {
+export async function addban(playername: string, reason: string) {
   const player = await ExtraBans.create({
     playername: playername,
     reason: reason || "No reason given",
@@ -204,7 +215,7 @@ async function addban(playername, reason) {
  * Remove a player from the banlist
  * @param {String} playername
  */
-async function removeban(playername) {
+export async function removeban(playername) {
   const extrabans = await ExtraBans.findOne({
     where: {
       playername: playername,

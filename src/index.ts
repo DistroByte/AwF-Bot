@@ -1,16 +1,17 @@
-import util from "util"
-import fs from "fs"
-import {readdir} from "fs/promises"
-import mongoose from "mongoose"
+import util from "util";
+import fs from "fs";
+import { readdir } from "fs/promises";
+import mongoose from "mongoose";
 
-import Comfy from "./base/Comfy"
+import Comfy from "./base/Comfy";
 const client = new Comfy({});
 
-process.chdir(__dirname)
+process.chdir(__dirname);
 
 require("./helpers/sqlitedb");
 
-setTimeout(require("./helpers/migratebans"), 10000);
+import refreshbanlist from "./helpers/migratebans";
+setTimeout(refreshbanlist, 10000);
 
 // remove all files from ./temp/ dir to prevent random bs
 try {
@@ -32,8 +33,9 @@ const init = async () => {
     cmds
       .filter((cmd) => cmd.split(".").pop() === "js")
       .forEach((cmd) => {
-        client.loadCommand(`./commands/${dir}`, cmd)
-          .then(r=>r&&client.logger(r, "error"))
+        client
+          .loadCommand(`./commands/${dir}`, cmd)
+          .then((r) => r && client.logger(r, "error"));
       });
   });
 
@@ -43,7 +45,7 @@ const init = async () => {
     const evts = await readdir(`./events/${dir}/`);
     evts.forEach(async (evt) => {
       const evtName = evt.split(".")[0];
-      const event = await import(`./events/${dir}/${evt}`)
+      const event = await import(`./events/${dir}/${evt}`);
       client.on(evtName, (...args) => event.default(client, ...args));
       delete require.cache[require.resolve(`./events/${dir}/${evt}`)];
     });
@@ -65,7 +67,8 @@ const init = async () => {
       client.logger("Error connecting to database. Error:" + err, "error")
     );
   mongoose
-    .createConnection(client.config.mongoDB).asPromise()
+    .createConnection(client.config.mongoDB)
+    .asPromise()
     .then((connection) => connection.useDb("scenario"))
     .then((connection) => {
       client.logger("Second database connected", "log");
@@ -88,14 +91,14 @@ process.on("unhandledRejection", async (err) => {
 });
 
 // add client to classes for logging
-import "./helpers/logger"
-import fifoHandler from "./helpers/fifo-handler"
-import Tails from "./base/Tails"
+import "./helpers/logger";
+import fifoHandler from "./helpers/fifo-handler";
+import Tails from "./base/Tails";
 fifoHandler.client = client;
 Tails.client = client;
 
 // load Prometheus server for data stuff
-import "./base/Prometheus"
+import "./base/Prometheus";
 
 // load server-based Prometheus stuff
-import "./base/GrafanaHandler"
+import "./base/GrafanaHandler";

@@ -3,7 +3,11 @@
  */
 
 import Comfy from "../base/Comfy";
-import Tails, { OutputData, playerJoinData, playerLeaveData } from "../base/Tails";
+import Tails, {
+  OutputData,
+  playerJoinData,
+  playerLeaveData,
+} from "../base/Tails";
 import mongoose from "mongoose";
 import ServerStatistics from "../base/Serverstatistics";
 import rcon from "./rcon";
@@ -16,8 +20,8 @@ import { checkBan } from "./functions";
 import { FactorioServer } from "../servers";
 
 class serverHandler {
-  client: Comfy
-  helpdesk: string
+  client: Comfy;
+  helpdesk: string;
   constructor(client: Comfy) {
     this.client = client;
     this.helpdesk = "723280139982471247"; // helpdesk channel
@@ -116,7 +120,11 @@ class serverHandler {
     if (line.includes("?griefer"))
       this.client.channels
         .fetch(this.helpdesk)
-        .then((channel) => channel.isText() && channel.send(`Griefer in <#${server.discordid}>!`));
+        .then(
+          (channel) =>
+            channel.isText() &&
+            channel.send(`Griefer in <#${server.discordid}>!`)
+        );
     line = this.formatChatData(line);
     if (line == "") return;
     line = Util.escapeMarkdown(line);
@@ -127,7 +135,7 @@ class serverHandler {
     let line = out.line;
     const server = out.server;
     let channel = this.client.channels.cache.get(server.discordid);
-    if (!channel.isText() || channel.type === "dm") return
+    if (!channel || !channel.isText() || channel.type === "dm") return;
     if (line.includes("; Factorio")) {
       return channel.setTopic(
         `Running ${this.formatVersion(line)} since ${this.formatDate(line)}`
@@ -135,8 +143,10 @@ class serverHandler {
     }
     if (line.includes("Error")) {
       if (channel.name !== "dev-dump") {
-        const errorChannel = this.client.channels.cache.get("786603909489491988")
-        if (errorChannel.isText()) errorChannel.send(`Error in ${channel.name}: ${line}`);
+        const errorChannel =
+          this.client.channels.cache.get("786603909489491988");
+        if (errorChannel.isText())
+          errorChannel.send(`Error in ${channel.name}: ${line}`);
       }
     }
     if (line.includes("Saving game as"))
@@ -157,7 +167,7 @@ class serverHandler {
         )}\``
       );
   }
-  async playerStuff(data: playerJoinData|playerLeaveData) {
+  async playerStuff(data: playerJoinData | playerLeaveData) {
     const line = data.line;
     const server = data.server;
     if (line.type === "join") {
@@ -414,14 +424,15 @@ class serverHandler {
     const requestType = request.shift();
     const collectionName = request.shift();
     const playerName = request.shift();
-    const args = request
+    const args = request;
     let line = data.line.slice(
       // +3 for spaces
       requestType.length + collectionName.length + playerName.length + 3
     );
     if (requestType == "request") {
       // request from database and send back to server
-      let find = await mongoose.connections[1].getClient()
+      let find = await mongoose.connections[1]
+        .getClient()
         .db("scenario")
         .collection(collectionName)
         .findOne({
@@ -446,7 +457,8 @@ class serverHandler {
         `/interface Datastore.ingest('propagate', '${collectionName}', '${playerName}', '${args}')`,
         data.server.name
       );
-      let find = await mongoose.connections[1].getClient()
+      let find = await mongoose.connections[1]
+        .getClient()
         .db("scenario")
         .collection(collectionName)
         .findOne({
@@ -457,7 +469,8 @@ class serverHandler {
           playername: playerName,
           data: JSON.parse(args.toString()),
         };
-        await mongoose.connections[1].getClient()
+        await mongoose.connections[1]
+          .getClient()
           .db("scenario")
           .collection(collectionName)
           .insertOne(send);
@@ -465,14 +478,16 @@ class serverHandler {
         let send = lodash.cloneDeep(find);
         send.data = JSON.parse(args.toString());
 
-        await mongoose.connections[1].getClient()
+        await mongoose.connections[1]
+          .getClient()
           .db("scenario")
           .collection(collectionName)
           .findOneAndReplace(find, send);
       }
     } else if (requestType == "save") {
       // save to database
-      let find = await mongoose.connections[1].getClient()
+      let find = await mongoose.connections[1]
+        .getClient()
         .db("scenario")
         .collection(collectionName)
         .findOne({
@@ -483,14 +498,16 @@ class serverHandler {
           playername: playerName,
           data: JSON.parse(line),
         };
-        await mongoose.connections[1].getClient()
+        await mongoose.connections[1]
+          .getClient()
           .db("scenario")
           .collection(collectionName)
           .insertOne(send);
       } else {
         let send = lodash.cloneDeep(find);
         send.data = JSON.parse(line);
-        await mongoose.connections[1].getClient()
+        await mongoose.connections[1]
+          .getClient()
           .db("scenario")
           .collection(collectionName)
           .findOneAndReplace(find, send);
@@ -501,7 +518,8 @@ class serverHandler {
         playername: playerName,
         data: JSON.parse(args.toString()),
       };
-      await mongoose.connections[1].getClient()
+      await mongoose.connections[1]
+        .getClient()
         .db("scenario")
         .collection(collectionName)
         .deleteOne(toDelete);
@@ -514,16 +532,20 @@ class serverHandler {
       `<#${data.server.discordid}>`
     );
     const embed = JSON.parse(message);
-    const channel = this.client.channels.cache.get(data.server.discordid)
-    channel.isText() && channel.send({
-      embed: new MessageEmbed(embed),
-      content: `<@&${config.moderatorroleid}>`,
-    });
-    const modchannel = this.client.channels.cache.get(this.client.config.moderatorchannel)
-    modchannel.isText() && modchannel.send({
-      embed: new MessageEmbed(embed),
-      content: `<@&${config.moderatorroleid}>`,
-    });
+    const channel = this.client.channels.cache.get(data.server.discordid);
+    channel.isText() &&
+      channel.send({
+        embed: new MessageEmbed(embed),
+        content: `<@&${config.moderatorroleid}>`,
+      });
+    const modchannel = this.client.channels.cache.get(
+      this.client.config.moderatorchannel
+    );
+    modchannel.isText() &&
+      modchannel.send({
+        embed: new MessageEmbed(embed),
+        content: `<@&${config.moderatorroleid}>`,
+      });
   }
   async startHandler(data: OutputData) {
     let server = data.server;
@@ -545,8 +567,7 @@ class serverHandler {
         )
         .then((output) => output.resp);
       if (res.trim() == "Command Complete") {
-        const channel = this.client.channels.cache
-          .get(data.server.discordid)
+        const channel = this.client.channels.cache.get(data.server.discordid);
         channel.isText() && channel.send("Roles have synced");
       }
     }, 5000); // allow server to connect to rcon

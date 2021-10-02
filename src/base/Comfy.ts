@@ -2,44 +2,56 @@
  * @file Jammy's core. Based off of ComfyBot
  */
 
-import { Client, ClientOptions, Collection, Message, MessageEmbed, TextChannel } from "discord.js";
+import {
+  Client,
+  ClientOptions,
+  Collection,
+  Message,
+  MessageEmbed,
+  TextChannel,
+} from "discord.js";
 import NodeCache from "node-cache";
 import factorioServers, { FactorioServer } from "../servers";
-import FIFO from "fifo"
-import path from "path"
-import moment from "moment"
-import BotConfig, { BotConfig as BotConfigType, BotConfigEmojis } from "../config"
+import FIFO from "fifo";
+import path from "path";
+import moment from "moment";
+import BotConfig, {
+  BotConfig as BotConfigType,
+  BotConfigEmojis,
+} from "../config";
 import BotConsts, { BotConsts as BotConstsType } from "../consts";
 import { Command } from "./Command";
-import BotLogger from "../helpers/logger"
-import BotUsersData, { UserClass } from "./User"
-import ServerStatisticsModel from "./Serverstatistics";
+import BotLogger from "../helpers/logger";
+import BotUsersData, { UserClass } from "./User";
+import ServerStatistics from "./Serverstatistics";
+import { DocumentType } from "@typegoose/typegoose";
+import { BeAnObject } from "@typegoose/typegoose/lib/types";
 
-type ArgumentTypes<F extends Function> = F extends (args: infer A) => any ? A : never;
+type ArgumentTypes<F extends Function> = F extends (args: infer A) => any
+  ? A
+  : never;
 
-interface ComfyOptions extends ClientOptions {
-}
+interface ComfyOptions extends ClientOptions {}
 class Comfy extends Client {
-  config: BotConfigType
-  emotes: BotConfigEmojis
-  consts: BotConstsType
-  commands: Collection<string, Command>
-  aliases: Collection<string, string>
-  logger: typeof BotLogger
-  usersData: typeof BotUsersData
-  serverQueues: Map<string, {
-    server: FactorioServer,
-    messageQueue: FIFO<string>,
-    sendingMessage: boolean
-  }>
-  factorioServers: FactorioServer[]
-  databaseCache: {
-    users: Collection<string, UserClass>
-    factorioServers: Collection<string, typeof ServerStatisticsModel>
-  }
+  config: BotConfigType;
+  emotes: BotConfigEmojis;
+  consts: BotConstsType;
+  commands: Collection<string, Command>;
+  aliases: Collection<string, string>;
+  logger: typeof BotLogger;
+  usersData: typeof BotUsersData;
+  serverQueues: Map<
+    string,
+    {
+      server: FactorioServer;
+      messageQueue: FIFO<string>;
+      sendingMessage: boolean;
+    }
+  >;
+  factorioServers: FactorioServer[];
   cache: {
-    linkingCache: NodeCache
-  }
+    linkingCache: NodeCache;
+  };
   constructor(options: ComfyOptions) {
     super(options);
     this.consts = BotConsts;
@@ -83,8 +95,9 @@ class Comfy extends Client {
           }
         }
         if (message.length) {
-          const channel = this.channels.cache.get(server.server.discordid)
-          if (channel.isText()) channel.send(message).then(() => (server.sendingMessage = false));
+          const channel = this.channels.cache.get(server.server.discordid);
+          if (channel.isText())
+            channel.send(message).then(() => (server.sendingMessage = false));
         } else {
           server.sendingMessage = false;
         }
@@ -92,14 +105,9 @@ class Comfy extends Client {
     }, 100);
     this.factorioServers = factorioServers;
 
-    this.databaseCache = {
-      users: new Collection(),
-      factorioServers: new Collection(),
-    };
-
     this.cache = {
       linkingCache: new NodeCache({ stdTTL: 600 }),
-    }
+    };
   }
 
   printDate(date: Date) {
@@ -108,8 +116,10 @@ class Comfy extends Client {
 
   async loadCommand(commandPath: string, commandName: string) {
     try {
-      const props: Command = await import(`.${commandPath}${path.sep}${commandName}`).then(c=>c.default)
-      
+      const props: Command = await import(
+        `.${commandPath}${path.sep}${commandName}`
+      ).then((c) => c.default);
+
       this.commands.set(props.name, props);
       props.aliases.forEach((alias) => {
         this.aliases.set(alias, props.name);
@@ -134,25 +144,17 @@ class Comfy extends Client {
   }
 
   async findOrCreateUser({ id: userID }) {
-    if (this.databaseCache.users.get(userID)) {
-      return this.databaseCache.users.get(userID)
+    let userData = await this.usersData.findOne({ id: userID });
+    if (userData) {
+      return userData;
     } else {
-      let userData = await this.usersData.findOne({ id: userID })
-      if (userData) {
-        this.databaseCache.users.set(userID, userData);
-        return userData;
-      } else {
-        userData = new this.usersData({ id: userID });
-        await userData.save();
-        this.databaseCache.users.set(userID, userData);
-        return userData;
-      }
+      userData = await this.usersData.create({ id: userID });
+      return userData;
     }
   }
+
   async findUserFactorioName(factorioname: string) {
     let userData = await this.usersData.findOne({ factorioName: factorioname });
-    if (userData?.id)
-      this.databaseCache.users.set(userData.id, userData);
     return userData;
   }
 
@@ -161,11 +163,13 @@ class Comfy extends Client {
       const guild = this.guilds.cache.forEach((guild) =>
         guild.channels.cache.forEach(
           (channel) =>
-            channel.id === this.config.moderatorchannel && channel.isText() && channel.send(message)
+            channel.id === this.config.moderatorchannel &&
+            channel.isText() &&
+            channel.send(message)
         )
       );
     }
   }
 }
 
-export default Comfy
+export default Comfy;

@@ -2,8 +2,8 @@ import { BannedPlayers } from "./sqlitedb";
 import { readFile } from "fs/promises";
 
 interface BannedPlayer {
-  username: string
-  reason: string
+  username: string;
+  reason: string;
 }
 
 const run = async () => {
@@ -11,7 +11,10 @@ const run = async () => {
   await BannedPlayers.truncate();
 
   const players = new Map();
-  const bannedPlayersFile: BannedPlayer[] = await readFile("../banlist-full.json", "utf-8").then(r=>JSON.parse(r))
+  const bannedPlayersFile: BannedPlayer[] = await readFile(
+    "../banlist-full.json",
+    "utf-8"
+  ).then((r) => JSON.parse(r));
   bannedPlayersFile.forEach((player) => players.set(player.username, true));
 
   const bans = Array.from(players.keys()).map((player) => {
@@ -35,4 +38,4 @@ const run = async () => {
   return true;
 };
 
-module.exports = run;
+export default run;
