@@ -12,7 +12,7 @@ import fs from "fs";
 import { BannedPlayers, ExtraBans } from "./sqlitedb";
 import { FactorioServer } from "../servers";
 
-type ArgumentTypes<F extends Function> = F extends (...args: infer A) => any
+export type ArgumentTypes<F extends Function> = F extends (args: infer A) => any
   ? A
   : never;
 

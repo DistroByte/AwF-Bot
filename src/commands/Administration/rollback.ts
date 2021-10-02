@@ -1,40 +1,34 @@
-const { MessageEmbed } = require("discord.js");
-const Command = require("../../base/Command.js");
-const {
+import { Message, MessageEmbed } from "discord.js";
+import { Command } from "../../base/Command.js";
+import {
   sortModifiedDate,
   runShellCommand,
   getConfirmationMessage,
   createPagedEmbed,
-} = require("../../helpers/functions");
-const fs = require("fs");
-const servers = require("../../servers");
+} from "../../helpers/functions";
+import fs from "fs";
+import servers from "../../servers";
 
-class Rollback extends Command {
-  constructor(client) {
-    super(client, {
-      name: "rollback",
-      description: "Restore a Factorio save",
-      usage: "(channel) (save name)",
-      aliases: ["restoresave"],
-      examples: ["{{p}}rollback #awf-regular _autosave43"],
-      dirname: __dirname,
-      enabled: true,
-      guildOnly: false,
-      aliases: [],
-      memberPermissions: ["ADMINISTRATOR"],
-      botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
-      nsfw: false,
-      ownerOnly: false,
-      cooldown: 5000,
-      customPermissions: ["MANAGE_SERVER"],
-    });
-  }
-
-  async run(message, args) {
+const Rollback: Command<Message> = {
+  name: "rollback",
+  description: "Restore a Factorio save",
+  usage: "(channel) (save name)",
+  category: "Administration",
+  aliases: ["restoresave"],
+  examples: ["{{p}}rollback #awf-regular _autosave43"],
+  dirname: __dirname,
+  enabled: true,
+  guildOnly: false,
+  memberPermissions: ["ADMINISTRATOR"],
+  botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
+  nsfw: false,
+  ownerOnly: false,
+  customPermissions: ["MANAGE_SERVER"],
+  run: async ({ client, message, args }) => {
     if (!args[0]) return message.channel.send("Ping a server!");
     const serverid =
       message.mentions.channels.first()?.id ||
-      (await this.client.channels.fetch(args[0]).then((c) => c?.id));
+      (await client.channels.fetch(args[0]).then((c) => c?.id));
     const server = servers.find((server) => server.discordid === serverid);
     if (!server)
       return message.channel.send(`\`${args[0]}\` is an invalid server!`);
@@ -43,16 +37,15 @@ class Rollback extends Command {
       // no save provided
       const savefiles = sortModifiedDate(
         fs
-          .readdirSync(`${this.client.config.serverpath}/${server.path}/saves`)
+          .readdirSync(`${client.config.serverpath}/${server.path}/saves`)
           .map(
-            (path) =>
-              `${this.client.config.serverpath}/${server.path}/saves/${path}`
+            (path) => `${client.config.serverpath}/${server.path}/saves/${path}`
           )
       ).filter((save) => save.path.endsWith(".zip"));
       const embed = new MessageEmbed()
         .setAuthor(message.guild.name, message.guild.iconURL())
-        .setColor(this.client.config.embed.color)
-        .setFooter(this.client.config.embed.footer);
+        .setColor(client.config.embed.color)
+        .setFooter(client.config.embed.footer);
 
       const content = savefiles.map((savefile) => {
         return {
@@ -61,16 +54,17 @@ class Rollback extends Command {
             -".zip".length
           )}\``,
           value: `<t:${Math.round(new Date(savefile.mtime).valueOf() / 1000)}>`,
+          inline: false,
         };
       });
 
-      createPagedEmbed(content, embed, message);
+      createPagedEmbed(content, message, null, embed);
     } else {
       // specific save provided
       let save;
       try {
         save = fs.statSync(
-          `${this.client.config.serverpath}/${server.path}/saves/${args[1]}.zip`
+          `${client.config.serverpath}/${server.path}/saves/${args[1]}.zip`
         );
       } catch (e) {
         return message.channel.send(`${args[1]} is an invalid save!`);
@@ -84,9 +78,9 @@ class Rollback extends Command {
       if (!confirm) return message.channel.send("Rollback cancelled");
 
       const command = [
-        `${this.client.config.serverpath}/${server.path}/factorio-init/factorio stop`,
-        `${this.client.config.serverpath}/${server.path}/factorio-init/factorio load-save ${args[1]}`,
-        `${this.client.config.serverpath}/${server.path}/factorio-init/factorio start`,
+        `${client.config.serverpath}/${server.path}/factorio-init/factorio stop`,
+        `${client.config.serverpath}/${server.path}/factorio-init/factorio load-save ${args[1]}`,
+        `${client.config.serverpath}/${server.path}/factorio-init/factorio start`,
       ].join(" && ");
 
       // return
@@ -95,7 +89,7 @@ class Rollback extends Command {
       });
       setTimeout(() => {
         runShellCommand(
-          `${this.client.config.serverpath}/${server.path}/factorio-init/factorio status`
+          `${client.config.serverpath}/${server.path}/factorio-init/factorio status`
         )
           .then((res) => {
             message.channel.send(res);
@@ -103,7 +97,7 @@ class Rollback extends Command {
           .catch((e) => message.channel.send(`Error statusing: ${e}`));
       }, 5000);
     }
-  }
-}
+  },
+};
 
-module.exports = Rollback;
+export default Rollback;

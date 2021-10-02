@@ -49,14 +49,12 @@ const Startserver: Command<Message> = {
         (server) => server.discordid === message.mentions.channels.first().id
       )?.path;
       if (!serverFolder) return message.reply("No server corresponds to that!");
-      // if (message.mentions.channels.first())
-      //   serverFolder = getServerFromChannelInput(message.mentions.channels.first().id).path;
-      // else
-      //   serverFolder = args[0];
+
       let process = childprocess.spawn(`./factorio-init/factorio`, ["start"], {
-        detached: true,
         cwd: `${serverpath}/${serverFolder}`,
+        detached: true,
       });
+
       // TODO: fix this. factorio-init is tied to this process so i somehow have to stop kill the connection but let factorio-init continue
       // process.on('message', () => {
       //   console.log(process.connected)

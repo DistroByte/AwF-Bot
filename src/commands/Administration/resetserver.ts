@@ -1,42 +1,32 @@
-const { MessageEmbed, MessageAttachment } = require("discord.js");
-const Command = require("../../base/Command.js");
-const serverJS = require("../../servers");
-const {
-  sortModifiedDate,
-  runShellCommand,
-} = require("../../helpers/functions");
-const childprocess = require("child_process");
-const fs = require("fs");
-const moment = require("moment");
-const ServerStatistics = require("../../base/Serverstatistics");
-const minimist = require("minimist");
-const Str = require("@supercharge/strings");
-const https = require("https");
+import { MessageEmbed, MessageAttachment, Message } from "discord.js";
+import { Command } from "../../base/Command.js";
+import serverJS from "../../servers";
+import { sortModifiedDate, runShellCommand } from "../../helpers/functions";
+import childprocess from "child_process";
+import fs from "fs";
+import moment from "moment";
+import ServerStatistics from "../../base/Serverstatistics";
+import minimist from "minimist";
+import Str from "@supercharge/strings";
+import https from "https";
 
-class Linkme extends Command {
-  constructor(client) {
-    super(client, {
-      name: "resetserver",
-      description: "Reset a Factorio server and back up a save to Mega",
-      usage:
-        "<#channel> [--scenario <Scenario name>][File attatchment for map gen settings]",
-      examples: [
-        "{{p}}resetserver <#724696348871622818> --scenario AwF-Scenario",
-      ],
-      dirname: __dirname,
-      enabled: true,
-      guildOnly: false,
-      aliases: [],
-      memberPermissions: ["ADMINISTRATOR"],
-      botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
-      nsfw: false,
-      ownerOnly: false,
-      cooldown: 5000,
-      customPermissions: ["MANAGE_SERVER"],
-    });
-  }
-
-  async run(message, args) {
+const Resetserver: Command<Message> = {
+  name: "resetserver",
+  description: "Reset a Factorio server and back up a save to Mega",
+  usage:
+    "<#channel> [--scenario <Scenario name>][File attatchment for map gen settings]",
+  category: "Administration",
+  examples: ["{{p}}resetserver <#724696348871622818> --scenario AwF-Scenario"],
+  dirname: __dirname,
+  enabled: true,
+  guildOnly: false,
+  aliases: [],
+  memberPermissions: ["ADMINISTRATOR"],
+  botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
+  nsfw: false,
+  ownerOnly: false,
+  customPermissions: ["MANAGE_SERVER"],
+  run: async ({ client, message, args }) => {
     if (!message.mentions.channels.first())
       return message.reply("No channel to reset provided!");
     args.shift(); // remove mention
@@ -47,15 +37,14 @@ class Linkme extends Command {
 
     // stop server
     childprocess.spawnSync(`./factorio-init/factorio`, ["stop"], {
-      cwd: `${this.client.config.serverpath}/${server.path}`,
+      cwd: `${client.config.serverpath}/${server.path}`,
     });
 
     // back up saves
     const saves = fs
-      .readdirSync(`${this.client.config.serverpath}/${server.path}/saves`)
+      .readdirSync(`${client.config.serverpath}/${server.path}/saves`)
       .map(
-        (save) =>
-          `${this.client.config.serverpath}/${server.path}/saves/${save}`
+        (save) => `${client.config.serverpath}/${server.path}/saves/${save}`
       );
     const latestSavePath = saves[0];
     // if there are saves, back up latest and remove all after
@@ -64,11 +53,11 @@ class Linkme extends Command {
         latestSavePath.lastIndexOf("/") + 1,
         latestSavePath.indexOf(".")
       );
-      if (!fs.existsSync(`${this.client.config.archivePath}/${server.path}/`))
-        fs.mkdirSync(`${this.client.config.archivePath}/${server.path}/`);
+      if (!fs.existsSync(`${client.config.archivePath}/${server.path}/`))
+        fs.mkdirSync(`${client.config.archivePath}/${server.path}/`);
       fs.copyFileSync(
         latestSavePath,
-        `${this.client.config.archivePath}/${
+        `${client.config.archivePath}/${
           server.path
         }/${latestSave}_${moment().format("YYYY-MM-DD-mm-ss")}.zip`
       );
@@ -76,13 +65,14 @@ class Linkme extends Command {
     }
 
     // remove stats
-    ServerStatistics.findOneAndReplace(
-      { serverID: server.discordid },
-      {
-        serverID: server.discordid,
-        serverName: server.name,
+    ServerStatistics.findOneAndDelete({ serverID: server.discordid }).then(
+      () => {
+        ServerStatistics.create({
+          serverID: server.discordid,
+          serverName: server.name,
+        });
       }
-    ).then(() => {});
+    );
 
     let cmdArgs = minimist(args);
     let command = "";
@@ -146,7 +136,7 @@ class Linkme extends Command {
     let factorio = childprocess.spawn(
       `./bin/x64/factorio`,
       command.split(" "),
-      { cwd: `${this.client.config.serverpath}/${server.path}` }
+      { cwd: `${client.config.serverpath}/${server.path}` }
     );
     const handleMessage = (msg) => {
       let data = msg.toString().trim();
@@ -155,13 +145,6 @@ class Linkme extends Command {
       if (data.match(serverStartRegExp)) {
         tempFiles.forEach((filepath) => fs.rmSync(filepath));
         factorio.kill();
-        // roles are synced in the server handler so there is no wait for them to load
-        this.client.factorioServers.find((clientServer) => {
-          if (clientServer.discordid === server.discordid) {
-            clientServer.roleSync = true;
-            return true;
-          }
-        });
       }
     };
     factorio.stdout.on("data", handleMessage);
@@ -174,12 +157,12 @@ class Linkme extends Command {
         { files: [file] }
       );
       childprocess.spawn(`./factorio-init/factorio`, ["start"], {
-        detatched: true,
-        cwd: `${this.client.config.serverpath}/${server.path}`,
+        detached: true,
+        cwd: `${client.config.serverpath}/${server.path}`,
       });
       setTimeout(() => {
         runShellCommand(
-          `${this.client.config.serverpath}/${server.path}/factorio-init/factorio status`
+          `${client.config.serverpath}/${server.path}/factorio-init/factorio status`
         )
           .then((out) => {
             return message.channel.send(`Server status: \`${out}\``);
@@ -189,7 +172,7 @@ class Linkme extends Command {
           });
       }, 5000);
     });
-  }
-}
+  },
+};
 
-module.exports = Linkme;
+export default Resetserver;
