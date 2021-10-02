@@ -8,7 +8,7 @@ servers.json
 testing.js
 temp/*
 test.js
-servers.js
-config.js
+servers.ts
+config.ts
 .env
 database.sqlite
