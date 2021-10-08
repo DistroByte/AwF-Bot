@@ -1,5 +1,4 @@
 import Comfy from "./Comfy";
-import path from "path";
 import { Message, PermissionResolvable } from "discord.js";
 
 interface CommandRunOpts {
