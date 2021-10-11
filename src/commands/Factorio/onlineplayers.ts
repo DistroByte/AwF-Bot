@@ -41,7 +41,7 @@ const OnlinePlayers: Command<Message> = {
     const withoutScenarioOutput = await Promise.all(withoutScenarioOutputProm);
 
     scenarioOutput.forEach((response) => {
-      if (!response.resp)
+      if (!response.resp || typeof response.resp !== "string")
         return embed.addField(
           response.server.discordname,
           "Server is unreachable"
@@ -59,7 +59,7 @@ const OnlinePlayers: Command<Message> = {
       else embed.addField(response.server.discordname, "Nobody is online");
     });
     withoutScenarioOutput.forEach((response) => {
-      if (!response.resp)
+      if (!response.resp || typeof response.resp !== "string")
         return embed.addField(
           response.server.discordname,
           "Server is unreachable"
