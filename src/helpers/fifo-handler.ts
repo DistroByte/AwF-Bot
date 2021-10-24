@@ -3,15 +3,16 @@
  */
 
 import { Message, Presence } from "discord.js";
-import FactorioServers, {FactorioServer} from "../servers"; // tails, fifo, discord IDs etc.
+import FactorioServers from "../servers"; // tails, fifo, discord IDs etc.
+import { FactorioServer } from "../types";
 import FIFO from "fifo-js";
 import Comfy from "../base/Comfy";
-import config from "../config"
-const {serverpath} = config
+import config from "../config";
+const { serverpath } = config;
 
 interface ServerFifo {
-  serverFifo: FIFO,
-  serverObject: FactorioServer
+  serverFifo: FIFO;
+  serverObject: FactorioServer;
 }
 
 /**
@@ -21,9 +22,9 @@ class ServerFifoManager {
   /**
    * @class Gets it's servers from the serversJS variable required from the .js file
    */
-  usedFifos: ServerFifo[]
-  unusedFifos: ServerFifo[]
-  client: Comfy | null
+  usedFifos: ServerFifo[];
+  unusedFifos: ServerFifo[];
+  client: Comfy | null;
   constructor() {
     this.usedFifos = [];
     this.unusedFifos = [];
@@ -95,7 +96,7 @@ class ServerFifoManager {
    * @param {Message} message - Discord message to send to server
    * @param {boolean} [sendWithUsername=true] - Whether to send the message with username or not.
    */
-  sendToAll(message: Message, sendWithUsername=true) {
+  sendToAll(message: Message, sendWithUsername = true) {
     let toSend;
     if (sendWithUsername === true)
       toSend = `${message.author.username}: ${message.cleanContent}`;
@@ -107,4 +108,4 @@ class ServerFifoManager {
 }
 
 let FifoManager = new ServerFifoManager();
-export default FifoManager
+export default FifoManager;

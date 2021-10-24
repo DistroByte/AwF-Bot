@@ -17,7 +17,7 @@ import Users from "../base/User";
 import { Util } from "discord.js";
 import config from "../config";
 import { checkBan } from "./functions";
-import { FactorioServer } from "../servers";
+import { FactorioServer } from "../types";
 
 class serverHandler {
   client: Comfy;
@@ -300,13 +300,15 @@ class serverHandler {
       if (line[0] == "PLAYER:") newline.shift();
       this.appendMessage(
         server,
-        `${this.client.emotes?.playerdeath} ${line[0]} died due to ${line[1]}`
+        `${this.client.emotes?.playerdeath} ${newline[0]} died due to ${newline[1]}`
       );
 
       let user = await this.client.findUserFactorioName(line[0]);
-      user.factorioStats.deaths++;
-      user.factorioStats.points -= 100;
-      user.save().then(() => {});
+      if (user) {
+        user.factorioStats.deaths++;
+        user.factorioStats.points -= 100;
+        user.save().then(() => {});
+      }
     }
     if (line.includes("ROCKET: ")) {
       let serverStats = await ServerStatistics.findOneAndUpdate(

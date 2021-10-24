@@ -1,6 +1,7 @@
 import config from "../config";
 import rcon from "../helpers/rcon";
-import servers, { FactorioServer } from "../servers";
+import servers from "../servers";
+import { FactorioServer } from "../types";
 import { promClient, register } from "./Prometheus";
 
 // this may conflict with stuff in ./Prometheus.js
@@ -161,8 +162,8 @@ const logisticDeliveryItem = new promClient.Gauge({
 register.registerMetric(logisticDeliveryItem);
 
 class GrafanaHandler {
-  servers: FactorioServer[]
-  timeout: NodeJS.Timeout
+  servers: FactorioServer[];
+  timeout: NodeJS.Timeout;
   constructor() {
     this.servers = servers
       .map((server) => {

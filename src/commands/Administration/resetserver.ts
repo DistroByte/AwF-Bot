@@ -35,45 +35,6 @@ const Resetserver: Command<Message> = {
     );
     if (!server) return message.reply("Invalid channel, not tied to a server!");
 
-    // stop server
-    childprocess.spawnSync(`./factorio-init/factorio`, ["stop"], {
-      cwd: `${client.config.serverpath}/${server.path}`,
-    });
-
-    // back up saves
-    const saves = fs
-      .readdirSync(`${client.config.serverpath}/${server.path}/saves`)
-      .map(
-        (save) => `${client.config.serverpath}/${server.path}/saves/${save}`
-      );
-    const latestSavePath = saves[0];
-    // if there are saves, back up latest and remove all after
-    if (latestSavePath) {
-      const latestSave = latestSavePath.slice(
-        latestSavePath.lastIndexOf("/") + 1,
-        latestSavePath.indexOf(".")
-      );
-      if (!fs.existsSync(`${client.config.archivePath}/${server.path}/`))
-        fs.mkdirSync(`${client.config.archivePath}/${server.path}/`);
-      fs.copyFileSync(
-        latestSavePath,
-        `${client.config.archivePath}/${
-          server.path
-        }/${latestSave}_${moment().format("YYYY-MM-DD-mm-ss")}.zip`
-      );
-      saves.forEach((savePath) => fs.rmSync(savePath));
-    }
-
-    // remove stats
-    ServerStatistics.findOneAndDelete({ serverID: server.discordid }).then(
-      () => {
-        ServerStatistics.create({
-          serverID: server.discordid,
-          serverName: server.name,
-        });
-      }
-    );
-
     let cmdArgs = minimist(args);
     let command = "";
     // add scenario / map to command
@@ -129,10 +90,47 @@ const Resetserver: Command<Message> = {
     if (reaction.emoji.name !== "✅")
       return message.channel.send("Wrong emoji");
 
-    let output = [];
-    const serverStartRegExp = new RegExp(
-      /Info ServerMultiplayerManager.cpp:\d\d\d: Matching server connection resumed/
+    // stop server
+    childprocess.spawnSync(`./factorio-init/factorio`, ["stop"], {
+      cwd: `${client.config.serverpath}/${server.path}`,
+    });
+
+    // back up saves
+    const saves = fs
+      .readdirSync(`${client.config.serverpath}/${server.path}/saves`)
+      .map(
+        (save) => `${client.config.serverpath}/${server.path}/saves/${save}`
+      );
+    const latestSavePath = saves[0];
+    // if there are saves, back up latest and remove all after
+    if (latestSavePath) {
+      const latestSave = latestSavePath.slice(
+        latestSavePath.lastIndexOf("/") + 1,
+        latestSavePath.indexOf(".")
+      );
+      if (!fs.existsSync(`${client.config.archivePath}/${server.path}/`))
+        fs.mkdirSync(`${client.config.archivePath}/${server.path}/`);
+      fs.copyFileSync(
+        latestSavePath,
+        `${client.config.archivePath}/${
+          server.path
+        }/${latestSave}_${moment().format("YYYY-MM-DD-mm-ss")}.zip`
+      );
+      saves.forEach((savePath) => fs.rmSync(savePath));
+    }
+
+    // remove stats
+    ServerStatistics.findOneAndDelete({ serverID: server.discordid }).then(
+      () => {
+        ServerStatistics.create({
+          serverID: server.discordid,
+          serverName: server.name,
+        });
+      }
     );
+
+    let output = [];
+    const serverStartRegExp = new RegExp(/Hosting game at IP ADDR/);
     let factorio = childprocess.spawn(
       `./bin/x64/factorio`,
       command.split(" "),

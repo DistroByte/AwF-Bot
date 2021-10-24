@@ -3,32 +3,33 @@
  */
 import rcon from "./rcon";
 import Tails, { playerJoinData, playerLeaveData } from "../base/Tails";
-import serversJS, { FactorioServer } from "../servers";
+import serversJS from "../servers";
+import { FactorioServer } from "../types";
 import discord from "discord.js";
 
 // Known issue: servers will report a UPS of 0 if the bot starts and nobody is online on the server
 
 interface UPSServer extends FactorioServer {
-  ups: number
-  previousTick: number
-  playercount: number
+  ups: number;
+  previousTick: number;
+  playercount: number;
 }
 
 /**
  * @classdesc UPS handler, generates data that can be fetched. Doesn't historically store it
  */
 class UPSManager {
-  private servers: UPSServer[]
-  private _processing: boolean
+  private servers: UPSServer[];
+  private _processing: boolean;
   constructor(servers: FactorioServer[]) {
     this._processing = false;
-    this.servers = servers.map(server => {
+    this.servers = servers.map((server) => {
       return {
         ...server,
         playercount: 0,
         ups: 0,
         previousTick: 0,
-      }
+      };
     });
     Object.keys(servers).forEach((serverKey) => {
       this.servers[serverKey].ups = 0;
@@ -56,10 +57,10 @@ class UPSManager {
   }
 
   get processing() {
-    return this._processing
+    return this._processing;
   }
 
-  playerStuff(data: playerJoinData|playerLeaveData) {
+  playerStuff(data: playerJoinData | playerLeaveData) {
     const line = data.line;
     const server = data.server;
     if (line.type === "join") {
@@ -84,7 +85,9 @@ class UPSManager {
             .rconCommand("/sc rcon.print(game.tick)", server.discordid)
             .catch(() => {});
           if (response) {
-            server.ups = Math.abs(server.previousTick - parseInt(response.resp));
+            server.ups = Math.abs(
+              server.previousTick - parseInt(response.resp)
+            );
             server.previousTick = parseInt(response.resp);
           }
         } catch {}
@@ -128,4 +131,4 @@ class UPSManager {
 }
 
 const UPSHandler = new UPSManager(serversJS);
-export default UPSHandler
+export default UPSHandler;

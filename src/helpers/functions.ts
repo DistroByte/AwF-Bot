@@ -10,7 +10,7 @@ import childprocess from "child_process";
 import discord from "discord.js";
 import fs from "fs";
 import { BannedPlayers, ExtraBans } from "./sqlitedb";
-import { FactorioServer } from "../servers";
+import { FactorioServer } from "../types";
 
 export type ArgumentTypes<F extends Function> = F extends (args: infer A) => any
   ? A
