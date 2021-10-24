@@ -1,4 +1,6 @@
-module.exports = [
+import { FactorioServer } from "./types";
+
+const servers: FactorioServer[] = [
   {
     name: "DEV-DUMP", // server name in logs
     discordname: "dev-dump", // discord channel name for the server
@@ -19,3 +21,5 @@ module.exports = [
     dev: false, // whether or not the server is developmental
   },
 ];
+
+export default servers;

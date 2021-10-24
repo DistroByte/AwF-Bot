@@ -11,14 +11,17 @@ import {
   TextChannel,
 } from "discord.js";
 import NodeCache from "node-cache";
-import factorioServers, { FactorioServer } from "../servers";
+import factorioServers from "../servers";
+import {
+  FactorioServer,
+  BotConfig as BotConfigType,
+  BotConfigEmojis,
+} from "../types";
 import FIFO from "fifo";
 import path from "path";
 import moment from "moment";
-import BotConfig, {
-  BotConfig as BotConfigType,
-  BotConfigEmojis,
-} from "../config";
+// import BotConfig from "../config";
+import BotConfig from "../config";
 import BotConsts, { BotConsts as BotConstsType } from "../consts";
 import { Command } from "./Command";
 import BotLogger from "../helpers/logger";

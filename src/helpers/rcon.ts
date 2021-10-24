@@ -3,7 +3,8 @@
  */
 import { Rcon } from "rcon-client";
 import config from "../config";
-import servers, { FactorioServer } from "../servers";
+import servers from "../servers";
+import { FactorioServer } from "../types";
 import discord from "discord.js";
 import Comfy from "../base/Comfy";
 const { rconport, rconpw, errorchannel } = config;

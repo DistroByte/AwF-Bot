@@ -1,4 +1,6 @@
-module.exports = {
+import { BotConfig } from "./types";
+
+const config: BotConfig = {
   token: "", // Discord bot token
   prefix: ".", // Bot prefix
   inviteURL: "", // Bot's invite url or nothing
@@ -20,11 +22,6 @@ module.exports = {
     // Discord owner identificators
     id: "429696038266208258",
     name: "oof2win2#3149",
-  },
-  apiKeys: {
-    // Some API keys. Not used
-    amethyste: "",
-    dbl: "",
   },
   emojis: {
     // Some emojis. Will display 'undefined' if not found
@@ -59,8 +56,14 @@ module.exports = {
   archivePath: "", // path to your archive folder
   promPort: 9111, // port for prometheus to run on
 
-  //
-  adminroleid: "548545406653431810",
+  moderatorroleid: "", // discord moderator role id
+  adminroleid: "548545406653431810", // discord admin role id
+  customPermissions: [
+    { name: "RCON_CMD", roleid: "555824650324672522" },
+    { name: "MANAGE_SERVER", roleid: "555824650324672522" },
+  ],
   grafanaInterval: 15 * 1000, // scrape data every 15s
   safeGuilds: ["548410604679856151"],
 };
+
+export default config;

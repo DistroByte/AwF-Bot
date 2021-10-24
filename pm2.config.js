@@ -2,11 +2,11 @@ module.exports = {
   apps: [
     {
       name: "AwF-Bot",
-      script: "index.js",
+      script: "dist/index.js",
       env: {
         NODE_ENV: "production",
       },
-      watch: ["*"],
+      watch: ["dist"],
       ignore_watch: ["node_modules", ".git"],
     },
   ],

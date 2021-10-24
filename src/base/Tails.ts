@@ -1,57 +1,49 @@
 import { EventEmitter } from "events";
 import { Tail } from "tail";
-import servers, { FactorioServer } from "../servers";
+import servers from "../servers";
+import { FactorioServer } from "../types";
 import config from "../config";
 import Comfy from "./Comfy";
 
 export interface OutputData {
-  line: string,
-  server: FactorioServer
+  line: string;
+  server: FactorioServer;
 }
 export interface playerJoinData {
-  line: {type: "join", playerName: string}
-  server: FactorioServer
+  line: { type: "join"; playerName: string };
+  server: FactorioServer;
 }
 export interface playerLeaveData {
-  line: {type: "leave", playerName: string, reason: string}
-  server: FactorioServer
+  line: { type: "leave"; playerName: string; reason: string };
+  server: FactorioServer;
 }
 
 export declare interface TailEvents {
-  ALL: (data: OutputData) => void
-  CHAT: (data: OutputData) => void
-  JLOGGER: (data: OutputData) => void
-  playerJoin: (data: playerJoinData) => void
-  playerLeave: (data: playerLeaveData) => void
-  out: (data: OutputData) => void
-  start: (data: OutputData) => void
-  logging: (data: OutputData) => void
-  datastore: (data: OutputData) => void
-  discord: (data: OutputData) => void
+  ALL: (data: OutputData) => void;
+  CHAT: (data: OutputData) => void;
+  JLOGGER: (data: OutputData) => void;
+  playerJoin: (data: playerJoinData) => void;
+  playerLeave: (data: playerLeaveData) => void;
+  out: (data: OutputData) => void;
+  start: (data: OutputData) => void;
+  logging: (data: OutputData) => void;
+  datastore: (data: OutputData) => void;
+  discord: (data: OutputData) => void;
 }
 
 declare interface tailListener {
-  on<E extends keyof TailEvents>(
-    event: E,
-    listener: TailEvents[E]
-  ): this
-  off<E extends keyof TailEvents>(
-    event: E,
-    listener: TailEvents[E]
-  ): this
-  once<E extends keyof TailEvents>(
-    event: E,
-    listener: TailEvents[E]
-  ): this
+  on<E extends keyof TailEvents>(event: E, listener: TailEvents[E]): this;
+  off<E extends keyof TailEvents>(event: E, listener: TailEvents[E]): this;
+  once<E extends keyof TailEvents>(event: E, listener: TailEvents[E]): this;
   emit<E extends keyof TailEvents>(
     event: E,
     ...args: Parameters<TailEvents[E]>
-  ): boolean
+  ): boolean;
 }
 
 class tailListener extends EventEmitter {
-  client: Comfy
-  private tailLocations: tailLocation[]
+  client: Comfy;
+  private tailLocations: tailLocation[];
   constructor(tailLocations: tailLocation[]) {
     super();
     this.client = undefined;
@@ -100,9 +92,9 @@ class tailListener extends EventEmitter {
 }
 
 interface tailLocation {
-  path: string
-  server: FactorioServer
-  type: "out" | "logging" | "datastore" | "discord"
+  path: string;
+  server: FactorioServer;
+  type: "out" | "logging" | "datastore" | "discord";
 }
 
 let tailLocations: tailLocation[] = [];
@@ -134,4 +126,4 @@ servers.forEach((server) => {
 });
 
 const listen = new tailListener(tailLocations);
-export default listen
+export default listen;
