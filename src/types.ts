@@ -12,6 +12,7 @@ export interface FactorioServer {
     discord: boolean;
   };
   dev: boolean;
+  hidden: boolean
 }
 
 export type BotConfigEmojis = Record<string, string>;

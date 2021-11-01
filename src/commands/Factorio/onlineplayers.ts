@@ -23,9 +23,11 @@ const OnlinePlayers: Command<Message> = {
 
     const serversWithScenario = rcon.rconConnections
       .filter((connection) => connection.hasScenario)
+	  .filter((connection) => connection.server.hidden === false)
       .map((connection) => connection.server.discordname);
     const serversWithoutScenario = rcon.rconConnections
       .filter((connection) => !connection.hasScenario)
+	  .filter((connection) => connection.server.hidden === false)
       .map((connection) => connection.server.discordname);
 
     const scenarioOutputProm = serversWithScenario.map((discordname) =>
