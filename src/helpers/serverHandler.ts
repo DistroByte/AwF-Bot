@@ -529,6 +529,7 @@ class serverHandler {
   }
   async discordHandler(data) {
     if (data.server.dev) return; // ignore dev server
+	if (data.server.hidden) return; // return if server is hidden
     const message = data.line.replace(
       "${serverName}",
       `<#${data.server.discordid}>`
@@ -546,7 +547,6 @@ class serverHandler {
     modchannel.isText() &&
       modchannel.send({
         embed: new MessageEmbed(embed),
-        content: `<@&${config.moderatorroleid}>`,
       });
   }
   async startHandler(data: OutputData) {
