@@ -57,6 +57,7 @@
     "prisma": "^3.0.1",
     "prom-client": "^13.1.0",
     "rcon-client": "^4.2.3",
+    "read-last-lines": "^1.8.0",
     "reflect-metadata": "^0.1.13",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
