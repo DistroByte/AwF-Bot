@@ -23,11 +23,11 @@ const OnlinePlayers: Command<Message> = {
 
     const serversWithScenario = rcon.rconConnections
       .filter((connection) => connection.hasScenario)
-	  .filter((connection) => connection.server.hidden === false)
+      .filter((connection) => connection.server.hidden === false)
       .map((connection) => connection.server.discordname);
     const serversWithoutScenario = rcon.rconConnections
       .filter((connection) => !connection.hasScenario)
-	  .filter((connection) => connection.server.hidden === false)
+      .filter((connection) => connection.server.hidden === false)
       .map((connection) => connection.server.discordname);
 
     const scenarioOutputProm = serversWithScenario.map((discordname) =>
@@ -66,7 +66,14 @@ const OnlinePlayers: Command<Message> = {
           response.server.discordname,
           "Server is unreachable"
         );
-      embed.addField(response.server.discordname, response.resp);
+      const players = response.resp
+        .split("\n")
+        .slice(1)
+        .map((line) => line.slice(0, line.indexOf(" (online)")));
+      embed.addField(
+        response.server.discordname,
+        players.join("\n") || "Nobody is online"
+      );
     });
     return message.channel.send(embed);
   },
