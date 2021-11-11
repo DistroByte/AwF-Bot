@@ -11,6 +11,8 @@ import discord from "discord.js";
 import fs from "fs";
 import { BannedPlayers, ExtraBans } from "./sqlitedb";
 import { FactorioServer } from "../types";
+import UserModel from "../base/User";
+import { mongoose } from "@typegoose/typegoose";
 
 export type ArgumentTypes<F extends Function> = F extends (args: infer A) => any
   ? A
@@ -207,6 +209,17 @@ export async function addban(playername: string, reason: string) {
     playername: playername,
     reason: reason || "No reason given",
   });
+
+  UserModel.deleteMany({factorioName: playername}).exec()
+  mongoose.connections[1]
+	.getClient()
+	.db("scenario")
+	.collections()
+	.then((collections) => {
+		collections.map((collection) => {
+			collection.deleteMany({playername: playername})
+		})
+	})
 
   return player;
 }
