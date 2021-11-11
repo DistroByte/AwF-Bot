@@ -136,11 +136,6 @@ class serverHandler {
     const server = out.server;
     let channel = this.client.channels.cache.get(server.discordid);
     if (!channel || !channel.isText() || channel.type === "dm") return;
-    if (line.includes("; Factorio")) {
-      return channel.setTopic(
-        `Running ${this.formatVersion(line)} since ${this.formatDate(line)}`
-      );
-    }
     if (line.includes("Error")) {
       if (channel.name !== "dev-dump") {
         const errorChannel =
