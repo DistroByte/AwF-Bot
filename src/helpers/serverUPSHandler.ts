@@ -67,12 +67,18 @@ class UPSManager {
       Object.keys(this.servers).forEach((serverKey) => {
         if (this.servers[serverKey]?.discordid === server.discordid)
           this.servers[serverKey].playercount++;
+		  if (this.servers[serverKey] == 1) {
+			rcon.rconCommand("/sc game.tick_paused = true", server.discordid)
+		}
       });
     }
     if (line.type === "leave") {
       Object.keys(this.servers).forEach((serverKey) => {
         if (this.servers[serverKey]?.discordid === server.discordid)
           this.servers[serverKey].playercount--;
+		  if (this.servers[serverKey] == 0) {
+			  rcon.rconCommand("/sc game.tick_paused = true", server.discordid)
+		  }
       });
     }
   }
