@@ -298,11 +298,11 @@ class serverHandler {
         `${this.client.emotes?.playerdeath} ${newline[0]} died due to ${newline[1]}`
       );
 
-      let user = await this.client.findUserFactorioName(line[0]);
+      let user = await this.client.findUserFactorioName(newline[0]);
       if (user) {
         user.factorioStats.deaths++;
         user.factorioStats.points -= 100;
-        user.save().then(() => {});
+        user.save();
       }
     }
     if (line.includes("ROCKET: ")) {
@@ -390,21 +390,30 @@ class serverHandler {
             this.client.config.factorioRoles.veteran.name
           )
         ) {
-          this.client.guilds.fetch(this.client.consts.guildid).then((guild) => {
-            guild.members.fetch(user.id).then((guildmember) => {
-              guildmember.roles
+          // add Veteran role on Discord
+          this.client.guilds
+            .resolve(this.client.consts.guildid)
+            .members
+            .fetch(user.id)
+            .then((member) => {
+              member
+                .roles
                 .add(this.client.config.factorioRoles.veteran.id)
-                .then(() => {}); // add Veteran role on Discord
-            });
-          });
+                .catch(() => {})
+            })
+            .catch(() => {})
           user.factorioRoles.push(
             this.client.config.factorioRoles.veteran.name
           ); // add role to DB
           user
             .save()
             .then(() => this.assignRoles(playername, server).then(() => {})); // assign roles in-game
+        } else {
+          user.save()
         }
-      } else user.save().then(() => {}); // normal save
+      } else {
+        user.save()
+      }
     }
   }
   async awfLogging(data: OutputData) {
@@ -524,7 +533,7 @@ class serverHandler {
   }
   async discordHandler(data) {
     if (data.server.dev) return; // ignore dev server
-	if (data.server.hidden) return; // return if server is hidden
+    if (data.server.hidden) return; // return if server is hidden
     const message = data.line.replace(
       "${serverName}",
       `<#${data.server.discordid}>`
