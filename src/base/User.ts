@@ -25,10 +25,10 @@ export class UserClass {
   @prop({
     type: () =>
       new Passthrough({
-        deaths: 0,
-        builtEntities: 0,
-        timePlayed: 0,
-        points: 0,
+        deaths: Number,
+        builtEntities: Number,
+        timePlayed: Number,
+        points: Number,
       }),
   })
   factorioStats: {
