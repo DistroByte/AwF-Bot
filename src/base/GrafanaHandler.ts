@@ -163,7 +163,7 @@ register.registerMetric(logisticDeliveryItem);
 
 class GrafanaHandler {
   servers: FactorioServer[];
-  timeout: NodeJS.Timeout;
+  interval: NodeJS.Timeout;
   constructor() {
     this.servers = servers
       .map((server) => {
@@ -172,7 +172,7 @@ class GrafanaHandler {
       })
       .filter((r) => r);
 
-    this.timeout = setTimeout(
+    this.interval = setInterval(
       () => this.gatherStatistics(),
       config.grafanaInterval || 5 * 1000
     );
@@ -183,15 +183,13 @@ class GrafanaHandler {
    * @param {*} server
    */
   handleStatistics(statistics, server) {
-    const json = JSON.parse(statistics);
+    const json = JSON.parse(statistics.split("\n")[0]);
     const otherStats = json[Object.keys(json)[0]].other;
-
-    playercountGauge.reset();
-    Array.isArray(otherStats.online_players) &&
-      playercountGauge.set(
-        { server: server.name },
-        otherStats.online_players.length
-      );
+		
+		playercountGauge.set(
+			{ server: server.name },
+			Array.isArray(otherStats.online_players) ? otherStats.online_players.length : 0
+		)
     Object.keys(otherStats.mods).forEach((modname) =>
       modGauge.set(
         {
@@ -218,7 +216,7 @@ class GrafanaHandler {
       const power = force["power"];
 
       researchGauge.reset();
-      Array.isArray(research) &&
+      if (Array.isArray(research))
         research.forEach((research, i) =>
           researchGauge.set(
             {
@@ -231,22 +229,24 @@ class GrafanaHandler {
             research.progress
           )
         );
+      if (trains) {
+        trainCount.set({ server: server.name, force: forcename }, trains.total);
+        trainTravelTime.set(
+          { server: server.name, force: forcename },
+          trains.time_travelling
+        );
+        trainWaitTimeSignal.set(
+          { server: server.name, force: forcename },
+          trains.waiting_time_signal
+        );
+        trainWaitTimeStation.set(
+          { server: server.name, force: forcename },
+          trains.waiting_time_station
+        );
+      }
 
-      trainCount.set({ server: server.name, force: forcename }, trains.total);
-      trainTravelTime.set(
-        { server: server.name, force: forcename },
-        trains.time_travelling
-      );
-      trainWaitTimeSignal.set(
-        { server: server.name, force: forcename },
-        trains.waiting_time_signal
-      );
-      trainWaitTimeStation.set(
-        { server: server.name, force: forcename },
-        trains.waiting_time_station
-      );
-
-      Object.keys(production.item_input).forEach((key) =>
+      if (production) {
+        Object.keys(production.item_input).forEach((key) =>
         itemProductionInput.set(
           { server: server.name, force: forcename, name: key },
           production.item_input[key].count
@@ -294,49 +294,52 @@ class GrafanaHandler {
           production.build_output[key].count
         )
       );
+      }
 
-      robotCount.set(
-        { server: server.name, force: forcename, type: "construction" },
-        robots.all_construction_robots
-      );
-      robotCount.set(
-        { server: server.name, force: forcename, type: "logistic" },
-        robots.all_logistic_robots
-      );
-      availableRobotCount.set(
-        { server: server.name, force: forcename, type: "construction" },
-        robots.available_construction_robots
-      );
-      availableRobotCount.set(
-        { server: server.name, force: forcename, type: "logistic" },
-        robots.available_logistic_robots
-      );
-      chargingRobotCount.set(
-        { server: server.name, force: forcename },
-        robots.charging_robot_count
-      );
-      toChargeRobotCount.set(
-        { server: server.name, force: forcename },
-        robots.to_charge_robot_count
-      );
-      Object.keys(robots.items).forEach((itemname) =>
-        logisticStorageItem.set(
-          { server: server.name, force: forcename, name: itemname },
-          robots.items[itemname]
-        )
-      );
-      Object.keys(robots.pickups).forEach((itemname) =>
-        logisticPickupItem.set(
-          { server: server.name, force: forcename, name: itemname },
-          robots.pickups[itemname]
-        )
-      );
-      Object.keys(robots.deliveries).forEach((itemname) =>
-        logisticDeliveryItem.set(
-          { server: server.name, force: forcename, name: itemname },
-          robots.deliveries[itemname]
-        )
-      );
+      if (robots) {
+        robotCount.set(
+          { server: server.name, force: forcename, type: "construction" },
+          robots.all_construction_robots
+        );
+        robotCount.set(
+          { server: server.name, force: forcename, type: "logistic" },
+          robots.all_logistic_robots
+        );
+        availableRobotCount.set(
+          { server: server.name, force: forcename, type: "construction" },
+          robots.available_construction_robots
+        );
+        availableRobotCount.set(
+          { server: server.name, force: forcename, type: "logistic" },
+          robots.available_logistic_robots
+        );
+        chargingRobotCount.set(
+          { server: server.name, force: forcename },
+          robots.charging_robot_count
+        );
+        toChargeRobotCount.set(
+          { server: server.name, force: forcename },
+          robots.to_charge_robot_count
+        );
+        Object.keys(robots.items).forEach((itemname) =>
+          logisticStorageItem.set(
+            { server: server.name, force: forcename, name: itemname },
+            robots.items[itemname]
+          )
+        );
+        Object.keys(robots.pickups).forEach((itemname) =>
+          logisticPickupItem.set(
+            { server: server.name, force: forcename, name: itemname },
+            robots.pickups[itemname]
+          )
+        );
+        Object.keys(robots.deliveries).forEach((itemname) =>
+          logisticDeliveryItem.set(
+            { server: server.name, force: forcename, name: itemname },
+            robots.deliveries[itemname]
+          )
+        );
+      }
 
       if (power) {
         powerInput.set(
@@ -360,7 +363,7 @@ class GrafanaHandler {
     });
   }
   destroy() {
-    clearTimeout(this.timeout);
+    clearTimeout(this.interval);
   }
 }
 

@@ -43,12 +43,14 @@ const init = async () => {
   const evtDirs = await readdir("./events/");
   evtDirs.forEach(async (dir) => {
     const evts = await readdir(`./events/${dir}/`);
-    evts.forEach(async (evt) => {
-      const evtName = evt.split(".")[0];
-      const event = await import(`./events/${dir}/${evt}`);
-      client.on(evtName, (...args) => event.default(client, ...args));
-      delete require.cache[require.resolve(`./events/${dir}/${evt}`)];
-    });
+    evts
+      .filter(evt => evt.endsWith(".js"))
+      .forEach(async (evt) => {
+        const evtName = evt.split(".")[0];
+        const event = await import(`./events/${dir}/${evt}`);
+        client.on(evtName, (...args) => event.default(client, ...args));
+        delete require.cache[require.resolve(`./events/${dir}/${evt}`)];
+      });
   });
 
   client.login(client.config.token);
