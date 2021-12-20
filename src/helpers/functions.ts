@@ -64,6 +64,7 @@ export async function runShellCommand(cmd: string): Promise<string> {
       if (stdout) resolve(stdout);
       if (stderr) reject(stderr);
       if (error) reject(error);
+			resolve("")
     });
   });
 }

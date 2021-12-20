@@ -54,6 +54,7 @@ const config: BotConfig = {
     trusted: { id: "", name: "" },
   },
   archivePath: "", // path to your archive folder
+	scenarioRootPath: "", // root path to scenario folders
   promPort: 9111, // port for prometheus to run on
 
   moderatorroleid: "", // discord moderator role id

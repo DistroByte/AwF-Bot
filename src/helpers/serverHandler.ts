@@ -288,11 +288,7 @@ class serverHandler {
     if (line.includes("DIED")) {
       line = line.slice("DIED: ".length);
       const newline = line.split(" "); //split at separation between username and death reson
-      if (newline[0].includes("PLAYER: ")) {
-        newline[0] = line[0].slice("PLAYER: ".length);
-        newline[1] = `Player ${line[1]}`;
-      }
-      if (line[0] == "PLAYER:") newline.shift();
+      if (newline[0] == "PLAYER:") newline.shift();
       this.appendMessage(
         server,
         `${this.client.emotes?.playerdeath} ${newline[0]} died due to ${newline[1]}`

@@ -51,6 +51,7 @@ export interface BotConfig {
     }
   >;
   archivePath: string;
+	scenarioRootPath: string
   promPort: number;
   customPermissions: { name: string; roleid: string }[];
   adminroleid: string;
