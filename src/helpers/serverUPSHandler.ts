@@ -15,8 +15,8 @@ interface UPSServer extends FactorioServer {
 }
 
 /**
- * @classdesc UPS handler, generates data that can be fetched. Doesn't historically store it
- */
+* @classdesc UPS handler, generates data that can be fetched. Doesn't historically store it
+*/
 class UPSManager {
 	private servers: UPSServer[];
 	private _processing: boolean;
@@ -42,7 +42,13 @@ class UPSManager {
 					)
 					.then((output) => {
 						try {
-							this.servers[serverKey].playercount = parseInt(output.resp);
+							const playercount = parseInt(output.resp)
+							this.servers[serverKey].playercount = playercount;
+							if (playercount > 0) {
+								rcon.rconCommand(`/interface game.tick_paused = false`, this.servers[serverKey].discordid)
+							} else {
+								rcon.rconCommand(`/interface game.tick_paused = true`, this.servers[serverKey].discordid)
+							}
 						} catch { }
 					})
 					.catch(() => { });
@@ -61,24 +67,16 @@ class UPSManager {
 
 	playerStuff(data: playerJoinData | playerLeaveData) {
 		const line = data.line;
-		const server = data.server;
+		const server = this.servers.find(s => s.discordid === data.server.discordid)
 		if (line.type === "join") {
-			Object.keys(this.servers).forEach((serverKey) => {
-				if (this.servers[serverKey]?.discordid === server.discordid)
-					this.servers[serverKey].playercount++;
-				if (this.servers[serverKey].playercount == 1) {
-					rcon.rconCommand("/sc game.tick_paused = false", server.discordid)
-				}
-			});
+			server.playercount++
+			if (server.playercount > 0)
+				rcon.rconCommand("/sc game.tick_paused = false", server.discordid)
 		}
 		if (line.type === "leave") {
-			Object.keys(this.servers).forEach((serverKey) => {
-				if (this.servers[serverKey]?.discordid === server.discordid)
-					this.servers[serverKey].playercount--;
-				if (this.servers[serverKey].playercount == 0) {
-					rcon.rconCommand("/sc game.tick_paused = true", server.discordid)
-				}
-			});
+			server.playercount--
+			if (server.playercount === 0)
+				rcon.rconCommand("/sc game.tick_paused = true", server.discordid)
 		}
 	}
 	private async getData() {
@@ -127,9 +125,9 @@ class UPSManager {
 		this._processing = false;
 	}
 	/**
-	 * Get current data for handling
-	 * @returns {UPS[]} - Collected data
-	 */
+	* Get current data for handling
+	* @returns {UPS[]} - Collected data
+	*/
 	exportData(): UPSServer[] {
 		return this.servers;
 	}
@@ -137,3 +135,4 @@ class UPSManager {
 
 const UPSHandler = new UPSManager(serversJS);
 export default UPSHandler;
+ 
