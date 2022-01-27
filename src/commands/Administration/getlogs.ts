@@ -22,7 +22,7 @@ const Rollback: Command<Message> = {
 		if (!message.mentions.channels.first())
 			return message.reply("No channel to get logs of provided!");
 		args.shift(); // remove mention
-		const lineCount = Math.min(Number(args.shift()) || 50, 50)
+		const lineCount = Math.min(Number(args.shift()) || 50, 200)
 		const server = serverJS.find(
 			(server) => server.discordid === message.mentions.channels.first().id
 		);

@@ -183,6 +183,7 @@ class GrafanaHandler {
    * @param {*} server
    */
   handleStatistics(statistics, server) {
+		if (!statistics || typeof statistics !== "string") return
     const json = JSON.parse(statistics.split("\n")[0]);
     const otherStats = json[Object.keys(json)[0]].other;
 		

@@ -58,10 +58,10 @@ const Rollback: Command<Message> = {
         };
       });
 
-      createPagedEmbed(content, message, null, embed);
+      createPagedEmbed(content, message, undefined, embed);
     } else {
       // specific save provided
-      let save;
+      let save: fs.Stats;
       try {
         save = fs.statSync(
           `${client.config.serverpath}/${server.path}/saves/${args[1]}.zip`
@@ -73,7 +73,7 @@ const Rollback: Command<Message> = {
         message,
         `Are you sure you want to reset the save to \`${
           args[1]
-        }\` from ${new Date(save.mtime).toISOString()}?`
+        }\` from <t:${Math.round(save.mtime.valueOf() / 1000)}>?`
       );
       if (!confirm) return message.channel.send("Rollback cancelled");
 
