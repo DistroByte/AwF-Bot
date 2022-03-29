@@ -46,7 +46,7 @@
     "lodash": "^4.17.21",
     "mathjs": "^9.3.0",
     "md5": "^2.3.0",
-    "minimist": "^1.2.5",
+    "minimist": "^1.2.6",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.32",
     "mongoose": "^6.0.8",
