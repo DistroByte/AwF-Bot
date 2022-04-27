@@ -76,7 +76,7 @@
   },
   "devDependencies": {
     "@types/tail": "^2.2.1",
-    "grunt": "^1.4.0",
+    "grunt": "^1.5.2",
     "grunt-cli": "^1.4.2",
     "grunt-jsdoc-to-markdown": "^6.0.0",
     "html-to-md": "^0.3.9",
