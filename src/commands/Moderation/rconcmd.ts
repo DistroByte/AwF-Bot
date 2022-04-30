@@ -15,6 +15,7 @@ const Rconcmd: Command<Message> = {
   aliases: [],
   memberPermissions: ["MANAGE_GUILD"],
   botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
+  customPermissions: ["RCON_CMD"],
   nsfw: false,
   ownerOnly: false,
   run: async ({ message, args }) => {

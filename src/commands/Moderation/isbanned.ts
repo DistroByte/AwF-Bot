@@ -14,6 +14,7 @@ const Getroles: Command<Message> = {
   aliases: [],
   memberPermissions: [],
   botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
+  customPermissions: ["MANAGE_SERVER"],
   nsfw: false,
   ownerOnly: false,
   run: async ({ message, args }) => {

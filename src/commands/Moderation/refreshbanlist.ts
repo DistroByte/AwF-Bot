@@ -12,6 +12,7 @@ const Refreshbanlist: Command<Message> = {
   aliases: [],
   memberPermissions: ["MANAGE_GUILD"],
   botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
+  customPermissions: ["MANAGE_SERVER"],
   nsfw: false,
   ownerOnly: false,
   run: async ({ message }) => {
