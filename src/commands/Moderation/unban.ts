@@ -15,6 +15,7 @@ const Unban: Command<Message> = {
   guildOnly: false,
   memberPermissions: ["BAN_MEMBERS"],
   botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
+  customPermissions: ["MANAGE_SERVER"],
   nsfw: false,
   ownerOnly: false,
   run: async ({ client, message, args }) => {
