@@ -73,7 +73,7 @@ const Help: Command<Message> = {
       }
 
       // and send the embed in the current channel
-      return message.channel.send(groupEmbed);
+      return message.channel.send({ embeds: [groupEmbed] });
     }
 
     const categories = [];
@@ -111,11 +111,13 @@ const Help: Command<Message> = {
       "\u200B",
       `[Dashboard](https://dashboard.dbyte.xyz) ● [Donate](https://www.patreon.com/distrobyte) ● [Invite](${client.config.inviteURL}) ● [Support](${client.config.supportURL}) ● [Github](https://www.github.com/DistroByte)`
     );
-    embed.setAuthor(
-      `${client.user.username} | Commands`,
-      client.user.displayAvatarURL()
-    );
-    return message.channel.send(embed);
+    embed.setAuthor({
+      name: `${client.user.username} | Commands`,
+      iconURL: client.user.displayAvatarURL(),
+    });
+    return message.channel.send({
+      embeds: [embed],
+    });
   },
 };
 

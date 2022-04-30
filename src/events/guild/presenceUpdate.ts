@@ -3,6 +3,6 @@ import Comfy from "../../base/Comfy";
 import fifo from "../../helpers/fifo-handler";
 
 export default async (client: Comfy, _, newPresence: Presence) => {
-  if (newPresence.userID === client.config.testbotid)
+  if (newPresence.userId === client.config.testbotid)
     fifo.checkDevServer(newPresence);
 };

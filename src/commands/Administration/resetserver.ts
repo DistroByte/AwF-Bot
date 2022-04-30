@@ -69,7 +69,6 @@ const Resetserver: Command<Message> = {
     }
     command = `${command} ${cmdArgs._}`.trim();
 
-    const reactionFilter = (reaction, user) => user.id === message.author.id;
     const confirm = await message.channel.send(
       `Are you sure you want to reset your server with this command?\n\`bin/x64/factorio ${command}\``
     );
@@ -77,9 +76,10 @@ const Resetserver: Command<Message> = {
     confirm.react("❌");
     let reactions;
     try {
-      reactions = await confirm.awaitReactions(reactionFilter, {
+      reactions = await confirm.awaitReactions({
         max: 1,
         time: 120000,
+        filter: (reaction, user) => user.id === message.author.id,
       });
     } catch {
       return message.channel.send("Error getting reaction");
@@ -150,10 +150,10 @@ const Resetserver: Command<Message> = {
     factorio.on("close", (code) => {
       let msg = output.join("\n");
       let file = new MessageAttachment(Buffer.from(msg), "output.txt");
-      message.channel.send(
-        `Process exited with code ${code}. Starting server back up. Roles will sync shortly`,
-        { files: [file] }
-      );
+      message.channel.send({
+        files: [file],
+        content: `Process exited with code ${code}. Starting server back up. Roles will sync shortly`,
+      });
       childprocess.spawn(`./factorio-init/factorio`, ["start"], {
         detached: true,
         cwd: `${client.config.serverpath}/${server.path}`,

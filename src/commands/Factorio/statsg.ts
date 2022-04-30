@@ -30,16 +30,26 @@ const StatsG: Command<Message> = {
       .setFooter(client.config.embed.footer);
     embed.setTitle("Global Factorio User Statistics");
     embed.setDescription(`Statistics of <@${userID}> | ${userID}`);
-    embed.addFields(
-      { name: "Total Points", value: Math.round(user.factorioStats.points) },
-      { name: "Deaths", value: user.factorioStats.deaths },
-      { name: "Built Entities", value: user.factorioStats.builtEntities },
+    embed.addFields([
+      {
+        name: "Total Points",
+        value: Math.round(user.factorioStats.points).toString(),
+      },
+      { name: "Deaths", value: user.factorioStats.deaths.toString() },
+      {
+        name: "Built Entities",
+        value: user.factorioStats.builtEntities.toString(),
+      },
       {
         name: "Time played (minutes)",
-        value: Math.round((user.factorioStats.timePlayed / 54000) * 15),
-      }
-    );
-    return message.channel.send(embed);
+        value: Math.round(
+          (user.factorioStats.timePlayed / 54000) * 15
+        ).toString(),
+      },
+    ]);
+    return message.channel.send({
+      embeds: [embed],
+    });
   },
 };
 

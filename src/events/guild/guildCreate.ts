@@ -7,14 +7,14 @@ export default async (client: Comfy, guild: Guild) => {
     if (!client.config.safeGuilds.includes(guild.id)) {
       let guildInvites: Collection<string, Invite>;
       try {
-        guildInvites = await guild.fetchInvites();
+        guildInvites = await guild.invites.fetch();
       } catch {}
       client.emergencylog(
         `Bot has been invited to guild ID ${guild.name} (\`${
           guild.id
         }\`) Invites: ${
           guildInvites
-            ? guildInvites.map((invite) => invite.toString()).join(", ") ||
+            ? guildInvites.map((invite) => invite.url).join(", ") ||
               "No invites"
             : "No permissions to fetch invites"
         }`

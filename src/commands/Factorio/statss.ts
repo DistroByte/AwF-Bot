@@ -30,10 +30,13 @@ const StatsS: Command<Message> = {
     if (!stats)
       return message.channel.send(`\`${args[0]}\` is an invalid server!`);
     const statsembed = new MessageEmbed()
-      .setAuthor(message.guild.name, message.guild.iconURL())
+      .setAuthor({
+        name: message.guild.name,
+        iconURL: message.guild.iconURL(),
+      })
       .setColor(client.config.embed.color)
       .setFooter(client.config.embed.footer);
-    statsembed.addField("Rockets launched", stats.rocketLaunches);
+    statsembed.addField("Rockets launched", stats.rocketLaunches.toString());
 
     // TODO: add in again when the DB wrapper has the option
     // const research = stats.completedResearch?.reduce(
@@ -58,7 +61,9 @@ const StatsS: Command<Message> = {
       { name: "Evolution", value: evolution },
       { name: "Time", value: time }
     );
-    return message.channel.send(statsembed);
+    return message.channel.send({
+      embeds: [statsembed],
+    });
   },
 };
 
