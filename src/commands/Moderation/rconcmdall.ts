@@ -46,7 +46,9 @@ const RconcmdAll: Command<Message> = {
         console.error(error);
       }
     });
-    return message.channel.send(outEmbed);
+    return message.channel.send({
+      embeds: [outEmbed],
+    });
   },
 };
 export default RconcmdAll;

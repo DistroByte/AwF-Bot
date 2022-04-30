@@ -28,27 +28,29 @@ const Linkme: Command<Message> = {
       );
     client.cache.linkingCache.del(`${args[0]}`);
     let embed = new MessageEmbed()
-      .setAuthor(message.guild.name, message.guild.iconURL())
+      .setAuthor({
+        name: message.guild.name,
+        iconURL: message.guild.iconURL(),
+      })
       .setColor(client.config.embed.color)
       .setFooter(client.config.embed.footer);
-    embed.addFields(
+    embed.addFields([
       { name: "Factorio name", value: linkID },
-      { name: "Discord user", value: message.author }
-    );
+      { name: "Discord user", value: `<@${message.author.id}>` },
+    ]);
     embed.setDescription(
       "You have chosen to link youself. React with ✅ to confirm, ❌ to cancel. Will time out in 90s"
     );
 
-    const confirm = await message.channel.send(embed);
+    const confirm = await message.channel.send({ embeds: [embed] });
     confirm.react("✅");
     confirm.react("❌");
-    const reactionFilter = (reaction, user) => user.id == message.author.id;
     let reactions;
     try {
-      reactions = await confirm.awaitReactions(reactionFilter, {
+      reactions = await confirm.awaitReactions({
         max: 1,
         time: 120000,
-        errors: ["time"],
+        filter: (reaction, user) => user.id == message.author.id,
       });
     } catch {
       return message.channel.send("Timed out.");

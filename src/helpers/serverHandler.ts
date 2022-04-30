@@ -135,7 +135,7 @@ class serverHandler {
     let line = out.line;
     const server = out.server;
     let channel = this.client.channels.cache.get(server.discordid);
-    if (!channel || !channel.isText() || channel.type === "dm") return;
+    if (!channel || !channel.isText() || channel.type === "DM") return;
     if (line.includes("Error")) {
       if (channel.name !== "dev-dump") {
         const errorChannel =
@@ -389,15 +389,13 @@ class serverHandler {
           // add Veteran role on Discord
           this.client.guilds
             .resolve(this.client.consts.guildid)
-            .members
-            .fetch(user.id)
+            .members.fetch(user.id)
             .then((member) => {
-              member
-                .roles
+              member.roles
                 .add(this.client.config.factorioRoles.veteran.id)
-                .catch(() => {})
+                .catch(() => {});
             })
-            .catch(() => {})
+            .catch(() => {});
           user.factorioRoles.push(
             this.client.config.factorioRoles.veteran.name
           ); // add role to DB
@@ -405,10 +403,10 @@ class serverHandler {
             .save()
             .then(() => this.assignRoles(playername, server).then(() => {})); // assign roles in-game
         } else {
-          user.save()
+          user.save();
         }
       } else {
-        user.save()
+        user.save();
       }
     }
   }
@@ -538,7 +536,7 @@ class serverHandler {
     const channel = this.client.channels.cache.get(data.server.discordid);
     channel.isText() &&
       channel.send({
-        embed: new MessageEmbed(embed),
+        embeds: [new MessageEmbed(embed)],
         content: `<@&${config.moderatorroleid}>`,
       });
     const modchannel = this.client.channels.cache.get(
@@ -546,7 +544,7 @@ class serverHandler {
     );
     modchannel.isText() &&
       modchannel.send({
-        embed: new MessageEmbed(embed),
+        embeds: [new MessageEmbed(embed)],
       });
   }
   async startHandler(data: OutputData) {

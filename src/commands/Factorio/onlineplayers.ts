@@ -75,7 +75,9 @@ const OnlinePlayers: Command<Message> = {
         players.join("\n") || "Nobody is online"
       );
     });
-    return message.channel.send(embed);
+    return message.channel.send({
+      embeds: [embed],
+    });
   },
 };
 

@@ -43,7 +43,7 @@ const Startserver: Command<Message> = {
         if (fs.statSync(dir.dir).isDirectory())
           choiceEmbed.addField(`\`${dir}\``, "\u200B"); //check if it is a directory and if yes add it to the embed
       });
-      return message.channel.send(choiceEmbed);
+      return message.channel.send({ embeds: [choiceEmbed] });
     } else {
       let serverFolder = serverJS.find(
         (server) => server.discordid === message.mentions.channels.first().id

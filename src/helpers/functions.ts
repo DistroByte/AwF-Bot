@@ -64,7 +64,7 @@ export async function runShellCommand(cmd: string): Promise<string> {
       if (stdout) resolve(stdout);
       if (stderr) reject(stderr);
       if (error) reject(error);
-			resolve("")
+      resolve("");
     });
   });
 }
@@ -90,14 +90,13 @@ export async function getConfirmationMessage(
   const confirm = await message.channel.send(content);
   confirm.react("✅");
   confirm.react("❌");
-  const reactionFilter: discord.CollectorFilter = (reaction, user) =>
-    user.id === message.author.id;
   let reactions;
   try {
-    reactions = await confirm.awaitReactions(reactionFilter, {
+    reactions = await confirm.awaitReactions({
       max: 1,
       time: 120000,
       errors: ["time"],
+      filter: (reaction, user) => user.id === message.author.id,
     });
   } catch (error) {
     return false;
@@ -124,12 +123,14 @@ export async function createPagedEmbed(
   let page = 0;
   const maxPages = Math.floor(fields.length / options.maxPageCount);
   embed.fields = fields.slice(0, options.maxPageCount);
-  let embedMsg = await message.channel.send(embed);
+  let embedMsg = await message.channel.send({ embeds: [embed] });
 
   const setData = async () => {
     const start = page * options.maxPageCount;
     embed.fields = fields.slice(start, start + options.maxPageCount);
-    embedMsg = await embedMsg.edit(null, embed);
+    embedMsg = await embedMsg.edit({
+      embeds: [embed],
+    });
   };
   const removeReaction = async (emoteName) => {
     embedMsg.reactions.cache
@@ -141,38 +142,28 @@ export async function createPagedEmbed(
   embedMsg.react("➡️");
   embedMsg.react("🗑️");
 
-  const backwardsFilter = (reaction, user) =>
-    reaction.emoji.name === "⬅️" && user.id === message.author.id;
-  const forwardsFilter = (reaction, user) =>
-    reaction.emoji.name === "➡️" && user.id === message.author.id;
-  const removeFilter = (reaction, user) =>
-    reaction.emoji.name === "🗑️" && user.id === message.author.id;
-
-  const backwards = embedMsg.createReactionCollector(backwardsFilter, {
+  const reactionFilter = embedMsg.createReactionCollector({
     time: 120000,
+    filter: (reaction, user) => user.id === message.author.id,
   });
-  const forwards = embedMsg.createReactionCollector(forwardsFilter, {
-    time: 120000,
-  });
-  const remove = embedMsg.createReactionCollector(removeFilter, {
-    time: 120000,
-  });
-
-  backwards.on("collect", (reaction) => {
-    page--;
-    removeReaction("⬅️"); // remove the user's reaction no matter what
-    if (page == -1) page = 0;
-    else setData();
-  });
-  forwards.on("collect", (reaction) => {
-    page++;
-    removeReaction("➡️"); // remove the user's reaction no matter what
-    if (page > maxPages) page = maxPages;
-    else setData();
-  });
-
-  remove.on("collect", () => {
-    embedMsg.delete();
+  reactionFilter.on("collect", (reaction) => {
+    switch (reaction.emoji.name) {
+      case "⬅️":
+        page--;
+        removeReaction("⬅️"); // remove the user's reaction no matter what
+        if (page == -1) page = 0;
+        else setData();
+        break;
+      case "➡️":
+        page++;
+        removeReaction("➡️"); // remove the user's reaction no matter what
+        if (page > maxPages) page = maxPages;
+        else setData();
+        break;
+      case "🗑️":
+        embedMsg.delete();
+        break;
+    }
   });
 }
 
@@ -211,16 +202,16 @@ export async function addban(playername: string, reason: string) {
     reason: reason || "No reason given",
   });
 
-  UserModel.deleteMany({factorioName: playername}).exec()
+  UserModel.deleteMany({ factorioName: playername }).exec();
   mongoose.connections[1]
-	.getClient()
-	.db("scenario")
-	.collections()
-	.then((collections) => {
-		collections.map((collection) => {
-			collection.deleteMany({playername: playername})
-		})
-	})
+    .getClient()
+    .db("scenario")
+    .collections()
+    .then((collections) => {
+      collections.map((collection) => {
+        collection.deleteMany({ playername: playername });
+      });
+    });
 
   return player;
 }

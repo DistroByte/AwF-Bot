@@ -4,7 +4,17 @@ import { readdir } from "fs/promises";
 import mongoose from "mongoose";
 
 import Comfy from "./base/Comfy";
-const client = new Comfy({});
+const client = new Comfy({
+  intents: [
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
+    Intents.FLAGS.GUILD_INVITES,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+    Intents.FLAGS.GUILD_PRESENCES,
+    Intents.FLAGS.GUILD_WEBHOOKS,
+  ],
+});
 
 process.chdir(__dirname);
 
@@ -44,7 +54,7 @@ const init = async () => {
   evtDirs.forEach(async (dir) => {
     const evts = await readdir(`./events/${dir}/`);
     evts
-      .filter(evt => evt.endsWith(".js"))
+      .filter((evt) => evt.endsWith(".js"))
       .forEach(async (evt) => {
         const evtName = evt.split(".")[0];
         const event = await import(`./events/${dir}/${evt}`);
@@ -104,3 +114,4 @@ import "./base/Prometheus";
 
 // load server-based Prometheus stuff
 import "./base/GrafanaHandler";
+import { Intents } from "discord.js";

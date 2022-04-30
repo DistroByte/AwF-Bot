@@ -3,15 +3,15 @@ import Comfy from "../../base/Comfy";
 import fifo from "../../helpers/fifo-handler";
 
 export default async (client: Comfy, message: Message) => {
-
   if (message.author.bot) return;
-  if (!message.channel.isText()) return
+  if (!message.channel.isText()) return;
+  if (message.channel.type === "DM") return;
 
   if (message.guild && !message.member)
     await message.guild.members.fetch(message.author.id);
 
   if (message.content === "@someone" && message.guild) {
-    return client.commands.get("someone").run({message, args: [], client});
+    return client.commands.get("someone").run({ message, args: [], client });
   }
 
   const prefix = client.config.prefix;
@@ -29,22 +29,21 @@ export default async (client: Comfy, message: Message) => {
     client.commands.get(command) ||
     client.commands.get(client.aliases.get(command));
 
-  if (!cmd) return
-  if (message.channel.type === "dm" || !message.guild) return;
+  if (!cmd) return;
 
   let neededPermissions = [];
   if (cmd.botPermissions) {
     if (!cmd.botPermissions.includes("EMBED_LINKS")) {
       cmd.botPermissions.push("EMBED_LINKS");
     }
-    message.channel.type
+    message.channel.type;
     cmd.botPermissions.forEach((perm) => {
-      if (message.channel.type === "dm") return // TODO: remove this if bug is fixed
+      if (message.channel.type === "DM") return; // TODO: remove this if bug is fixed
       if (!message.channel.permissionsFor(message.guild.me).has(perm)) {
         neededPermissions.push(perm);
       }
     });
-    
+
     if (neededPermissions.length > 0) {
       return message.channel.send(
         `I need the following permissions to execute this command: ${neededPermissions
@@ -57,7 +56,7 @@ export default async (client: Comfy, message: Message) => {
   neededPermissions = [];
   if (cmd.memberPermissions) {
     cmd.memberPermissions.forEach((perm) => {
-      if (message.channel.type === "dm") return // TODO: remove this if bug is fixed
+      if (message.channel.type === "DM") return; // TODO: remove this if TS bug is fixed
       if (!message.channel.permissionsFor(message.member).has(perm)) {
         neededPermissions.push(perm);
       }
@@ -77,12 +76,10 @@ export default async (client: Comfy, message: Message) => {
 
   // custom command perms. if there are custom permissions, they take priority over normal perms
   if (customPermissions.length) {
-    console.log(customPermissions, customPermissions.length)
+    console.log(customPermissions, customPermissions.length);
     const neededRoleIds = cmd.customPermissions
       .map((permname) =>
-        client.config.customPermissions.find(
-          (p) => p.name === permname
-        )
+        client.config.customPermissions.find((p) => p.name === permname)
       )
       .filter((r) => r)
       .map((p) => p.roleid);
@@ -99,18 +96,20 @@ export default async (client: Comfy, message: Message) => {
   }
 
   if (
-    !message.channel
-      .permissionsFor(message.member)
-      .has("MENTION_EVERYONE") &&
-    (message.content.includes("@everyone") ||
-      message.content.includes("@here"))
+    !message.channel.permissionsFor(message.member).has("MENTION_EVERYONE") &&
+    (message.content.includes("@everyone") || message.content.includes("@here"))
   ) {
     return message.channel.send(
       "You are not allowed to mention `@everyone` or `@here` in commands"
     );
   }
 
-  if (!message.channel.nsfw && cmd.nsfw) {
+  if (
+    cmd.nsfw &&
+    ((message.channel.type != "GUILD_NEWS" &&
+      message.channel.type != "GUILD_TEXT") ||
+      !message.channel.nsfw)
+  ) {
     return message.channel.send(
       "You must execute this command in a channel that allows NSFW!"
     );
@@ -121,7 +120,7 @@ export default async (client: Comfy, message: Message) => {
   }
 
   if (cmd.ownerOnly) {
-    const guildUser = message.guild.member(message.author);
+    const guildUser = message.guild.members.cache.get(message.author.id);
     if (!guildUser.roles.cache.get(client.config.adminroleid))
       return message.channel.send(
         "Only the owner of ComfyBot can run this commands!"
@@ -135,13 +134,12 @@ export default async (client: Comfy, message: Message) => {
     "cmd"
   );
 
-
   try {
-    cmd.run({message, args, client: client});
+    cmd.run({ message, args, client: client });
   } catch (e) {
     console.error(e);
     return message.channel.send(
       "Something went wrong... Please retry again later!"
     );
   }
-}
+};

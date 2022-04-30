@@ -61,7 +61,9 @@ const Stats: Command<Message> = {
       "• Links",
       `[Dashboard](https://dashboard.dbyte.xyz) ● [Donate](https://www.patreon.com/distrobyte) ● [Invite](${client.config.inviteURL}) ● [Support](${client.config.supportURL}) ● [Github](https://www.github,com/DistroByte)`
     );
-    return message.channel.send(statsEmbed);
+    return message.channel.send({
+      embeds: [statsEmbed],
+    });
   },
 };
 
