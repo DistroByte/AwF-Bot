@@ -2,8 +2,9 @@ import util from "util";
 import fs from "fs";
 import { readdir } from "fs/promises";
 import mongoose from "mongoose";
-
+import { Intents } from "discord.js";
 import Comfy from "./base/Comfy";
+
 const client = new Comfy({
   intents: [
     Intents.FLAGS.GUILDS,
@@ -114,4 +115,3 @@ import "./base/Prometheus";
 
 // load server-based Prometheus stuff
 import "./base/GrafanaHandler";
-import { Intents } from "discord.js";
