@@ -66,7 +66,10 @@ const Linkme: Command<Message> = {
       if (!user.factorioRoles) user.factorioRoles = [];
       user.factorioRoles.push("Member");
       user.save();
-      message.channel.send("You have been successfully linked");
+      await message.channel.send("You have been successfully linked");
+      message.channel.send(
+        "https://tenor.com/view/parks-and-rec-parks-and-recreation-ron-swanson-gif-5603552"
+      );
 
       // this may be a bit unnecessary to send it to all servers but it's easier than to
       // figure out from which server the linking process was initiated
