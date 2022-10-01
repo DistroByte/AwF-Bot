@@ -1,5 +1,6 @@
 import { Message, MessageEmbed } from "discord.js";
 import { Command } from "../../base/Command.js";
+import mongoose from "mongoose";
 
 const StatsG: Command<Message> = {
   name: "statsg",
@@ -22,29 +23,41 @@ const StatsG: Command<Message> = {
     if (!client.users.cache.get(userID))
       return message.reply(`User <@${userID}> doesn't exist!`);
     let user = await client.findOrCreateUser({ id: userID });
-    if (!user.factorioName) return message.reply("User is not linked!");
+    if (!user.factorioName)
+      return message.reply(`User <@${userID}> is not linked to Factorio!`);
+
+    const data = await mongoose.connections[1]
+      .getClient()
+      .db("scenario")
+      .collection("PlayerData")
+      .findOne({
+        playername: user.factorioName,
+      });
+
+    console.log(data.data);
+    if (!data.data || !data.data.Statistics)
+      return message.reply(`User <@${userID}> has no stats!`);
+    const { Statistics } = data.data;
 
     let embed = new MessageEmbed()
-      .setAuthor(message.guild.name, message.guild.iconURL())
+      .setAuthor({ name: message.guild.name, iconURL: message.guild.iconURL() })
       .setColor(client.config.embed.color)
       .setFooter(client.config.embed.footer);
     embed.setTitle("Global Factorio User Statistics");
     embed.setDescription(`Statistics of <@${userID}> | ${userID}`);
     embed.addFields([
       {
-        name: "Total Points",
-        value: Math.round(user.factorioStats.points).toString(),
+        name: "Damage dealt",
+        value: (Statistics.DamageDealt ?? 0).toString(),
       },
-      { name: "Deaths", value: user.factorioStats.deaths.toString() },
+      { name: "Deaths", value: (Statistics.Deaths ?? 0).toString() },
       {
         name: "Built Entities",
-        value: user.factorioStats.builtEntities.toString(),
+        value: (Statistics.MachinesBuilt ?? 0).toString(),
       },
       {
         name: "Time played (minutes)",
-        value: Math.round(
-          (user.factorioStats.timePlayed / 54000) * 15
-        ).toString(),
+        value: (Statistics.Playtime ?? 0).toString(),
       },
     ]);
     return message.channel.send({
