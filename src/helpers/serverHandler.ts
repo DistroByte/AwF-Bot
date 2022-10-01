@@ -285,22 +285,22 @@ class serverHandler {
         }
       ).exec();
     }
-    if (line.includes("DIED")) {
-      line = line.slice("DIED: ".length);
-      const newline = line.split(" "); //split at separation between username and death reson
-      if (newline[0] == "PLAYER:") newline.shift();
-      this.appendMessage(
-        server,
-        `${this.client.emotes?.playerdeath} ${newline[0]} died due to ${newline[1]}`
-      );
+    // if (line.includes("DIED")) {
+    //   line = line.slice("DIED: ".length);
+    //   const newline = line.split(" "); //split at separation between username and death reson
+    //   if (newline[0] == "PLAYER:") newline.shift();
+    //   this.appendMessage(
+    //     server,
+    //     `${this.client.emotes?.playerdeath} ${newline[0]} died due to ${newline[1]}`
+    //   );
 
-      let user = await this.client.findUserFactorioName(newline[0]);
-      if (user) {
-        user.factorioStats.deaths++;
-        user.factorioStats.points -= 100;
-        user.save();
-      }
-    }
+    //   let user = await this.client.findUserFactorioName(newline[0]);
+    //   if (user) {
+    //     user.factorioStats.deaths++;
+    //     user.factorioStats.points -= 100;
+    //     user.save();
+    //   }
+    // }
     if (line.includes("ROCKET: ")) {
       let serverStats = await ServerStatistics.findOneAndUpdate(
         { serverID: server.discordid },
@@ -364,51 +364,51 @@ class serverHandler {
         ).then(() => {});
       }
     }
-    if (line.includes("STATS: ")) {
-      let tmp = line
-        .slice(line.indexOf("STATS: ") + "STATS: ".length)
-        .split(" ");
-      let playername = tmp.shift();
-      let builtEntities = parseInt(tmp.shift());
-      let playTime = parseInt(tmp.shift());
-      let user = await this.client.findUserFactorioName(playername);
-      if (!user) return; // don't run on people who don't have stuff
-      const addHoursPlayed = playTime / 54000 / 4; // 54000 ticks in 15 mins, 15*60*60, 60 minutes in an hour
-      const totHoursPlayed =
-        (playTime + user.factorioStats.timePlayed) / 54000 / 4;
-      user.factorioStats.builtEntities += builtEntities;
-      user.factorioStats.timePlayed += playTime;
-      user.factorioStats.points += builtEntities;
-      user.factorioStats.points += addHoursPlayed * 50;
-      if (totHoursPlayed > this.client.consts.veteranUserHours) {
-        if (
-          !user.factorioRoles.includes(
-            this.client.config.factorioRoles.veteran.name
-          )
-        ) {
-          // add Veteran role on Discord
-          this.client.guilds
-            .resolve(this.client.consts.guildid)
-            .members.fetch(user.id)
-            .then((member) => {
-              member.roles
-                .add(this.client.config.factorioRoles.veteran.id)
-                .catch(() => {});
-            })
-            .catch(() => {});
-          user.factorioRoles.push(
-            this.client.config.factorioRoles.veteran.name
-          ); // add role to DB
-          user
-            .save()
-            .then(() => this.assignRoles(playername, server).then(() => {})); // assign roles in-game
-        } else {
-          user.save();
-        }
-      } else {
-        user.save();
-      }
-    }
+    // if (line.includes("STATS: ")) {
+    //   let tmp = line
+    //     .slice(line.indexOf("STATS: ") + "STATS: ".length)
+    //     .split(" ");
+    //   let playername = tmp.shift();
+    //   let builtEntities = parseInt(tmp.shift());
+    //   let playTime = parseInt(tmp.shift());
+    //   let user = await this.client.findUserFactorioName(playername);
+    //   if (!user) return; // don't run on people who don't have stuff
+    //   const addHoursPlayed = playTime / 54000 / 4; // 54000 ticks in 15 mins, 15*60*60, 60 minutes in an hour
+    //   const totHoursPlayed =
+    //     (playTime + user.factorioStats.timePlayed) / 54000 / 4;
+    //   user.factorioStats.builtEntities += builtEntities;
+    //   user.factorioStats.timePlayed += playTime;
+    //   user.factorioStats.points += builtEntities;
+    //   user.factorioStats.points += addHoursPlayed * 50;
+    //   if (totHoursPlayed > this.client.consts.veteranUserHours) {
+    //     if (
+    //       !user.factorioRoles.includes(
+    //         this.client.config.factorioRoles.veteran.name
+    //       )
+    //     ) {
+    //       // add Veteran role on Discord
+    //       this.client.guilds
+    //         .resolve(this.client.consts.guildid)
+    //         .members.fetch(user.id)
+    //         .then((member) => {
+    //           member.roles
+    //             .add(this.client.config.factorioRoles.veteran.id)
+    //             .catch(() => {});
+    //         })
+    //         .catch(() => {});
+    //       user.factorioRoles.push(
+    //         this.client.config.factorioRoles.veteran.name
+    //       ); // add role to DB
+    //       user
+    //         .save()
+    //         .then(() => this.assignRoles(playername, server).then(() => {})); // assign roles in-game
+    //     } else {
+    //       user.save();
+    //     }
+    //   } else {
+    //     user.save();
+    //   }
+    // }
   }
   async awfLogging(data: OutputData) {
     let line = JSON.parse(data.line);
