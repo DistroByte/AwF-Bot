@@ -85,6 +85,7 @@ class ServerFifoManager {
     if (sendWithUsername === true)
       toSend = `${message.author.username}: ${message.cleanContent}`;
     else toSend = `${message.cleanContent}`;
+    toSend = toSend.replaceAll("`", "\\`");
     this.usedFifos.forEach((server) => {
       if (server.serverObject.discordid === message.channel.id)
         server.serverFifo.write(toSend, () => {});
@@ -101,6 +102,7 @@ class ServerFifoManager {
     if (sendWithUsername === true)
       toSend = `${message.author.username}: ${message.cleanContent}`;
     else toSend = `${message.cleanContent}`;
+    toSend = toSend.replaceAll("`", "\\`");
     this.usedFifos.forEach((server) => {
       server.serverFifo.write(toSend, () => {});
     });
