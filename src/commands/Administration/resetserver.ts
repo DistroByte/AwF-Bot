@@ -101,7 +101,7 @@ const Resetserver: Command<Message> = {
       .map(
         (save) => `${client.config.serverpath}/${server.path}/saves/${save}`
       );
-    const latestSavePath = sortModifiedDate(saves)[0].path;
+    const latestSavePath = sortModifiedDate(saves)[0]?.path;
     // if there are saves, back up latest and remove all after
     if (latestSavePath) {
       const latestSave = latestSavePath.slice(
