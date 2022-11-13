@@ -40,7 +40,8 @@ const RconcmdAll: Command<Message> = {
       try {
         if (out.resp && out.resp.length > 1024)
           throw Error("Response too long!");
-        else outEmbed.addField(`${out.server.discordname}`, out.resp);
+        else
+          outEmbed.addField(`${out.server.discordname}`, out.resp.toString());
       } catch (error) {
         outEmbed.addField(`${out.server.discordname}`, error);
         console.error(error);
