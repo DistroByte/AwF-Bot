@@ -55,8 +55,10 @@ const StatsS: Command<Message> = {
     //   );
     let evolution = await rcon
       .rconCommand("/evolution", serverid)
-      .then((r) => r.resp);
-    let time = await rcon.rconCommand("/time", serverid).then((r) => r.resp);
+      .then((r) => r.resp || "Unknown");
+    let time = await rcon
+      .rconCommand("/time", serverid)
+      .then((r) => r.resp || "Unknown");
     statsembed.addFields(
       { name: "Evolution", value: evolution },
       { name: "Time", value: time }

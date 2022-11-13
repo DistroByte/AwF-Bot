@@ -37,6 +37,7 @@ const Rconcmd: Command<Message> = {
     const cmdArr = args.slice(1);
     const command = cmdArr.join(" ");
     let res = await rcon.rconCommand(command, toSendServer);
+    if (!res) return message.channel.send("Server not found!");
     if (typeof res.resp == "object")
       return message.channel.send(
         `Error. Command may have worked, but didn't give a response: ${res.resp}`

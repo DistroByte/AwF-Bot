@@ -43,7 +43,7 @@ const OnlinePlayers: Command<Message> = {
     const withoutScenarioOutput = await Promise.all(withoutScenarioOutputProm);
 
     scenarioOutput.forEach((response) => {
-      if (!response.resp || typeof response.resp !== "string")
+      if (!response.resp)
         return embed.addField(
           response.server.discordname,
           "Server is unreachable"

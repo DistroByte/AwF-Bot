@@ -173,6 +173,19 @@ class Comfy extends Client {
       );
     }
   }
+
+  async sendToErrorChannel(message: ArgumentTypes<TextChannel["send"]>) {
+    if (this.config.errorchannel) {
+      const guild = this.guilds.cache.forEach((guild) =>
+        guild.channels.cache.forEach(
+          (channel) =>
+            channel.id === this.config.errorchannel &&
+            channel.isText() &&
+            channel.send(message)
+        )
+      );
+    }
+  }
 }
 
 export default Comfy;

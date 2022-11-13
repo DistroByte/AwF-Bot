@@ -183,14 +183,16 @@ class GrafanaHandler {
    * @param {*} server
    */
   handleStatistics(statistics, server) {
-		if (!statistics || typeof statistics !== "string") return
+    if (!statistics || typeof statistics !== "string") return;
     const json = JSON.parse(statistics.split("\n")[0]);
     const otherStats = json[Object.keys(json)[0]].other;
-		
-		playercountGauge.set(
-			{ server: server.name },
-			Array.isArray(otherStats.online_players) ? otherStats.online_players.length : 0
-		)
+
+    playercountGauge.set(
+      { server: server.name },
+      Array.isArray(otherStats.online_players)
+        ? otherStats.online_players.length
+        : 0
+    );
     Object.keys(otherStats.mods).forEach((modname) =>
       modGauge.set(
         {
@@ -248,53 +250,53 @@ class GrafanaHandler {
 
       if (production) {
         Object.keys(production.item_input).forEach((key) =>
-        itemProductionInput.set(
-          { server: server.name, force: forcename, name: key },
-          production.item_input[key].count
-        )
-      );
-      Object.keys(production.item_output).forEach((key) =>
-        itemProductionOutput.set(
-          { server: server.name, force: forcename, name: key },
-          production.item_output[key].count
-        )
-      );
-      Object.keys(production.fluid_input).forEach((key) =>
-        fluidProductionInput.set(
-          { server: server.name, force: forcename, name: key },
-          production.fluid_input[key].count
-        )
-      );
-      Object.keys(production.fluid_output).forEach((key) =>
-        fluidProductionOutput.set(
-          { server: server.name, force: forcename, name: key },
-          production.fluid_output[key].count
-        )
-      );
-      Object.keys(production.kill_input).forEach((key) =>
-        killProductionInput.set(
-          { server: server.name, force: forcename, name: key },
-          production.kill_input[key].count
-        )
-      );
-      Object.keys(production.kill_output).forEach((key) =>
-        killProductionOutput.set(
-          { server: server.name, force: forcename, name: key },
-          production.kill_output[key].count
-        )
-      );
-      Object.keys(production.build_input).forEach((key) =>
-        buildProductionInput.set(
-          { server: server.name, force: forcename, name: key },
-          production.build_input[key].count
-        )
-      );
-      Object.keys(production.build_output).forEach((key) =>
-        buildProductionOutput.set(
-          { server: server.name, force: forcename, name: key },
-          production.build_output[key].count
-        )
-      );
+          itemProductionInput.set(
+            { server: server.name, force: forcename, name: key },
+            production.item_input[key].count
+          )
+        );
+        Object.keys(production.item_output).forEach((key) =>
+          itemProductionOutput.set(
+            { server: server.name, force: forcename, name: key },
+            production.item_output[key].count
+          )
+        );
+        Object.keys(production.fluid_input).forEach((key) =>
+          fluidProductionInput.set(
+            { server: server.name, force: forcename, name: key },
+            production.fluid_input[key].count
+          )
+        );
+        Object.keys(production.fluid_output).forEach((key) =>
+          fluidProductionOutput.set(
+            { server: server.name, force: forcename, name: key },
+            production.fluid_output[key].count
+          )
+        );
+        Object.keys(production.kill_input).forEach((key) =>
+          killProductionInput.set(
+            { server: server.name, force: forcename, name: key },
+            production.kill_input[key].count
+          )
+        );
+        Object.keys(production.kill_output).forEach((key) =>
+          killProductionOutput.set(
+            { server: server.name, force: forcename, name: key },
+            production.kill_output[key].count
+          )
+        );
+        Object.keys(production.build_input).forEach((key) =>
+          buildProductionInput.set(
+            { server: server.name, force: forcename, name: key },
+            production.build_input[key].count
+          )
+        );
+        Object.keys(production.build_output).forEach((key) =>
+          buildProductionOutput.set(
+            { server: server.name, force: forcename, name: key },
+            production.build_output[key].count
+          )
+        );
       }
 
       if (robots) {
@@ -360,7 +362,7 @@ class GrafanaHandler {
         "/collectdata rcon",
         server.discordid
       );
-      this.handleStatistics(data.resp, server);
+      if (data) this.handleStatistics(data.resp, server);
     });
   }
   destroy() {

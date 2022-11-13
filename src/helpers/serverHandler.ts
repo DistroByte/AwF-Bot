@@ -93,15 +93,13 @@ class serverHandler {
   private async assignRoles(playername: string, server: FactorioServer) {
     let user = await this.client.findUserFactorioName(playername);
     if (!user || !user.factorioRoles) return;
-    let res = (
-      await rcon.rconCommand(
-        `/interface local names = {} for i, role in ipairs(Roles.get_player_roles("${playername}")) do names[i] = role.name end return names`,
-        server.discordid
-      )
-    ).resp;
-    if (!res.length) return console.error(res);
-    const roles = res
-      .slice(res.indexOf("{") + 2, res.indexOf("}") - 1)
+    let res = await rcon.rconCommand(
+      `/interface local names = {} for i, role in ipairs(Roles.get_player_roles("${playername}")) do names[i] = role.name end return names`,
+      server.discordid
+    );
+    if (!res.resp) return console.error(res);
+    const roles = res.resp
+      .slice(res.resp.indexOf("{") + 2, res.resp.indexOf("}") - 1)
       .replace(/"/g, "")
       .split(",  ");
     user.factorioRoles.forEach((role) => {
@@ -455,7 +453,7 @@ class serverHandler {
       rcon.rconCommandAllExclude(
         // args is now the rest of the stuff
         `/interface Datastore.ingest('propagate', '${collectionName}', '${playerName}', '${args}')`,
-        data.server.name
+        [data.server.name]
       );
       let find = await mongoose.connections[1]
         .getClient()
@@ -565,8 +563,8 @@ class serverHandler {
           )}'))`,
           server.discordid
         )
-        .then((output) => output.resp);
-      if (res.trim() == "Command Complete") {
+        .then((output) => output);
+      if (res.resp && res.resp.trim() == "Command Complete") {
         const channel = this.client.channels.cache.get(data.server.discordid);
         channel.isText() && channel.send("Roles have synced");
       }
