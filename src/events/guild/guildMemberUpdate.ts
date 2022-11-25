@@ -30,12 +30,10 @@ export default async (
 
     Object.keys(client.config.factorioRoles).map((name) => {
       const role = client.config.factorioRoles[name];
-      console.log(role);
       if (shouldHaveRoleIDs.includes(role.id)) factorioRoles.push(role.name);
     });
     user.factorioRoles.forEach((role) => {
       if (!factorioRoles.includes(role)) {
-        console.log(role);
         rolesToUnassign.push(role);
       }
     });
@@ -51,8 +49,9 @@ export default async (
     }
     factorioRoles.forEach((role) => {
       rcon.rconCommandAll(
-        `/interface Roles.assign_player('${user.factorioName}', '${role}', "JammyBot")`
+        `/interface Roles.assign_player('${user.factorioName}', '${role}', "JammyBot", true)`
       );
     });
+	await user.save()
   }
 };

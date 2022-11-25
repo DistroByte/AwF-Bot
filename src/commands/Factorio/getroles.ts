@@ -23,7 +23,7 @@ const Getroles: Command<Message> = {
     const id =
       message.mentions.users.first()?.id || args[0] || message.author.id;
     const user = await client.findOrCreateUser({ id: id });
-    if (user.factorioRoles === [])
+    if (user.factorioRoles.length === 0)
       return message.channel.send(`User has no roles!`);
     else
       message.channel.send(

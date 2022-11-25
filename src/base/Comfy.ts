@@ -78,7 +78,7 @@ class Comfy extends Client {
       });
     });
     setInterval(() => {
-      this.serverQueues.forEach((server) => {
+      this.serverQueues.forEach(async (server) => {
         if (server.sendingMessage === true) return;
         server.sendingMessage = true;
         let message = "";
@@ -98,7 +98,7 @@ class Comfy extends Client {
           }
         }
         if (message.length) {
-          const channel = this.channels.cache.get(server.server.discordid);
+          const channel = await this.channels.fetch(server.server.discordid);
           if (channel.isText())
             channel.send(message).then(() => (server.sendingMessage = false));
         } else {

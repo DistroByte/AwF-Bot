@@ -4,6 +4,7 @@ import { readdir } from "fs/promises";
 import mongoose from "mongoose";
 import { Intents } from "discord.js";
 import Comfy from "./base/Comfy";
+import rcon from "./helpers/rcon";
 
 const client = new Comfy({
   intents: [
@@ -14,6 +15,7 @@ const client = new Comfy({
     Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
     Intents.FLAGS.GUILD_PRESENCES,
     Intents.FLAGS.GUILD_WEBHOOKS,
+	Intents.FLAGS.GUILD_MEMBERS,
   ],
 });
 
@@ -66,7 +68,6 @@ const init = async () => {
 
   client.login(client.config.token);
 
-  let rcon = require("./helpers/rcon");
   rcon.client = client;
   const serverHandler = require("./helpers/serverHandler");
   const servers = new serverHandler(client);
