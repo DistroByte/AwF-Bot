@@ -24,20 +24,20 @@ const OnlinePlayers: Command<Message> = {
     const serversWithScenario = rcon.rconConnections
       .filter((connection) => connection.hasScenario)
       .filter((connection) => connection.server.hidden === false)
-      .map((connection) => connection.server.discordname);
+      .map((connection) => connection.server.name);
     const serversWithoutScenario = rcon.rconConnections
       .filter((connection) => !connection.hasScenario)
       .filter((connection) => connection.server.hidden === false)
-      .map((connection) => connection.server.discordname);
+      .map((connection) => connection.server.name);
 
-    const scenarioOutputProm = serversWithScenario.map((discordname) =>
+    const scenarioOutputProm = serversWithScenario.map((name) =>
       rcon.rconCommand(
         "/interface t = {}; for _, player in ipairs(game.connected_players) do t[player.name] = Roles.get_player_highest_role(player).name end; rcon.print(game.table_to_json(t))",
-        discordname
+        name
       )
     );
     const withoutScenarioOutputProm = serversWithoutScenario.map(
-      (discordname) => rcon.rconCommand("/p o", discordname)
+      (name) => rcon.rconCommand("/p o", name)
     );
     const scenarioOutput = await Promise.all(scenarioOutputProm);
     const withoutScenarioOutput = await Promise.all(withoutScenarioOutputProm);
@@ -45,7 +45,7 @@ const OnlinePlayers: Command<Message> = {
     scenarioOutput.forEach((response) => {
       if (!response.resp)
         return embed.addField(
-          response.server.discordname,
+			response.resp != false ? response.server.discordname : response.identifier,
           "Server is unreachable"
         );
       const playerRoles = JSON.parse(
@@ -63,7 +63,7 @@ const OnlinePlayers: Command<Message> = {
     withoutScenarioOutput.forEach((response) => {
       if (!response.resp || typeof response.resp !== "string")
         return embed.addField(
-          response.server.discordname,
+			response.resp != false ? response.server.discordname : response.identifier,
           "Server is unreachable"
         );
       const players = response.resp

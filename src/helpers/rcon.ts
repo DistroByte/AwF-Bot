@@ -18,7 +18,7 @@ interface RCONCommandSuccessOutput {
 }
 interface RCONCommandFailOutput {
   resp: false;
-  server: FactorioServer;
+  identifier: string;
 }
 type RCONCommandOutput = RCONCommandSuccessOutput | RCONCommandFailOutput;
 
@@ -30,7 +30,7 @@ interface Connection {
 
 class RconInterface {
   private servers: FactorioServer[];
-  private client: Comfy | null;
+  public client: Comfy | null;
   public rconConnections: Connection[];
   /**
    * Intervals of checking if a server is online
@@ -67,24 +67,28 @@ class RconInterface {
       // reconnection mechanism
       rcon.on("end", () => {
         this.reconnectRcon(rcon, server); // start the reconnection mechanism
-        this.client.sendToErrorChannel(
-          `Server <#${
-            server.discordid
-          }> has dropped connection to RCON at <t:${Math.floor(
-            Date.now() / 1000
-          )}>`
-        );
+       if (!server.dev) {
+		this.client.sendToErrorChannel(
+			`Server <#${
+			  server.discordid
+			}> has dropped connection to RCON at <t:${Math.floor(
+			  Date.now() / 1000
+			)}>`
+		  );
+	   }
       });
     } catch (error) {
       // mechanism to reconnect to RCON after some time
       this.reconnectRcon(rcon, server); // start the reconnection mechanism
-      this.client.sendToErrorChannel(
-        `Server <#${
-          server.discordid
-        }> has failed to initially connect to RCON at <t:${Math.floor(
-          Date.now() / 1000
-        )}>`
-      );
+      if (!server.dev) {
+		this.client.sendToErrorChannel(
+			`Server <#${
+			  server.discordid
+			}> has failed to initially connect to RCON at <t:${Math.floor(
+			  Date.now() / 1000
+			)}>`
+		  );
+	  }
     }
   }
 
@@ -124,13 +128,15 @@ class RconInterface {
         if (connectionAttempts === 11520) connectionAttempts = 5760;
         // dayjs is used to get the relative time since the start of the reconnection attempts
         if (attempts.includes(connectionAttempts)) {
-          this.client.sendToErrorChannel(
-            `Server <#${
-              server.discordid
-            }> has been unable to connect to RCON since ${dayjs(
-              startedAt
-            ).fromNow()}`
-          );
+          if (!server.dev) {
+			this.client.sendToErrorChannel(
+				`Server <#${
+				  server.discordid
+				}> has dropped connection to RCON at <t:${Math.floor(
+				  Date.now() / 1000
+				)}>`
+			  );
+		  }
         }
       }
     };
@@ -153,17 +159,19 @@ class RconInterface {
         s.server.name === serverIdentifier ||
         s.server.discordid === serverIdentifier
     );
+	// if (serverIdentifier == "724696348871622818")
+	// 	console.log(server)
     if (!server)
       return {
         resp: false,
-        server: server.server,
+		identifier: serverIdentifier,
       };
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     const response = await server.rcon.send(command).catch(() => {});
     if (!response)
       return {
         resp: false,
-        server: server.server,
+		identifier: serverIdentifier,
       };
     return {
       resp: response,
