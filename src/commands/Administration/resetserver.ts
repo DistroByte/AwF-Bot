@@ -118,6 +118,10 @@ const Resetserver: Command<Message> = {
       );
       saves.forEach((savePath) => fs.rmSync(savePath));
     }
+	// back up deconlog, if exists
+	if (fs.existsSync(`${client.config.serverpath}/${server.path}/script-output/log/decon.log`)) {
+		fs.renameSync(`${client.config.serverpath}/${server.path}/script-output/log/decon.log`, `${client.config.serverpath}/${server.path}/script-output/log/decon_${moment().format("YYYY-MM-DD-mm-ss")}.log`);
+	}
 
     // remove stats
     ServerStatistics.findOneAndDelete({ serverID: server.discordid }).then(
