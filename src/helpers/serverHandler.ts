@@ -35,7 +35,6 @@ class serverHandler {
     Tails.on("datastore", (log) => this.datastoreHandler(log));
     Tails.on("discord", (log) => this.discordHandler(log));
     // Tails.on("ALL", (log) => this.allHandler(log))
-    Tails.on("start", (log) => this.startHandler(log));
   }
   private formatDate(line: string) {
     return line.trim().slice(line.indexOf("0.000") + 6, 25);
@@ -545,8 +544,7 @@ class serverHandler {
         embeds: [new MessageEmbed(embed)],
       });
   }
-  async startHandler(data: OutputData) {
-    let server = data.server;
+  async startHandler(server: FactorioServer) {
     setTimeout(async () => {
       let roles = await Users.find({})
         .select({ factorioName: 1, factorioRoles: 1 })
@@ -565,7 +563,7 @@ class serverHandler {
         )
         .then((output) => output);
       if (res.resp && res.resp.trim() == "Command Complete") {
-        const channel = this.client.channels.cache.get(data.server.discordid);
+        const channel = this.client.channels.cache.get(server.discordid);
         channel.isText() && channel.send("Roles have synced");
       }
     }, 5000); // allow server to connect to rcon
@@ -580,4 +578,4 @@ class serverHandler {
     }
   }
 }
-module.exports = serverHandler;
+export default serverHandler;

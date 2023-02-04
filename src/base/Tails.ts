@@ -25,7 +25,6 @@ export declare interface TailEvents {
   playerJoin: (data: playerJoinData) => void;
   playerLeave: (data: playerLeaveData) => void;
   out: (data: OutputData) => void;
-  start: (data: OutputData) => void;
   logging: (data: OutputData) => void;
   datastore: (data: OutputData) => void;
   discord: (data: OutputData) => void;
@@ -54,9 +53,6 @@ class tailListener extends EventEmitter {
     this.tailLocations.forEach((tailStuff) => {
       let tail = new Tail(tailStuff.path);
       tail.on("line", (line: string) => {
-        const serverStartRegExp = new RegExp(
-          /Info ServerMultiplayerManager.cpp:\d\d\d: Matching server connection resumed/
-        );
         if (line.includes("[CHAT]"))
           this.client?.ws
             ? this.client.logger(`${tailStuff.server.name}: ${line}`)
@@ -79,13 +75,10 @@ class tailListener extends EventEmitter {
             line: JSON.parse(line),
             server: tailStuff.server,
           });
-        else if (serverStartRegExp.test(line))
-          return this.emit("start", { line: line, server: tailStuff.server });
-        else
-          this.emit(tailStuff.type, {
-            line: line,
-            server: tailStuff.server,
-          });
+        this.emit(tailStuff.type, {
+          line: line,
+          server: tailStuff.server,
+        });
       });
     });
   }
