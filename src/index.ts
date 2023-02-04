@@ -15,7 +15,7 @@ const client = new Comfy({
     Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
     Intents.FLAGS.GUILD_PRESENCES,
     Intents.FLAGS.GUILD_WEBHOOKS,
-	Intents.FLAGS.GUILD_MEMBERS,
+    Intents.FLAGS.GUILD_MEMBERS,
   ],
 });
 
@@ -69,8 +69,9 @@ const init = async () => {
   client.login(client.config.token);
 
   rcon.client = client;
-  const serverHandler = require("./helpers/serverHandler");
+  const serverHandler = (await import("./helpers/serverHandler")).default;
   const servers = new serverHandler(client);
+  rcon.serverConnected = (server) => servers.startHandler(server);
 
   mongoose
     .connect(client.config.mongoDB)

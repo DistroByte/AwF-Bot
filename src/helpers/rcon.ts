@@ -37,11 +37,14 @@ class RconInterface {
    */
   private checkIntervals: Map<string, NodeJS.Timeout> = new Map();
 
+  public serverConnected: (server: FactorioServer) => void;
+
   constructor(servers: FactorioServer[]) {
     this.servers = servers;
     this.rconConnections = [];
 
     this.servers.map((_, i) => this.initServer(i));
+    this.serverConnected = () => {};
   }
 
   private async initServer(serverIndex: number) {
@@ -63,32 +66,33 @@ class RconInterface {
         server: server,
         hasScenario: hasScenario,
       });
+      this.serverConnected(server);
 
       // reconnection mechanism
       rcon.on("end", () => {
         this.reconnectRcon(rcon, server); // start the reconnection mechanism
-       if (!server.dev) {
-		this.client.sendToErrorChannel(
-			`Server <#${
-			  server.discordid
-			}> has dropped connection to RCON at <t:${Math.floor(
-			  Date.now() / 1000
-			)}>`
-		  );
-	   }
+        if (!server.dev) {
+          this.client.sendToErrorChannel(
+            `Server <#${
+              server.discordid
+            }> has dropped connection to RCON at <t:${Math.floor(
+              Date.now() / 1000
+            )}>`
+          );
+        }
       });
     } catch (error) {
       // mechanism to reconnect to RCON after some time
       this.reconnectRcon(rcon, server); // start the reconnection mechanism
       if (!server.dev) {
-		this.client.sendToErrorChannel(
-			`Server <#${
-			  server.discordid
-			}> has failed to initially connect to RCON at <t:${Math.floor(
-			  Date.now() / 1000
-			)}>`
-		  );
-	  }
+        this.client.sendToErrorChannel(
+          `Server <#${
+            server.discordid
+          }> has failed to initially connect to RCON at <t:${Math.floor(
+            Date.now() / 1000
+          )}>`
+        );
+      }
     }
   }
 
@@ -121,6 +125,7 @@ class RconInterface {
             Date.now() / 1000
           )}>, after ${dayjs(startedAt).fromNow(true)}. Synchronizing banlist`
         );
+        this.serverConnected(server);
         return;
       } catch {
         connectionAttempts++;
@@ -129,14 +134,14 @@ class RconInterface {
         // dayjs is used to get the relative time since the start of the reconnection attempts
         if (attempts.includes(connectionAttempts)) {
           if (!server.dev) {
-			this.client.sendToErrorChannel(
-				`Server <#${
-				  server.discordid
-				}> has dropped connection to RCON at <t:${Math.floor(
-				  Date.now() / 1000
-				)}>`
-			  );
-		  }
+            this.client.sendToErrorChannel(
+              `Server <#${
+                server.discordid
+              }> has dropped connection to RCON at <t:${Math.floor(
+                Date.now() / 1000
+              )}>`
+            );
+          }
         }
       }
     };
@@ -159,19 +164,19 @@ class RconInterface {
         s.server.name === serverIdentifier ||
         s.server.discordid === serverIdentifier
     );
-	// if (serverIdentifier == "724696348871622818")
-	// 	console.log(server)
+    // if (serverIdentifier == "724696348871622818")
+    // 	console.log(server)
     if (!server)
       return {
         resp: false,
-		identifier: serverIdentifier,
+        identifier: serverIdentifier,
       };
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     const response = await server.rcon.send(command).catch(() => {});
     if (!response)
       return {
         resp: false,
-		identifier: serverIdentifier,
+        identifier: serverIdentifier,
       };
     return {
       resp: response,
