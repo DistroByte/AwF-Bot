@@ -522,19 +522,38 @@ class serverHandler {
         .deleteOne(toDelete);
     }
   }
-  async discordHandler(data) {
+  async discordHandler(data: OutputData) {
     if (data.server.dev) return; // ignore dev server
     if (data.server.hidden) return; // return if server is hidden
     const message = data.line.replace(
       "${serverName}",
       `<#${data.server.discordid}>`
     );
-    const embed = JSON.parse(message);
+    const embedData = JSON.parse(message);
+    const embed = new MessageEmbed(embedData);
+    let shouldPing = true;
+    if (embed.description.match(/(\S*) was used/)) {
+      // console command was used
+      // we therefore check if the user has the "Moderator" role in-game
+      try {
+        const playername =
+          embed.fields.find((field) => field.name === "By")?.value ??
+          "this is not a valid factorio name";
+        const user = await Users.findOne({ factorioName: playername });
+        const discordUser = await this.client.guilds.cache
+          .get(this.client.consts.guildid)
+          .members.fetch(user.id);
+        // if the discord user has the moderator role, we don't ping
+        if (discordUser.roles.cache.get(this.client.config.moderatorroleid)) {
+          shouldPing = false;
+        }
+      } catch {}
+    }
     const channel = this.client.channels.cache.get(data.server.discordid);
     channel.isText() &&
       channel.send({
-        embeds: [new MessageEmbed(embed)],
-        content: `<@&${config.moderatorroleid}>`,
+        embeds: [embed],
+        content: shouldPing ? `<@&${config.moderatorroleid}>` : "Command used",
       });
     const modchannel = this.client.channels.cache.get(
       this.client.config.moderatorchannel
