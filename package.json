@@ -62,7 +62,7 @@
     "reflect-metadata": "^0.1.13",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
-    "sequelize": "^6.6.5",
+    "sequelize": "^6.29.0",
     "sequelize-typescript": "^2.1.0",
     "sqlite3": "^5.0.8",
     "storage-to-json": "^1.0.34",
