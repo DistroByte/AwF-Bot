@@ -36,12 +36,6 @@ class serverHandler {
     Tails.on("discord", (log) => this.discordHandler(log));
     // Tails.on("ALL", (log) => this.allHandler(log))
   }
-  private formatDate(line: string) {
-    return line.trim().slice(line.indexOf("0.000") + 6, 25);
-  }
-  private formatVersion(line: string) {
-    return line.slice(line.indexOf("Factorio"), line.indexOf("(build")).trim();
-  }
   private formatChatData(data: string) {
     data = data.slice(data.indexOf("]") + 2); //removing the [CHAT] from sending to Discord
     if (data.includes("[")) {
