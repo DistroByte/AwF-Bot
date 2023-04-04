@@ -2,12 +2,7 @@
  * @file Jammy's core. Based off of ComfyBot
  */
 
-import {
-  Client,
-  ClientOptions,
-  Collection,
-  TextChannel,
-} from "discord.js";
+import { Client, ClientOptions, Collection, TextChannel } from "discord.js";
 import NodeCache from "node-cache";
 import factorioServers from "../servers";
 import {

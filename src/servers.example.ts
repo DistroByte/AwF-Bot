@@ -19,7 +19,7 @@ const servers: FactorioServer[] = [
       discord: false, // requires the full scenario, not just the mod
     },
     dev: false, // whether or not the server is developmental
-	hidden: false, // whether the server is hidden from ?po etc
+    hidden: false, // whether the server is hidden from ?po etc
   },
 ];
 

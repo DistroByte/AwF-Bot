@@ -52,6 +52,6 @@ export default async (
         `/interface Roles.assign_player('${user.factorioName}', '${role}', "JammyBot", true)`
       );
     });
-	await user.save()
+    await user.save();
   }
 };
