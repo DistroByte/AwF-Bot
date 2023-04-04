@@ -6,8 +6,6 @@ import {
   Client,
   ClientOptions,
   Collection,
-  Message,
-  MessageEmbed,
   TextChannel,
 } from "discord.js";
 import NodeCache from "node-cache";
@@ -20,15 +18,11 @@ import {
 import FIFO from "fifo";
 import path from "path";
 import moment from "moment";
-// import BotConfig from "../config";
 import BotConfig from "../config";
 import BotConsts, { BotConsts as BotConstsType } from "../consts";
 import { Command } from "./Command";
 import BotLogger from "../helpers/logger";
-import BotUsersData, { UserClass } from "./User";
-import ServerStatistics from "./Serverstatistics";
-import { DocumentType } from "@typegoose/typegoose";
-import { BeAnObject } from "@typegoose/typegoose/lib/types";
+import BotUsersData from "./User";
 
 type ArgumentTypes<F extends Function> = F extends (args: infer A) => any
   ? A
