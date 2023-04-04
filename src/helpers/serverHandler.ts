@@ -19,9 +19,18 @@ import config from "../config";
 import { checkBan } from "./functions";
 import { FactorioServer } from "../types";
 
+// represent an error and the amount it occured in a 10 minute window
+interface BaseServerError {
+  source: string
+  error: string
+  createdAt: Date
+  occurence: number
+}
+
 class serverHandler {
   client: Comfy;
   helpdesk: string;
+  baseServerErrors: Map<string, BaseServerError[]> = new Map()
   constructor(client: Comfy) {
     this.client = client;
     this.helpdesk = "723280139982471247"; // helpdesk channel
@@ -34,13 +43,31 @@ class serverHandler {
     Tails.on("logging", (log) => this.awfLogging(log));
     Tails.on("datastore", (log) => this.datastoreHandler(log));
     Tails.on("discord", (log) => this.discordHandler(log));
-    // Tails.on("ALL", (log) => this.allHandler(log))
-  }
-  private formatDate(line: string) {
-    return line.trim().slice(line.indexOf("0.000") + 6, 25);
-  }
-  private formatVersion(line: string) {
-    return line.slice(line.indexOf("Factorio"), line.indexOf("(build")).trim();
+
+    // send out errors every minute if need be
+    setTimeout(() => {
+      // check if any error types have started occuring over 10 minutes ago, if so, delete them
+      // if the error types are younger than 10 minutes, send them to discord
+      this.baseServerErrors.forEach((errors, server) => {
+        errors.forEach((error) => {
+          if (error.createdAt.getTime() < Date.now() - 600000) {
+            // if the error occured more than once in the last 10 minutes, send it to discord
+            if (error.occurence > 1) {
+              const errorchannel = this.client.channels.cache.get(this.client.config.errorchannel);
+              if (errorchannel.isText()) {
+                errorchannel.send(`Error in <#${server}>, occured ${error.occurence} times in the last 10 minutes: ${error.error}`);
+              }
+            }
+            // if the error is older than 10 minutes, delete it
+            let serverErrors = this.baseServerErrors.get(server)
+            if (serverErrors) {
+              serverErrors = serverErrors.filter((x) => x.source !== error.source)
+              this.baseServerErrors.set(server, serverErrors)
+            }
+          }
+        })
+      })
+    }, 60*1000)
   }
   private formatChatData(data: string) {
     data = data.slice(data.indexOf("]") + 2); //removing the [CHAT] from sending to Discord
@@ -135,10 +162,32 @@ class serverHandler {
     if (!channel || !channel.isText() || channel.type === "DM") return;
     if (line.includes("Error")) {
       if (channel.name !== "dev-dump") {
-        const errorChannel =
-          this.client.channels.cache.get("786603909489491988");
-        if (errorChannel.isText())
-          errorChannel.send(`Error in ${channel.name}: ${line}`);
+        if (!this.baseServerErrors.has(server.name)) {
+          this.baseServerErrors.set(server.name, [])
+        }
+        const errors = this.baseServerErrors.get(server.discordid) || []
+        const errorSource = line.split(" ")[1] ?? "" // get the line of the code at which the error occured
+        let foundError = false
+        for (const error of errors) {
+          if (errorSource === error.source) {
+            error.occurence += 1
+            foundError = true
+          }
+        }
+        if (!foundError) {
+          // if the error did not occur previously, add it to the list and send it to discord as a first-time occurence
+          errors.push({
+            error: line,
+            source: errorSource,
+            occurence: 1,
+            createdAt: new Date()
+          })
+          const errorChannel = this.client.channels.cache.get(this.client.config.errorchannel)
+          if (errorChannel?.isText()) {
+            errorChannel.send(`Error in <#${server.discordid}>: ${line}`)
+          }
+        }
+        this.baseServerErrors.set(server.discordid, errors)
       }
     }
     if (line.includes("Saving game as"))
