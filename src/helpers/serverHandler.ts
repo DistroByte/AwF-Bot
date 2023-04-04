@@ -21,16 +21,16 @@ import { FactorioServer } from "../types";
 
 // represent an error and the amount it occured in a 10 minute window
 interface BaseServerError {
-  source: string
-  error: string
-  createdAt: Date
-  occurence: number
+  source: string;
+  error: string;
+  createdAt: Date;
+  occurence: number;
 }
 
 class serverHandler {
   client: Comfy;
   helpdesk: string;
-  baseServerErrors: Map<string, BaseServerError[]> = new Map()
+  baseServerErrors: Map<string, BaseServerError[]> = new Map();
   constructor(client: Comfy) {
     this.client = client;
     this.helpdesk = "723280139982471247"; // helpdesk channel
@@ -53,21 +53,27 @@ class serverHandler {
           if (error.createdAt.getTime() < Date.now() - 600000) {
             // if the error occured more than once in the last 10 minutes, send it to discord
             if (error.occurence > 1) {
-              const errorchannel = this.client.channels.cache.get(this.client.config.errorchannel);
+              const errorchannel = this.client.channels.cache.get(
+                this.client.config.errorchannel
+              );
               if (errorchannel.isText()) {
-                errorchannel.send(`Error in <#${server}>, occured ${error.occurence} times in the last 10 minutes: ${error.error}`);
+                errorchannel.send(
+                  `Error in <#${server}>, occured ${error.occurence} times in the last 10 minutes: ${error.error}`
+                );
               }
             }
             // if the error is older than 10 minutes, delete it
-            let serverErrors = this.baseServerErrors.get(server)
+            let serverErrors = this.baseServerErrors.get(server);
             if (serverErrors) {
-              serverErrors = serverErrors.filter((x) => x.source !== error.source)
-              this.baseServerErrors.set(server, serverErrors)
+              serverErrors = serverErrors.filter(
+                (x) => x.source !== error.source
+              );
+              this.baseServerErrors.set(server, serverErrors);
             }
           }
-        })
-      })
-    }, 60*1000)
+        });
+      });
+    }, 60 * 1000);
   }
   private formatChatData(data: string) {
     data = data.slice(data.indexOf("]") + 2); //removing the [CHAT] from sending to Discord
@@ -163,15 +169,15 @@ class serverHandler {
     if (line.includes("Error")) {
       if (channel.name !== "dev-dump") {
         if (!this.baseServerErrors.has(server.name)) {
-          this.baseServerErrors.set(server.name, [])
+          this.baseServerErrors.set(server.name, []);
         }
-        const errors = this.baseServerErrors.get(server.discordid) || []
-        const errorSource = line.split(" ")[1] ?? "" // get the line of the code at which the error occured
-        let foundError = false
+        const errors = this.baseServerErrors.get(server.discordid) || [];
+        const errorSource = line.split(" ")[1] ?? ""; // get the line of the code at which the error occured
+        let foundError = false;
         for (const error of errors) {
           if (errorSource === error.source) {
-            error.occurence += 1
-            foundError = true
+            error.occurence += 1;
+            foundError = true;
           }
         }
         if (!foundError) {
@@ -180,14 +186,16 @@ class serverHandler {
             error: line,
             source: errorSource,
             occurence: 1,
-            createdAt: new Date()
-          })
-          const errorChannel = this.client.channels.cache.get(this.client.config.errorchannel)
+            createdAt: new Date(),
+          });
+          const errorChannel = this.client.channels.cache.get(
+            this.client.config.errorchannel
+          );
           if (errorChannel?.isText()) {
-            errorChannel.send(`Error in <#${server.discordid}>: ${line}`)
+            errorChannel.send(`Error in <#${server.discordid}>: ${line}`);
           }
         }
-        this.baseServerErrors.set(server.discordid, errors)
+        this.baseServerErrors.set(server.discordid, errors);
       }
     }
     if (line.includes("Saving game as"))
@@ -331,22 +339,22 @@ class serverHandler {
         }
       ).exec();
     }
-    // if (line.includes("DIED")) {
-    //   line = line.slice("DIED: ".length);
-    //   const newline = line.split(" "); //split at separation between username and death reson
-    //   if (newline[0] == "PLAYER:") newline.shift();
-    //   this.appendMessage(
-    //     server,
-    //     `${this.client.emotes?.playerdeath} ${newline[0]} died due to ${newline[1]}`
-    //   );
+    if (line.includes("DIED")) {
+      line = line.slice("DIED: ".length);
+      const newline = line.split(" "); //split at separation between username and death reson
+      if (newline[0] == "PLAYER:") newline.shift();
+      this.appendMessage(
+        server,
+        `${this.client.emotes?.playerdeath} ${newline[0]} died due to ${newline[1]}`
+      );
 
-    //   let user = await this.client.findUserFactorioName(newline[0]);
-    //   if (user) {
-    //     user.factorioStats.deaths++;
-    //     user.factorioStats.points -= 100;
-    //     user.save();
-    //   }
-    // }
+      let user = await this.client.findUserFactorioName(newline[0]);
+      if (user) {
+        user.factorioStats.deaths++;
+        user.factorioStats.points -= 100;
+        user.save();
+      }
+    }
     if (line.includes("ROCKET: ")) {
       let serverStats = await ServerStatistics.findOneAndUpdate(
         { serverID: server.discordid },

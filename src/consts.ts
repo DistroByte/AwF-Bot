@@ -1,7 +1,7 @@
 export interface BotConsts {
-  discordMessageLengthLimit: number
-  veteranUserHours: number
-  guildid: string
+  discordMessageLengthLimit: number;
+  veteranUserHours: number;
+  guildid: string;
 }
 
 const consts: BotConsts = {
@@ -10,4 +10,4 @@ const consts: BotConsts = {
   guildid: "548410604679856151",
 };
 
-export default consts
+export default consts;

@@ -36,8 +36,8 @@ const OnlinePlayers: Command<Message> = {
         name
       )
     );
-    const withoutScenarioOutputProm = serversWithoutScenario.map(
-      (name) => rcon.rconCommand("/p o", name)
+    const withoutScenarioOutputProm = serversWithoutScenario.map((name) =>
+      rcon.rconCommand("/p o", name)
     );
     const scenarioOutput = await Promise.all(scenarioOutputProm);
     const withoutScenarioOutput = await Promise.all(withoutScenarioOutputProm);
@@ -45,7 +45,9 @@ const OnlinePlayers: Command<Message> = {
     scenarioOutput.forEach((response) => {
       if (!response.resp)
         return embed.addField(
-			response.resp != false ? response.server.discordname : response.identifier,
+          response.resp != false
+            ? response.server.discordname
+            : response.identifier,
           "Server is unreachable"
         );
       const playerRoles = JSON.parse(
@@ -63,7 +65,9 @@ const OnlinePlayers: Command<Message> = {
     withoutScenarioOutput.forEach((response) => {
       if (!response.resp || typeof response.resp !== "string")
         return embed.addField(
-			response.resp != false ? response.server.discordname : response.identifier,
+          response.resp != false
+            ? response.server.discordname
+            : response.identifier,
           "Server is unreachable"
         );
       const players = response.resp

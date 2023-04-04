@@ -12,7 +12,7 @@ export interface FactorioServer {
     discord: boolean;
   };
   dev: boolean;
-  hidden: boolean
+  hidden: boolean;
 }
 
 export type BotConfigEmojis = Record<string, string>;
@@ -51,7 +51,7 @@ export interface BotConfig {
     }
   >;
   archivePath: string;
-	scenarioRootPath: string
+  scenarioRootPath: string;
   promPort: number;
   customPermissions: { name: string; roleid: string }[];
   adminroleid: string;

@@ -7,7 +7,7 @@ import http from "http";
 import serverUPS from "../helpers/serverUPSHandler";
 import config from "../config";
 
-export * as promClient from "prom-client"
+export * as promClient from "prom-client";
 
 const collectDefaultMetrics = promClient.collectDefaultMetrics;
 const Registry = promClient.Registry;
