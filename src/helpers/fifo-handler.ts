@@ -25,6 +25,8 @@ class ServerFifoManager {
   usedFifos: ServerFifo[];
   unusedFifos: ServerFifo[];
   client: Comfy | null;
+  static CommandRegex = /^(?<command>\/)*(?<text>.*)$/i;
+
   constructor() {
     this.usedFifos = [];
     this.unusedFifos = [];
@@ -75,6 +77,18 @@ class ServerFifoManager {
     }
   }
 
+  private escapeCommandCharacters(author, command: string): string {
+    const match = command.match(ServerFifoManager.CommandRegex);
+    if (!match?.groups?.text) {
+      this.client?.logger(
+        `[${author.id}] Trying to execute command through text ${command}`,
+        "warn"
+        );
+        throw new Error("Trying to execute command through text");
+    }
+    return match.groups.text;
+  }
+
   /**
    * Sends a message to a Factorio server which has the same channel ID as the message
    * @param {Message} message - Discord message to send to server
@@ -82,10 +96,13 @@ class ServerFifoManager {
    */
   sendToServer(message, sendWithUsername = true) {
     let toSend;
-    if (sendWithUsername === true)
+    if (sendWithUsername) {
       toSend = `${message.author.username}: ${message.cleanContent}`;
+      toSend = this.escapeCommandCharacters(message.author, toSend);
+    }
     else toSend = `${message.cleanContent}`;
     toSend = toSend.replaceAll("`", "\\`");
+
     this.usedFifos.forEach((server) => {
       if (server.serverObject.discordid === message.channel.id)
         server.serverFifo.write(toSend, () => {});
@@ -99,8 +116,10 @@ class ServerFifoManager {
    */
   sendToAll(message: Message, sendWithUsername = true) {
     let toSend;
-    if (sendWithUsername === true)
+    if (sendWithUsername) {
       toSend = `${message.author.username}: ${message.cleanContent}`;
+      toSend = this.escapeCommandCharacters(message.author, toSend);
+    }
     else toSend = `${message.cleanContent}`;
     toSend = toSend.replaceAll("`", "\\`");
     this.usedFifos.forEach((server) => {
