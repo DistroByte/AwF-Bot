@@ -64,7 +64,7 @@
     "request-promise": "^4.2.6",
     "sequelize": "^6.6.5",
     "sequelize-typescript": "^2.1.0",
-    "sqlite3": "^5.0.8",
+    "sqlite3": "^5.1.5",
     "storage-to-json": "^1.0.34",
     "superscript-text": "^1.0.0",
     "tail": "^2.2.1",
