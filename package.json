@@ -83,7 +83,7 @@
     "html-to-md": "^0.3.9",
     "jsdoc": "^3.6.7",
     "jsdoc-to-markdown": "^7.0.1",
-    "nodemon": "^2.0.7",
+    "nodemon": "^2.0.22",
     "prettier": "2.4.1"
   },
   "author": "oof2win2",
