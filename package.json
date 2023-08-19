@@ -16,7 +16,7 @@
     "url": "git+https://github.com/oof2win2/AwF-Bot.git"
   },
   "dependencies": {
-    "@discordjs/opus": "^0.4.0",
+    "@discordjs/opus": "^0.8.0",
     "@influxdata/influxdb-client": "^1.10.0",
     "@prisma/client": "^3.0.1",
     "@sindresorhus/slugify": "^1.1.0",
