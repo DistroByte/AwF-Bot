@@ -21,7 +21,7 @@
     "@prisma/client": "^3.0.1",
     "@sindresorhus/slugify": "^1.1.0",
     "@supercharge/strings": "^1.18.0",
-    "@typegoose/typegoose": "^9.0.1",
+    "@typegoose/typegoose": "^11.4.1",
     "@types/node": "^16.10.2",
     "amethyste-api": "^1.1.5",
     "async-eval": "^0.1.5",
