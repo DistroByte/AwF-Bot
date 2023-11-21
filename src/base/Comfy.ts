@@ -18,6 +18,8 @@ import BotConsts, { BotConsts as BotConstsType } from "../consts";
 import { Command } from "./Command";
 import BotLogger from "../helpers/logger";
 import BotUsersData from "./User";
+import rcon from "../helpers/rcon";
+import { writeFile } from "fs/promises";
 
 type ArgumentTypes<F extends Function> = F extends (args: infer A) => any
   ? A
@@ -174,6 +176,49 @@ class Comfy extends Client {
         )
       );
     }
+  }
+
+  private async generateWhitelistFile() {
+    const whitelist = await this.usersData.find({
+      factorioName: { $exists: true, $ne: "" },
+    });
+
+    const whitelistFile = whitelist
+      .map((user) => {
+        return user.factorioName;
+      })
+      .filter(Boolean);
+
+    const jsonFile = JSON.stringify(whitelistFile, null, 2);
+    await writeFile("./whitelist.json", jsonFile, "utf8");
+  }
+
+  async addPlayerToWhitelist(playername: string) {
+    await Promise.allSettled(
+      rcon.servers
+        .filter((server) => server.isWhitelistOnly)
+        .map((server) =>
+          rcon.rconCommand(`/whitelist add ${playername}`, server.discordid)
+        )
+    );
+
+    await this.generateWhitelistFile();
+
+    return;
+  }
+
+  async removePlayerFromWhitelist(playername: string) {
+    await Promise.allSettled(
+      rcon.servers
+        .filter((server) => server.isWhitelistOnly)
+        .map((server) =>
+          rcon.rconCommand(`/whitelist remove ${playername}`, server.discordid)
+        )
+    );
+
+    await this.generateWhitelistFile();
+
+    return;
   }
 }
 

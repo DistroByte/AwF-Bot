@@ -71,7 +71,7 @@ const init = async () => {
   rcon.client = client;
   const serverHandler = (await import("./helpers/serverHandler")).default;
   const servers = new serverHandler(client);
-  rcon.serverConnected = (server) => servers.startHandler(server);
+  rcon.onServerConnected = (server) => servers.startHandler(server);
 
   mongoose
     .connect(client.config.mongoDB)

@@ -21,8 +21,8 @@ const Linkme: Command<Message> = {
       return message.channel.send(
         "No linking code supplied! Get one from in-game"
       );
-    const linkID = client.cache.linkingCache.get(`${args[0]}`);
-    if (!linkID || typeof linkID !== "string")
+    const factorioName = client.cache.linkingCache.get(`${args[0]}`);
+    if (!factorioName || typeof factorioName !== "string")
       return message.channel.send(
         `Key ${args[0]} is invalid or expired. Keys should be in the format \`123456\``
       );
@@ -35,7 +35,7 @@ const Linkme: Command<Message> = {
       .setColor(client.config.embed.color)
       .setFooter(client.config.embed.footer);
     embed.addFields([
-      { name: "Factorio name", value: linkID },
+      { name: "Factorio name", value: factorioName },
       { name: "Discord user", value: `<@${message.author.id}>` },
     ]);
     embed.setDescription(
@@ -62,7 +62,7 @@ const Linkme: Command<Message> = {
       let user = await client.findOrCreateUser({
         id: message.author.id,
       });
-      user.factorioName = linkID;
+      user.factorioName = factorioName;
       if (!user.factorioRoles) user.factorioRoles = [];
       user.factorioRoles.push("Member");
       user.save();
@@ -71,6 +71,8 @@ const Linkme: Command<Message> = {
         "https://tenor.com/view/parks-and-rec-parks-and-recreation-ron-swanson-gif-5603552"
       );
 
+      await client.addPlayerToWhitelist(factorioName)
+
       // this may be a bit unnecessary to send it to all servers but it's easier than to
       // figure out from which server the linking process was initiated
       const serversWithScenario = rcon.rconConnections
@@ -78,7 +80,7 @@ const Linkme: Command<Message> = {
         .map((connection) => connection.server.discordname);
       serversWithScenario.map((discordname) =>
         rcon.rconCommand(
-          `/interface Roles.assign_player("${linkID}", "Member", "${client.user.username}")`,
+          `/interface Roles.assign_player("${factorioName}", "Member", "${client.user.username}")`,
           discordname
         )
       );
