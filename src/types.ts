@@ -13,6 +13,7 @@ export interface FactorioServer {
   };
   dev: boolean;
   hidden: boolean;
+  isWhitelistOnly: boolean;
 }
 
 export type BotConfigEmojis = Record<string, string>;

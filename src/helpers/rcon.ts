@@ -29,7 +29,7 @@ interface Connection {
 }
 
 class RconInterface {
-  private servers: FactorioServer[];
+  public servers: FactorioServer[];
   public client: Comfy | null;
   public rconConnections: Connection[];
   /**
@@ -37,14 +37,14 @@ class RconInterface {
    */
   private checkIntervals: Map<string, NodeJS.Timeout> = new Map();
 
-  public serverConnected: (server: FactorioServer) => void;
+  public onServerConnected: (server: FactorioServer) => void;
 
   constructor(servers: FactorioServer[]) {
     this.servers = servers;
     this.rconConnections = [];
 
     this.servers.map((_, i) => this.initServer(i));
-    this.serverConnected = () => {};
+    this.onServerConnected = () => {};
   }
 
   private async initServer(serverIndex: number) {
@@ -66,7 +66,7 @@ class RconInterface {
         server: server,
         hasScenario: hasScenario,
       });
-      this.serverConnected(server);
+      this.onServerConnected(server);
 
       // reconnection mechanism
       rcon.on("end", () => {
@@ -125,7 +125,7 @@ class RconInterface {
             Date.now() / 1000
           )}>, after ${dayjs(startedAt).fromNow(true)}. Synchronizing banlist`
         );
-        this.serverConnected(server);
+        this.onServerConnected(server);
         return;
       } catch {
         connectionAttempts++;

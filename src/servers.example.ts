@@ -20,6 +20,7 @@ const servers: FactorioServer[] = [
     },
     dev: false, // whether or not the server is developmental
     hidden: false, // whether the server is hidden from ?po etc
+    isWhitelistOnly: false, // whether the server requires whitelist to join
   },
 ];
 

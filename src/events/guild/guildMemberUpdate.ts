@@ -12,10 +12,7 @@ export default async (
   const factorioRoleIDs = Object.keys(client.config.factorioRoles).map(
     (name) => client.config.factorioRoles[name].id
   );
-  console.log(
-    _oldMember.roles.cache.map((role) => role.id),
-    newMember.roles.cache.map((role) => role.id)
-  );
+  
   if (
     user.factorioName &&
     newMember.roles.cache.some((r) => factorioRoleIDs.includes(r.id))
